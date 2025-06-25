@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import styles from "./page.module.css"
+import Pipoca from "@/Components/Bomboniere/pipoca";
 
 export default function MenuLoja() {
     const [step, setStep] = useState("mainMenu");
@@ -54,6 +55,10 @@ export default function MenuLoja() {
             {step === "mainMenu" && (
 
             <div className={styles.row}>
+
+                <Pipoca className={styles.pipoca}/>
+
+
                 <button className={styles.button} onClick={() => handleClickMenu("Pipoca")}>Pipocas</button>
                 <button className={styles.button} onClick={() => handleClickMenu("Refrigerante")}>Refrigerantes</button>
                 <button className={styles.button} onClick={() => handleClickMenu("Doce")}>Doces</button>
