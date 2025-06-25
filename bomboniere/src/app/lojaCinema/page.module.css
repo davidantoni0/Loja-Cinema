@@ -72,6 +72,14 @@
     justify-content: space-between;
     align-items: center;
   }
+
+  .total {
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 10px;
+    color: #2c3e50;
+  }
+  
   
   .removeButton {
     background-color: #e74c3c;

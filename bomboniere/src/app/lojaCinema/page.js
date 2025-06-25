@@ -14,6 +14,9 @@ export default function MenuLoja() {
         Biscoito: { "Pequeno": 3.0, "Médio": 4.5, "Grande": 6.0 }
     };
 
+    const total = cart.reduce((acc, item) => acc + item.price, 0);
+
+
     function handleClickMenu(item) {
         setSelectedItem(item);
         setStep("submenu");
@@ -82,9 +85,13 @@ export default function MenuLoja() {
 
                         <button className={styles.removeButton}onClick={() => handleClickRemoveItem(index)}>Remover</button>
                     </li>
+                    
                     ))}
                 </ul>
                 )}
+                <p className={styles.total}>Total: R$ {total.toFixed(2)}</p>
+
+
                 <button className={styles.button} onClick={() => setStep("mainMenu")}>
                 Voltar ao Menu
                 </button>
