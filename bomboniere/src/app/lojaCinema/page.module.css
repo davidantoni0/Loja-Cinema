@@ -1,3 +1,97 @@
-.button:hover{
+.menuLoja {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background-color: #fff4e6;
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .menuInicio {
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #d35400;
+  }
+  
+  .row,
+  .submenu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .button {
+    padding: 10px 16px;
+    font-size: 16px;
+    background-color: #ff9248;
+    border: none;
+    color: white;
+    border-radius: 8px;
     cursor: pointer;
-}
+    transition: background-color 0.3s ease;
+    width: 200px;
+  }
+  
+  .button:hover {
+    background-color: #e87419;
+  }
+  
+  .submenuTitle {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #333;
+    text-align: center;
+  }
+  
+  .cartMenu {
+    background-color: #fff;
+    padding: 20px;
+    border: 2px solid #ff9248;
+    border-radius: 10px;
+  }
+  
+  .cartMenu h2 {
+    margin-bottom: 15px;
+    color: #d35400;
+  }
+  
+  .cartMenu ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .cartMenu li {
+    margin-bottom: 10px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .removeButton {
+    background-color: #e74c3c;
+    border: none;
+    color: white;
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  
+  .removeButton:hover {
+    background-color: #c0392b;
+  }
+  
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 1px solid #ccc;
+  }
+  
