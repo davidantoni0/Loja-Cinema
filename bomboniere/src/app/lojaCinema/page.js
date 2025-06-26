@@ -54,24 +54,32 @@ export default function MenuLoja() {
 
             {step === "mainMenu" && (
 
-             <div className={styles.row}>
-                    <MenuButton label="Pipocas" onClick={() => handleClickMenu("Pipoca")} />
-                    <MenuButton label="Refrigerantes" onClick={() => handleClickMenu("Refrigerante")} />
-                    <MenuButton label="Doces" onClick={() => handleClickMenu("Doce")} />
-                    <MenuButton label="Biscoitos" onClick={() => handleClickMenu("Biscoito")} />
+                <div className={styles.row}>
+                    <MenuButton label="Pipocas" onClick={() => handleClickMenu("Pipoca")} imageSrc= "/ImagesLoja/pipoca.jpg"/>
+                    <MenuButton label="Refrigerantes" onClick={() => handleClickMenu("Refrigerante")} imageSrc= "/ImagesLoja/refrigerante.jpg"/>
+                    <MenuButton label="Doces" onClick={() => handleClickMenu("Doce")} imageSrc= "/ImagesLoja/doce.jpg"/>
+                    <MenuButton label="Biscoitos" onClick={() => handleClickMenu("Biscoito")} imageSrc= "/ImagesLoja/biscoito.jpg"/>
                 </div>
             )}
             
-            {step === "submenu" && (
-            <div className={styles.row}>
-            <div className={styles.submenuTitle}>
-                Selecione o tamanho de {selectedItem}:
-            </div>
-            <SubMenuButton size="Pequeno" onClick={() => handleClickAddItem("Pequeno")} />
-            <SubMenuButton size="Médio" onClick={() => handleClickAddItem("Médio")} />
-            <SubMenuButton size="Grande" onClick={() => handleClickAddItem("Grande")} />
-            </div>
-            )}
+            {step === "submenu" && selectedItem && (
+                <div className={styles.row}>
+                    <div className={styles.submenuTitle}>
+                    Selecione o tamanho de {selectedItem}:
+                    </div>
+                    {Object.keys(prices[selectedItem]).map((size) => {
+                    const price = prices[selectedItem][size];
+                    return (
+                        <SubMenuButton
+                        key={size}
+                        size={size}
+                        price={price}
+                        onClick={() => handleClickAddItem(size)}
+                        />
+                    );
+                    })}
+                </div>
+)}
 
             {step === "cart" && (
             <div className={styles.cartMenu}>

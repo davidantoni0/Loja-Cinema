@@ -1,9 +1,10 @@
 import s from './submenubutton.module.css';
+import React from 'react';
 
-function SubMenuButton({ size, onClick }) {
+function SubMenuButton({ size, onClick, price }) {
   return (
     <button className={s.button} onClick={() => onClick(size)}>
-      {size}
+      {size} - R${price.toFixed(2)}  {/* Display size and price */}
     </button>
   );
 }

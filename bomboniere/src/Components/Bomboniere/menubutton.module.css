@@ -13,3 +13,8 @@
 .button:hover {
   background-color: #e87419;
 }
+
+.button img {
+
+    margin-right: 10px;
+}
