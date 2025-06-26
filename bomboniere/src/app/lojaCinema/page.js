@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
 import styles from "./page.module.css"
-import Pipoca from "@/Components/Bomboniere/pipoca";
-
+import MenuButton from "@/Components/Bomboniere/menubutton";
+import SubMenuButton from "@/Components/Bomboniere/submenubutton";
 export default function MenuLoja() {
     const [step, setStep] = useState("mainMenu");
     const [selectedItem, setSelectedItem] = useState();
@@ -54,26 +54,22 @@ export default function MenuLoja() {
 
             {step === "mainMenu" && (
 
-            <div className={styles.row}>
-
-                <Pipoca className={styles.pipoca}/>
-
-
-                <button className={styles.button} onClick={() => handleClickMenu("Pipoca")}>Pipocas</button>
-                <button className={styles.button} onClick={() => handleClickMenu("Refrigerante")}>Refrigerantes</button>
-                <button className={styles.button} onClick={() => handleClickMenu("Doce")}>Doces</button>
-                <button className={styles.button} onClick={() => handleClickMenu("Biscoito")}>Biscoitos</button>
-            </div>
+             <div className={styles.row}>
+                    <MenuButton label="Pipocas" onClick={() => handleClickMenu("Pipoca")} />
+                    <MenuButton label="Refrigerantes" onClick={() => handleClickMenu("Refrigerante")} />
+                    <MenuButton label="Doces" onClick={() => handleClickMenu("Doce")} />
+                    <MenuButton label="Biscoitos" onClick={() => handleClickMenu("Biscoito")} />
+                </div>
             )}
             
             {step === "submenu" && (
-            <div className={styles.submenu}>
+            <div className={styles.row}>
             <div className={styles.submenuTitle}>
                 Selecione o tamanho de {selectedItem}:
             </div>
-            <button className={styles.button} onClick={() => handleClickAddItem("Pequeno")}>Pequeno</button>
-            <button className={styles.button} onClick={() => handleClickAddItem("Médio")}>Médio</button>
-            <button className={styles.button} onClick={() => handleClickAddItem("Grande")}>Grande</button>
+            <SubMenuButton size="Pequeno" onClick={() => handleClickAddItem("Pequeno")} />
+            <SubMenuButton size="Médio" onClick={() => handleClickAddItem("Médio")} />
+            <SubMenuButton size="Grande" onClick={() => handleClickAddItem("Grande")} />
             </div>
             )}
 

@@ -16,8 +16,7 @@
     color: #d35400;
   }
   
-  .row,
-  .submenu {
+  .row {
     display: flex;
     flex-direction: column;
     gap: 12px;
