@@ -4,10 +4,10 @@
     "nome": "Filme A",
     "assentos": [
       { "numero": 1, "disponivel": true },
-      { "numero": 2, "disponivel": false },
+      { "numero": 2, "disponivel": true },
       { "numero": 3, "disponivel": true },
       { "numero": 4, "disponivel": true },
-      { "numero": 5, "disponivel": false },
+      { "numero": 5, "disponivel": true },
       { "numero": 6, "disponivel": true },
       { "numero": 7, "disponivel": true },
       { "numero": 8, "disponivel": false },
