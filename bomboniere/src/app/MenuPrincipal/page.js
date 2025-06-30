@@ -15,7 +15,7 @@ export default function MenuPrincipal() {
   return (
     <div>
       <h2>Olá, {nome}</h2>
-      <Link href="/Ingresso">Compre seu ingresso!</Link>
+      <Link href="/filmes-assentos">Compre seu ingresso!</Link>
       <br/>
       <Link href="/lojaCinema">Conheça nossa Bomboniere!</Link>
     </div>
