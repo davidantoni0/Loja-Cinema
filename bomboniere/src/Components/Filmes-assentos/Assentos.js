@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-
-const Assentos = ({ assentos, onToggleAssento }) => {
+import styles from './Assentos.module.css';
+const Assentos = ({ assentos, onToggleAssento, onConfirmar, onCancelar }) => {
   const [assentosSelecionados, setAssentosSelecionados] = useState(assentos);
 
   useEffect(() => {
@@ -23,11 +23,13 @@ const Assentos = ({ assentos, onToggleAssento }) => {
     // Salva os assentos selecionados no localStorage
     localStorage.setItem('assentosSelecionados', JSON.stringify(assentosSelecionados));
     alert('Seleção de assentos confirmada!');
+    onConfirmar();
   };
 
   const handleCancelar = () => {
     // Restaura os assentos para o estado original
     setAssentosSelecionados(assentos);
+    onCancelar();
   };
 
   return (
@@ -35,7 +37,7 @@ const Assentos = ({ assentos, onToggleAssento }) => {
       <h2>Selecione os Assentos</h2>
       <div>
         {assentosSelecionados.map((assento) => (
-          <button
+          <button className={styles.assentosButton}
             key={assento.numero}
             style={{
               backgroundColor: assento.selecionado ? 'green' : assento.disponivel ? 'lightblue' : 'gray',

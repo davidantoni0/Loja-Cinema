@@ -1,4 +1,5 @@
 'use client';
+import styles from './page.module.css';
 import { useState, useEffect } from 'react';
 import FilmeSelector from '../../Components/Filmes-assentos/FilmeSelector';
 import Assentos from '../../Components/Filmes-assentos/Assentos';
@@ -42,7 +43,9 @@ export default function Home() {
       {!filmeSelecionado ? (
         <FilmeSelector filmes={filmes} onSelectFilme={handleSelectFilme} />
       ) : (
-        <Assentos assentos={filmeSelecionado.assentos} onToggleAssento={handleToggleAssento} />
+        <Assentos assentos={filmeSelecionado.assentos} onToggleAssento={handleToggleAssento} onConfirmar={() => setFilmeSelecionado(null)} onCancelar={() => setFilmeSelecionado(null)}
+/>
+
       )}
     </div>
   );
