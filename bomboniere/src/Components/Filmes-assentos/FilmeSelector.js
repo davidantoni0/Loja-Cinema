@@ -1,8 +1,7 @@
-import { useState } from 'react';
 import styles from './FilmeSelector.module.css';
 const FilmeSelector = ({ filmes, onSelectFilme }) => {
   return (
-    <div>
+    <div className={styles.filmeSelector}>
       <h2>Selecione um Filme</h2>
       <div>
         {filmes.map(filme => (

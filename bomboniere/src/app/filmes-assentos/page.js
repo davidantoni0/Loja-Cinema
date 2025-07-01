@@ -41,7 +41,7 @@ export default function Home() {
   return (
     
 
-    <div>
+    <div className={styles.container}>
       <h1>Seleção de Assentos</h1>
       {!filmeSelecionado ? (
         <FilmeSelector filmes={filmes} onSelectFilme={handleSelectFilme} />
@@ -50,7 +50,7 @@ export default function Home() {
         />
         
       )}
-        <button>
+        <button className={styles.button}>
         <Link href="../MenuPrincipal"> Menu Principal</Link>
         </button>
     </div>

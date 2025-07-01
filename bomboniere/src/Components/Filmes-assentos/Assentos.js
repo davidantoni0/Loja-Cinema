@@ -33,9 +33,10 @@ const Assentos = ({ assentos, onToggleAssento, onConfirmar, onCancelar }) => {
   };
 
   return (
-    <div>
+    <div className={styles.container}>
       <h2>Selecione os Assentos</h2>
       <div>
+        <div className={styles.cinemaScreen}></div>
         {assentosSelecionados.map((assento) => (
           <button className={styles.assentosButton}
             key={assento.numero}
