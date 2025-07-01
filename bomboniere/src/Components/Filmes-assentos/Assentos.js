@@ -41,6 +41,8 @@ const Assentos = ({ assentos, onToggleAssento, onConfirmar, onCancelar }) => {
           <button className={styles.assentosButton}
             key={assento.numero}
             style={{
+              height: '40px',
+              width: '50px',
               backgroundColor: assento.selecionado ? 'green' : assento.disponivel ? 'lightblue' : 'gray',
               cursor: assento.disponivel ? 'pointer' : 'not-allowed',
             }}
@@ -51,9 +53,9 @@ const Assentos = ({ assentos, onToggleAssento, onConfirmar, onCancelar }) => {
           </button>
         ))}
       </div>
-      <div>
-        <button onClick={handleConfirmar}>Confirmar</button>
-        <button onClick={handleCancelar}>Cancelar</button>
+      <div className={styles.confirmCancelButtons}>
+        <button className ={styles.confirm} onClick={handleConfirmar}>Confirmar</button>
+        <button className ={styles.cancel} onClick={handleCancelar}>Cancelar</button>
       </div>
     </div>
   );

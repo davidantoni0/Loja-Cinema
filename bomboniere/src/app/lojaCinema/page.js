@@ -79,6 +79,7 @@ export default function MenuLoja() {
                         />
                     );
                     })}
+                    <button className={styles.button} onClick={() => setStep("mainMenu")}>Voltar ao Menu</button>      
                 </div>
 )}
 
