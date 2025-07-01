@@ -1,11 +1,14 @@
 "use client";
 import { useMemo } from "react";
-import { useRouter } from "next/navigation"; // importação do roteador
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import styles from "./page.module.css";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "../firebase/firebaseConfig";
 
-export default function Login() {
-  const router = useRouter(); // inicializa o roteador
+export default function Cadastro() {
+  const router = useRouter();
+  const SENHA_ADMIN = "CineSenai2025";
 
   const dataAtual = useMemo(() => {
     const hoje = new Date();
@@ -15,114 +18,98 @@ export default function Login() {
     return `${ano}-${mes}-${dia}`;
   }, []);
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
-    alert("Cadastro enviado com sucesso!");
-    router.push("/Login"); // redireciona para a página de login
+
+    const form = event.target;
+    const nome = form.nome.value.trim();
+    const nascimento = form.nascimento.value;
+    const cpf = form.cpf.value;
+    const estudante = form.estudante.value === "true";
+    const deficiencia = form.deficiencia.value === "true";
+    const email = form.email.value.trim();
+    const senha = form.senha.value;
+
+    let funcionario = false;
+    if (form.funcionario.value === "true") {
+      if (form.senhaAdmin.value !== SENHA_ADMIN) {
+        alert("Senha de administrador incorreta.");
+        return;
+      }
+      funcionario = true;
+    }
+
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, senha);
+      const uid = cred.user.uid;
+
+      await setDoc(doc(db, "usuarios", uid), {
+        nome,
+        cpf,
+        data_nascimento: nascimento,
+        estudante,
+        deficiencia,
+        funcionario,
+        email,
+        vezes_ingresso: 0,
+        ultima_compra: null,
+        data_insercao: new Date().toISOString().split("T")[0],
+      });
+
+      localStorage.setItem("nomeUsuario", nome);
+      localStorage.setItem("usuarioFuncionario", funcionario ? "true" : "false");
+
+      alert(funcionario ? "Usuário cadastrado como Funcionário!" : "Usuário cadastrado com sucesso!");
+      router.push("/Login");
+
+    } catch (erro) {
+      if (erro.code === "auth/email-already-in-use") {
+        alert("Este e-mail já está cadastrado.");
+      } else {
+        alert("Erro ao cadastrar: " + erro.message);
+      }
+    }
   }
 
   return (
     <section>
       <Link href="/Login">Voltar</Link>
-
-      <form name="cadastro_clientes" method="POST" id="form_cadastro" onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
         <fieldset>
           <legend>Dados Pessoais</legend>
-
-          <div>
-            <label htmlFor="nome">Nome completo</label>
-            <input
-              type="text"
-              id="nome"
-              maxLength={255}
-              minLength={5}
-              placeholder="Digite seu nome"
-              pattern="[A-Za-zÀ-ÿ\s]{3,}"
-              required
-              autoFocus
-            />
-          </div>
-
-          <div>
-            <label htmlFor="nascimento">Data de nascimento</label>
-            <input
-              type="date"
-              id="nascimento"
-              name="nascimento"
-              min="1900-01-01"
-              max={dataAtual}
-              required
-            />
-          </div>
-
-          <div>
-            <label htmlFor="cpf">CPF</label>
-            <input
-              type="text"
-              id="cpf"
-              minLength={11}
-              maxLength={11}
-              pattern="[0-9]{11}"
-              required
-            />
-          </div>
+          <label>Nome completo <input type="text" name="nome" required /></label>
+          <label>Data de nascimento <input type="date" name="nascimento" max={dataAtual} required /></label>
+          <label>CPF <input type="text" name="cpf" pattern="[0-9]{11}" required /></label>
         </fieldset>
 
         <fieldset>
-          <legend>Dados sociais</legend>
-          <div>
-            <p>É estudante?</p>
-            <div>
-              <input type="radio" name="estudante" id="estudante_sim" value="true" />
-              <label htmlFor="estudante_sim">Sim</label>
+          <legend>Dados Sociais</legend>
+          <p>É estudante?</p>
+          <input type="radio" name="estudante" value="true" required /> Sim
+          <input type="radio" name="estudante" value="false" /> Não
 
-              <input type="radio" name="estudante" id="estudante_nao" value="false" />
-              <label htmlFor="estudante_nao">Não</label>
-            </div>
-          </div>
+          <p>Possui alguma deficiência?</p>
+          <input type="radio" name="deficiencia" value="true" required /> Sim
+          <input type="radio" name="deficiencia" value="false" /> Não
+        </fieldset>
 
-          <div>
-            <p>Possui alguma deficiência?</p>
-            <div>
-              <input type="radio" name="deficiencia" id="deficiencia_sim" value="true" />
-              <label htmlFor="deficiencia_sim">Sim</label>
+        <fieldset>
+          <legend>Funcionário</legend>
+          <p>É novo funcionário?</p>
+          <input type="radio" name="funcionario" value="true" required /> Sim
+          <input type="radio" name="funcionario" value="false" defaultChecked /> Não
 
-              <input type="radio" name="deficiencia" id="deficiencia_nao" value="false" />
-              <label htmlFor="deficiencia_nao">Não</label>
-            </div>
-          </div>
+          <label>Senha do administrador <input type="password" name="senhaAdmin" /></label>
         </fieldset>
 
         <fieldset>
           <legend>Contato</legend>
-          <div>
-            <label htmlFor="email">E-mail</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              maxLength={255}
-              minLength={5}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="senha">Senha</label>
-            <input
-              type="password"
-              id="senha"
-              name="senha"
-              maxLength={255}
-              minLength={5}
-              required
-            />
-          </div>
+          <label>E-mail <input type="email" name="email" required /></label>
+          <label>Senha <input type="password" name="senha" required /></label>
         </fieldset>
 
-        <div>
-          <input type="submit" value="Cadastrar" />
-          <input type="reset" value="Limpar Cadastro" />
-        </div>
+        <button type="submit">Cadastrar</button>
+        <button type="reset">Limpar</button>
       </form>
     </section>
   );

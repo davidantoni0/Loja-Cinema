@@ -1,0 +1,6 @@
+npm install firebase
+npm install -g firebase-tools
+
+firebase deploy
+
+cine-senai.web.app

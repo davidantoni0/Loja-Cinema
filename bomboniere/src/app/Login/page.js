@@ -1,36 +1,60 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation"; // 👈 Importa o roteador
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import styles from "./page.module.css";
-import usuarios from "../../../public/Dados/Usuarios.json";
+import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
+import { auth } from "../firebase/firebaseConfig";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [tentativas, setTentativas] = useState(0);
-  const [usuarioLogado, setUsuarioLogado] = useState(null);
-  const router = useRouter(); // 👈 Inicializa o roteador
+  const [mensagem, setMensagem] = useState("");
+  const router = useRouter();
 
-  function handleLogin(event) {
+  useEffect(() => {
+    const tentativasSalvas = localStorage.getItem("tentativasLogin");
+    if (tentativasSalvas) {
+      setTentativas(parseInt(tentativasSalvas));
+    }
+  }, []);
+
+  async function handleLogin(event) {
     event.preventDefault();
 
-    const usuario = usuarios.find(
-      (user) => user.email === email && user.senha === senha
-    );
-
-    if (usuario) {
-      setUsuarioLogado(usuario);
-      localStorage.setItem("nomeUsuario", usuario.nome); // 👈 Salva o nome no localStorage
-      alert(`Olá, ${usuario.nome}`);
-      router.push("/MenuPrincipal"); // 👈 Redireciona
-    } else {
+    try {
+      const usuario = await signInWithEmailAndPassword(auth, email, senha);
+      const nome = usuario.user.displayName || "Usuário";
+      localStorage.setItem("nomeUsuario", nome);
+      localStorage.removeItem("tentativasLogin");
+      router.push("/MenuPrincipal");
+    } catch (erro) {
       const novasTentativas = tentativas + 1;
       setTentativas(novasTentativas);
+      localStorage.setItem("tentativasLogin", novasTentativas);
+
       if (novasTentativas >= 3) {
-        alert("Usuário bloqueado");
+        setMensagem("⚠️ Usuário bloqueado após 3 tentativas.");
       } else {
-        alert("Email ou senha incorretos");
+        setMensagem("❌ Email ou senha incorretos.");
+      }
+    }
+  }
+
+  async function handleRedefinirSenha() {
+    if (!email) {
+      setMensagem("Digite seu e-mail para redefinir a senha.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setMensagem("📧 E-mail de redefinição enviado. Verifique sua caixa de entrada.");
+    } catch (erro) {
+      if (erro.code === "auth/user-not-found") {
+        setMensagem("❌ E-mail não cadastrado.");
+      } else {
+        setMensagem("❌ Erro ao enviar redefinição de senha.");
       }
     }
   }
@@ -48,8 +72,6 @@ export default function Login() {
             <input
               type="email"
               id="email"
-              name="email"
-              maxLength={100}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -60,16 +82,22 @@ export default function Login() {
             <input
               type="password"
               id="senha"
-              name="senha"
-              maxLength={30}
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               required
             />
           </div>
+
+          {mensagem && <p style={{ color: "red" }}>{mensagem}</p>}
+
           <button type="submit" disabled={tentativas >= 3}>
             Entrar
           </button>
+
+          <button type="button" onClick={handleRedefinirSenha}>
+            Esqueci minha senha
+          </button>
+
           <div>
             <p>Não possui conta?</p>
             <Link href="/Cadastro">Faça sua conta!</Link>
