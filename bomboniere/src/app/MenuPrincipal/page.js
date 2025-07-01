@@ -100,7 +100,7 @@ export default function MenuPrincipal() {
       <nav>
         <Link href="/filmes-assentos">Compre seu ingresso!</Link><br />
         <Link href="/lojaCinema">Conheça nossa Bomboniere!</Link><br />
-        {funcionario && <><Link href="/administrativo">Administrativo</Link><br /></>}
+        {funcionario && <><Link href="/Administrativo">Administrativo</Link><br /></>}
       </nav>
 
       <button
