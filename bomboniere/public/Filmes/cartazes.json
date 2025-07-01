@@ -1,0 +1,22 @@
+[
+  {
+    "filme": "Eu sei o que fizeram no verão passado",
+    "cartaz": "/Filmes/cartaz/Eu_sei_o_que_voces_fizeram_no_verao_passado.png"
+  },
+  {
+    "filme": "Jurassic World: Recomeço",
+    "cartaz": "/Filmes/cartaz/Jurassic_World_Recomesso.png"
+  },
+  {
+    "filme": "Olhos D'Água",
+    "cartaz": "/Filmes/cartaz/Olhos_Dagua.png"
+  },
+  {
+    "filme": "Quarteto Fantástico",
+    "cartaz": "/Filmes/cartaz/Quarteto_Fantastico.png"
+  },
+  {
+    "filme": "Superman: Deuses e Monstros",
+    "cartaz": "/Filmes/cartaz/Superman.png"
+  }
+]

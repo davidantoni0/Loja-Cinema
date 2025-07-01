@@ -1,0 +1,66 @@
+[
+    {
+        "id":"0001",
+        "nome": "Eu sei o que fizeram no verão passado",
+        "genero": "Terror, Suspense",
+        "sinopse": "Em uma pequena cidade litorânea, um grupo de jovens universitários atropela um desconhecido numa estrada escura e decide esconder o ocorrido. Meses depois, começam a receber mensagens anônimas e ameaças aterrorizantes. Quando um misterioso assassino com um gancho reaparece, eles percebem que a lenda urbana do passado está mais viva do que nunca — e que suas mentiras têm consequências sangrentas. Com ecos do clássico de 1997, esta nova geração enfrentará seus próprios fantasmas enquanto tenta sobreviver a um predador que sabe exatamente o que eles fizeram.",
+        "classificacao": "Não recomendado para menores de 14 anos",
+        "duracao": "110",
+        "elenco":"Madelyn Cline, Jonah Hauer-King, Chase Sui Wonders, Freddie Prinze Jr., Jennifer Love Hewitt",
+        "producao":"Sony Pictures, Columbia Pictures, Screen Gems",
+        "horario":"20:00",
+        "cartaz":"/cartaz/Eu sei o que vocês fizeram no verão passado.png"
+    },
+
+    {
+        "id":"0002",
+        "nome": "Jurassic World: Recomeço",
+        "genero": "Ação, Aventura, Ficção Científica",
+        "sinopse": "Anos após o colapso do último parque dos dinossauros, a humanidade tenta apagar os rastros do passado. Mas uma missão científica confidencial é enviada a uma remota ilha do Pacífico para recuperar material genético inédito. Ao chegar, a equipe descobre não apenas dinossauros sobreviventes — mas criaturas mutantes que evoluíram fora de controle. Enquanto a tensão cresce, civis presos no local enfrentam uma luta desesperada por sobrevivência. O que era para ser apenas uma expedição torna-se uma batalha entre homem, natureza e as consequências da ambição genética.",
+        "classificacao": "Não recomendado para menores de 12 anos",
+        "duracao": "133",
+        "elenco":"Scarlett Johansson, Jonathan Bailey, Mahershala Ali, Rupert Friend, Ed Skrein",
+        "producao":"Universal Pictures, Amblin Entertainment, Kennedy/Marshall",
+        "horario":"17:20",
+        "cartaz":"/cartaz/Jurassic World Recomesso.png"
+    },
+
+    {
+        "id":"0003",
+        "nome": "Olhos D'Água",
+        "genero": "Drama, Biografia, Aventura",
+        "sinopse": "Inspirado em fatos reais, o filme acompanha a trajetória emocionante de Marina Ribeiro, uma engenheira ambiental que desde a infância no sertão nordestino sonhava em devolver a vida aos rios da região. Enfrentando a resistência de políticos, a desigualdade nas comunidades e os próprios limites da ciência, Marina lidera um projeto de restauração de bacias hidrográficas, mobilizando moradores, escolas e voluntários. Um retrato íntimo e comovente de coragem, empatia e transformação ecológica, que mostra como uma ideia pode brotar como fonte de esperança em um solo ressecado.",
+        "classificacao": "Livre para todos os públicos",
+        "duracao": "110",
+        "elenco":"Clara Rugaard, Grace Passô, Cauã Reymond (participação especial), Taís Araújo",
+        "producao":"Redes brasileiras e plataformas digitais",
+        "horario": "10:00",
+        "cartaz": "/cartaz/Olhos D'água.png"
+    },
+
+    {
+        "id":"0004",
+        "nome": "Quarteto Fantástico",
+        "genero": "Ação, Aventura, Super-herói",
+        "sinopse": "Durante uma missão científica revolucionária no espaço, quatro especialistas são expostos a uma tempestade de radiação cósmica que altera seu DNA, concedendo-lhes habilidades extraordinárias. De volta à Terra, enfrentam desafios pessoais e a ameaça de um inimigo vindo de outra dimensão. À medida que descobrem os perigos de seus próprios poderes, aprendem que apenas unidos como uma verdadeira família poderão proteger o mundo de um colapso multidimensional. Em sua estreia no Universo Cinematográfico Marvel, os heróis mais inteligentes da Terra se reinventam para uma nova geração.",
+        "classificacao": "Não recomendado para menores de 10 anos",
+        "duracao": "120",
+        "elenco":"Pedro Pascal, Vanessa Kirby, Joseph Quinn, Ebon Moss-Bachrach",
+        "producao":"Marvel Studios, Walt Disney Studios",
+        "horario":"12:20",
+        "cartaz": "/cartaz/Quarteto Fantatico.png"
+    },
+
+    {
+        "id":"0005",
+        "nome": "Superman: Deuses e Monstros",
+        "genero": "Ação, Aventura, Super-herói",
+        "sinopse": "No início de sua jornada como repórter no Planeta Diário, Clark Kent ainda se adapta à vida humana enquanto luta para compreender seu verdadeiro papel no mundo. Quando Lex Luthor surge como líder de um grupo tecnológico que busca controlar o planeta sob o pretexto da ordem, Superman se vê em um dilema ético: intervir com toda sua força ou preservar sua identidade e confiança dos humanos. Em meio a batalhas épicas, decisões morais e a revelação de segredos antigos, o herói de Krypton precisa provar que até os deuses enfrentam seus monstros internos.",
+        "classificacao": "Não recomendado para menores de 12 anos",
+        "duracao": "125",
+        "elenco":"David Corenswet, Rachel Brosnahan, Nicholas Hoult, Nathan Fillion",
+        "producao":"Warner Bros., DC Studios",
+        "horario": "14:40",
+        "cartaz": "/cartaz/Superman.png"
+    }    
+]

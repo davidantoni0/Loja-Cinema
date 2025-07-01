@@ -1,0 +1,31 @@
+[
+  {
+    "faixa": "Livre",
+    "imagem": "/FaixaEtaria/Livre.png"
+  },
+
+  {
+    "faixa": "10 anos",
+    "imagem": "/FaixaEtaria/10 anos.png"
+  },
+
+  {
+    "faixa": "12 anos",
+    "imagem": "/FaixaEtaria/12 anos.png"
+  },
+
+  {
+    "faixa": "14 anos",
+    "imagem": "/FaixaEtaria/14 anos.png"
+  },
+
+  {
+    "faixa": "16 anos",
+    "imagem": "/FaixaEtaria/16 anos.png"
+  },
+
+ {
+    "faixa": "18 anos",
+    "imagem": "/FaixaEtaria/18 anos.png"
+  }
+]
