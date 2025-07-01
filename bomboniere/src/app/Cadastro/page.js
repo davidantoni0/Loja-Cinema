@@ -99,7 +99,7 @@ export default function Cadastro() {
           <input type="radio" name="funcionario" value="true" required /> Sim
           <input type="radio" name="funcionario" value="false" defaultChecked /> Não
 
-          <label>Senha do administrador <input type="password" name="senhaAdmin" /></label>
+          <label> Senha do administrador <input type="password" name="senhaAdmin" /></label>
         </fieldset>
 
         <fieldset>

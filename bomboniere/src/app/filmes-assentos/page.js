@@ -3,6 +3,7 @@ import styles from './page.module.css';
 import { useState, useEffect } from 'react';
 import FilmeSelector from '../../Components/Filmes-assentos/FilmeSelector';
 import Assentos from '../../Components/Filmes-assentos/Assentos';
+import Link from 'next/link';
 
 export default function Home() {
   const [filmes, setFilmes] = useState([]);
@@ -38,15 +39,20 @@ export default function Home() {
   };
 
   return (
+    
+
     <div>
       <h1>Seleção de Assentos</h1>
       {!filmeSelecionado ? (
         <FilmeSelector filmes={filmes} onSelectFilme={handleSelectFilme} />
       ) : (
         <Assentos assentos={filmeSelecionado.assentos} onToggleAssento={handleToggleAssento} onConfirmar={() => setFilmeSelecionado(null)} onCancelar={() => setFilmeSelecionado(null)}
-/>
-
+        />
+        
       )}
+        <button>
+        <Link href="../MenuPrincipal"> Menu Principal</Link>
+        </button>
     </div>
   );
 }

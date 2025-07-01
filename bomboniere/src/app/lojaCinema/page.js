@@ -3,6 +3,7 @@ import { useState } from "react";
 import styles from "./page.module.css"
 import MenuButton from "@/Components/Bomboniere/menubutton";
 import SubMenuButton from "@/Components/Bomboniere/submenubutton";
+import Link from "next/link";
 export default function MenuLoja() {
     const [step, setStep] = useState("mainMenu");
     const [selectedItem, setSelectedItem] = useState();
@@ -110,6 +111,9 @@ export default function MenuLoja() {
             <footer className={styles.footer}>
                 <button className={styles.button} onClick={() => setStep("cart")}>Veja o Carrinho ({cart.length} itens)</button>
                 <button className={styles.button} onClick={() => handleClickClearCart()}>Limpar o carrinho</button>
+                <button className={styles.button}>
+                    <Link href="../MenuPrincipal"> Menu Principal</Link>
+                </button>
             </footer>
         </div>
     );
