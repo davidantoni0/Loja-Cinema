@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import Assentos from "../../Components/Filmes-assentos/Assentos";
 import Link from "next/link";
-import { db } from "../../firebase/firebaseConfig";
+import { useRouter } from "next/navigation";
+import { db, auth } from "../../firebase/firebaseConfig";
 import {
   collection,
   addDoc,
@@ -15,16 +16,63 @@ import {
 } from "firebase/firestore";
 
 export default function EscolhaAssento() {
+  const router = useRouter();
+
   const [filme, setFilme] = useState(null);
   const [faixas, setFaixas] = useState([]);
   const [cartaz, setCartaz] = useState("");
   const [pendentesCount, setPendentesCount] = useState(0);
   const [dataSelecionada, setDataSelecionada] = useState(() => {
-    // Data padrão: hoje, formato yyyy-mm-dd para input date
     return new Date().toISOString().substring(0, 10);
   });
+  const [loading, setLoading] = useState(false);
+
+  // Dados do usuário vindo do localStorage
+  const [dadosUsuario, setDadosUsuario] = useState(null);
+  const [infoCompra, setInfoCompra] = useState(null);
+  const [precoBase] = useState(25.00); // Preço base do ingresso
 
   useEffect(() => {
+    // Carregar dados do usuário do localStorage
+    function carregarDadosUsuario() {
+      try {
+        const dadosUsuarioLogado = localStorage.getItem("dadosUsuarioLogado");
+        if (dadosUsuarioLogado) {
+          const dados = JSON.parse(dadosUsuarioLogado);
+          setDadosUsuario(dados);
+        } else {
+          // Fallback para auth.currentUser caso não tenha no localStorage
+          const user = auth.currentUser;
+          if (user) {
+            setDadosUsuario({
+              uid: user.uid,
+              email: user.email,
+              nome: user.email,
+              estudante: false,
+              deficiente: false,
+              funcionario: false
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados do usuário:", error);
+      }
+    }
+
+    // Carregar informações da compra do localStorage
+    function carregarInfoCompra() {
+      try {
+        const info = localStorage.getItem("infoCompra");
+        if (info) {
+          const dados = JSON.parse(info);
+          setInfoCompra(dados);
+        }
+      } catch (error) {
+        console.error("Erro ao carregar informações da compra:", error);
+      }
+    }
+
+    // Buscar filme no localStorage
     const filmeStorage = localStorage.getItem("filmeSelecionado");
     if (filmeStorage) {
       const dados = JSON.parse(filmeStorage);
@@ -36,14 +84,26 @@ export default function EscolhaAssento() {
     }
 
     async function buscarFaixas() {
-      const res = await fetch("/FaixaEtaria/faixaetaria.json");
-      const data = await res.json();
-      setFaixas(data);
+      try {
+        const res = await fetch("/FaixaEtaria/faixaetaria.json");
+        const data = await res.json();
+        setFaixas(data);
+      } catch (err) {
+        console.error("Erro ao carregar faixas etárias:", err);
+      }
     }
 
+    carregarDadosUsuario();
+    carregarInfoCompra();
     buscarFaixas();
-    contarPendentes();
+
   }, []);
+
+  useEffect(() => {
+    if (dadosUsuario?.uid) {
+      contarPendentes();
+    }
+  }, [dadosUsuario]);
 
   useEffect(() => {
     if (filme && dataSelecionada) {
@@ -51,8 +111,41 @@ export default function EscolhaAssento() {
     }
   }, [filme, dataSelecionada]);
 
+  // Função para calcular desconto
+  function calcularDesconto() {
+    if (!dadosUsuario) return 0;
+    
+    let desconto = 0;
+    if (dadosUsuario.estudante) desconto += 50;
+    if (dadosUsuario.deficiente) desconto += 50;
+    
+    return Math.min(desconto, 50); // Máximo de 50% de desconto
+  }
+
+  // Função para calcular preço com desconto
+  function calcularPreco(quantidade) {
+    const desconto = calcularDesconto();
+    const precoComDesconto = precoBase * (1 - desconto / 100);
+    return {
+      precoUnitario: precoComDesconto,
+      precoTotal: precoComDesconto * quantidade,
+      desconto: desconto,
+      economizado: (precoBase - precoComDesconto) * quantidade
+    };
+  }
+
   async function contarPendentes() {
-    const q = query(collection(db, "ingressos"), where("pago", "==", false));
+    if (!dadosUsuario?.uid) {
+      setPendentesCount(0);
+      return;
+    }
+
+    // Contar ingressos pendentes do usuário logado
+    const q = query(
+      collection(db, "ingressos"),
+      where("usuarioId", "==", dadosUsuario.uid),
+      where("pago", "==", false)
+    );
     const snapshot = await getDocs(q);
     setPendentesCount(snapshot.size);
   }
@@ -63,10 +156,14 @@ export default function EscolhaAssento() {
   }
 
   async function buscarCartaz(nome) {
-    const res = await fetch("/Filmes/cartazes.json");
-    const data = await res.json();
-    const item = data.find((c) => c.filme === nome);
-    setCartaz(item ? item.cartaz.replace("bomboniere/public", "") : "");
+    try {
+      const res = await fetch("/Filmes/cartazes.json");
+      const data = await res.json();
+      const item = data.find((c) => c.filme === nome);
+      setCartaz(item ? item.cartaz.replace("bomboniere/public", "") : "");
+    } catch (error) {
+      console.error("Erro ao buscar cartaz:", error);
+    }
   }
 
   function gerarAssentos(qtd) {
@@ -78,8 +175,6 @@ export default function EscolhaAssento() {
   }
 
   async function buscarAssentosOcupados() {
-    // Para consultar Firestore, precisamos construir intervalo de timestamps para o dia selecionado:
-    // 00:00:00 até 23:59:59 no horário local
     const dataInicio = new Date(dataSelecionada + "T00:00:00");
     const dataFim = new Date(dataSelecionada + "T23:59:59");
 
@@ -115,6 +210,10 @@ export default function EscolhaAssento() {
   }
 
   function toggleAssento(numero) {
+    // Não permite selecionar assento indisponível
+    const assento = filme.assentos.find((a) => a.numero === numero);
+    if (!assento || !assento.disponivel) return;
+
     const novo = { ...filme };
     novo.assentos = novo.assentos.map((a) =>
       a.numero === numero ? { ...a, selecionado: !a.selecionado } : a
@@ -123,66 +222,105 @@ export default function EscolhaAssento() {
   }
 
   async function confirmarIngresso() {
+    if (loading) return; // evita clique múltiplo
+
     const assentosSelecionados = filme.assentos.filter((a) => a.selecionado);
     if (assentosSelecionados.length === 0) {
       alert("Selecione pelo menos um assento.");
       return;
     }
 
+    if (!dadosUsuario?.uid || !dadosUsuario?.email) {
+      alert("Você precisa fazer login para comprar ingressos.");
+      router.push("/Login");
+      return;
+    }
+
+    setLoading(true);
+
+    const precoInfo = calcularPreco(assentosSelecionados.length);
+    
     const dadosIngresso = {
       filme: filme.nome,
-      dataCompra: serverTimestamp(), // timestamp Firestore para facilitar consultas
-      dataSessao: dataSelecionada, // string para referência e exibição
+      dataCompra: serverTimestamp(),
+      dataSessao: dataSelecionada,
       quantidade: assentosSelecionados.length,
       assentos: assentosSelecionados.map((a) => a.numero),
       pago: false,
+      usuarioId: dadosUsuario.uid,
+      usuarioEmail: dadosUsuario.email,
+      usuarioNome: dadosUsuario.nome,
+      // Informações de preço e desconto
+      precoUnitario: precoInfo.precoUnitario,
+      precoTotal: precoInfo.precoTotal,
+      desconto: precoInfo.desconto,
+      valorEconomizado: precoInfo.economizado,
+      // Dados do perfil do usuário
+      usuarioEstudante: dadosUsuario.estudante || false,
+      usuarioDeficiente: dadosUsuario.deficiente || false,
+      usuarioFuncionario: dadosUsuario.funcionario || false,
     };
 
     try {
       await addDoc(collection(db, "ingressos"), dadosIngresso);
-      alert("Ingresso reservado com sucesso!");
+      
+      // Salvar detalhes da compra no localStorage para uso posterior
+      const detalheCompra = {
+        ...dadosIngresso,
+        timestamp: new Date().toISOString(),
+        assentosSelecionados: assentosSelecionados
+      };
+      localStorage.setItem("ultimaCompra", JSON.stringify(detalheCompra));
+      
+      alert(`Ingresso reservado com sucesso!\nTotal: R$ ${precoInfo.precoTotal.toFixed(2)}\nDesconto aplicado: ${precoInfo.desconto}%\nEconomizado: R$ ${precoInfo.economizado.toFixed(2)}`);
+      
       setFilme({ ...filme, assentos: gerarAssentos(40) });
-      contarPendentes(); // Atualiza o contador após reservar
+      contarPendentes();
     } catch (error) {
       console.error("Erro ao salvar ingresso:", error);
       alert("Erro ao salvar ingresso.");
+    } finally {
+      setLoading(false);
     }
   }
 
   if (!filme) return <p>Carregando filme...</p>;
 
   const faixaImg = buscarImagemFaixa(filme.faixaEtaria);
+  const assentosSelecionados = filme.assentos.filter((a) => a.selecionado);
+  const precoInfo = calcularPreco(assentosSelecionados.length);
 
   return (
     <div className={styles.container}>
+      {/* Informações do usuário */}
+      {dadosUsuario && (
+        <div className={styles.userInfo}>
+          <p>Olá, {dadosUsuario.nome}!</p>
+          {(dadosUsuario.estudante || dadosUsuario.deficiente) && (
+            <div className={styles.descontoInfo}>
+              <p>✨ Você tem {calcularDesconto()}% de desconto!</p>
+              {dadosUsuario.estudante && <span className={styles.badge}>Estudante</span>}
+              {dadosUsuario.deficiente && <span className={styles.badge}>PcD</span>}
+            </div>
+          )}
+        </div>
+      )}
+
       <h1>{filme.nome}</h1>
 
       {cartaz && <img src={cartaz} alt="Cartaz" className={styles.cartaz} />}
 
-      <p>
-        <strong>Sinopse:</strong> {filme.sinopse}
-      </p>
-      <p>
-        <strong>Duração:</strong> {filme.duracao}
-      </p>
-      <p>
-        <strong>Gênero:</strong> {filme.genero}
-      </p>
-      <p>
-        <strong>Horário:</strong> {filme.horario}
-      </p>
-      <p>
-        <strong>Distribuidora:</strong> {filme.distribuidora}
-      </p>
-      <p>
-        <strong>Elenco:</strong> {filme.elenco}
-      </p>
+      <p><strong>Sinopse:</strong> {filme.sinopse}</p>
+      <p><strong>Duração:</strong> {filme.duracao}</p>
+      <p><strong>Gênero:</strong> {filme.genero}</p>
+      <p><strong>Horário:</strong> {filme.horario}</p>
+      <p><strong>Distribuidora:</strong> {filme.distribuidora}</p>
+      <p><strong>Elenco:</strong> {filme.elenco}</p>
 
       {faixaImg && (
         <img src={faixaImg} alt={filme.faixaEtaria} className={styles.faixaEtaria} />
       )}
 
-      {/* Seletor de data da sessão */}
       <label htmlFor="dataSessao" style={{ marginTop: 20, display: "block" }}>
         Selecione a data da sessão:
       </label>
@@ -190,10 +328,21 @@ export default function EscolhaAssento() {
         type="date"
         id="dataSessao"
         value={dataSelecionada}
-        min={new Date().toISOString().substring(0, 10)} // não permite datas anteriores
+        min={new Date().toISOString().substring(0, 10)}
         onChange={(e) => setDataSelecionada(e.target.value)}
         style={{ marginBottom: 20 }}
       />
+
+      {/* Informações de preço */}
+      <div className={styles.precoInfo}>
+        <p><strong>Preço por ingresso:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}</p>
+        {precoInfo.desconto > 0 && (
+          <p className={styles.desconto}>
+            <span style={{ textDecoration: 'line-through' }}>R$ {precoBase.toFixed(2)}</span>
+            {' '} → R$ {precoInfo.precoUnitario.toFixed(2)} ({precoInfo.desconto}% OFF)
+          </p>
+        )}
+      </div>
 
       <h2>Selecione seus assentos:</h2>
       <Assentos
@@ -201,11 +350,27 @@ export default function EscolhaAssento() {
         onToggleAssento={toggleAssento}
         onConfirmar={confirmarIngresso}
         onCancelar={() => setFilme({ ...filme, assentos: gerarAssentos(40) })}
+        loading={loading}
       />
+
+      {/* Resumo da compra */}
+      {assentosSelecionados.length > 0 && (
+        <div className={styles.resumoCompra}>
+          <h3>Resumo da Compra</h3>
+          <p><strong>Assentos selecionados:</strong> {assentosSelecionados.map(a => a.numero).join(', ')}</p>
+          <p><strong>Quantidade:</strong> {assentosSelecionados.length}</p>
+          <p><strong>Preço unitário:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}</p>
+          <p><strong>Total:</strong> R$ {precoInfo.precoTotal.toFixed(2)}</p>
+          {precoInfo.economizado > 0 && (
+            <p className={styles.economia}>
+              <strong>Você economizou:</strong> R$ {precoInfo.economizado.toFixed(2)}
+            </p>
+          )}
+        </div>
+      )}
 
       <Link href="/Carrinho" className={styles.carrinhoLink} aria-label="Ver carrinho">
         <div className={styles.carrinhoIcon}>
-          {/* Ícone simples SVG de carrinho */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="currentColor"
@@ -220,7 +385,9 @@ export default function EscolhaAssento() {
       </Link>
 
       <Link href="/MenuPrincipal">
-        <button className={styles.button}>Menu Principal</button>
+        <button className={styles.button} disabled={loading}>
+          {loading ? "Confirmando..." : "Menu Principal"}
+        </button>
       </Link>
     </div>
   );

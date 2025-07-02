@@ -10,8 +10,25 @@ export default function EmCartaz() {
   const [filmes, setFilmes] = useState([]);
   const [faixas, setFaixas] = useState([]);
   const [cartazes, setCartazes] = useState([]);
+  const [dadosUsuario, setDadosUsuario] = useState(null);
 
   useEffect(() => {
+    // Buscar dados do usuário do localStorage
+    function carregarDadosUsuario() {
+      try {
+        const dadosUsuarioLogado = localStorage.getItem("dadosUsuarioLogado");
+        if (dadosUsuarioLogado) {
+          const dados = JSON.parse(dadosUsuarioLogado);
+          setDadosUsuario(dados);
+          console.log("Dados do usuário carregados:", dados);
+        } else {
+          console.log("Nenhum dado de usuário encontrado no localStorage");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar dados do localStorage:", error);
+      }
+    }
+
     async function fetchFilmes() {
       const snapshot = await getDocs(collection(db, "filmes"));
       const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -30,6 +47,7 @@ export default function EmCartaz() {
       setFaixas(data);
     }
 
+    carregarDadosUsuario();
     fetchFilmes();
     fetchCartazes();
     fetchFaixas();
@@ -45,9 +63,51 @@ export default function EmCartaz() {
     return item ? item.imagem : "";
   }
 
+  // Função para calcular desconto baseado nos dados do usuário
+  function calcularDesconto() {
+    if (!dadosUsuario) return 0;
+    
+    let desconto = 0;
+    if (dadosUsuario.estudante) desconto += 50; // 50% desconto para estudantes
+    if (dadosUsuario.deficiente) desconto += 50; // 50% desconto para deficientes
+    
+    return Math.min(desconto, 50); // Máximo de 50% de desconto
+  }
+
+  function handleComprarIngresso(filme) {
+    // Salvar filme selecionado e dados do usuário no localStorage
+    localStorage.setItem("filmeSelecionado", JSON.stringify(filme));
+    
+    // Adicionar informações de desconto
+    const infoCompra = {
+      filme: filme,
+      usuario: dadosUsuario,
+      desconto: calcularDesconto(),
+      timestamp: new Date().toISOString()
+    };
+    
+    localStorage.setItem("infoCompra", JSON.stringify(infoCompra));
+    console.log("Informações da compra salvas:", infoCompra);
+    
+    window.location.href = "/EscolhaAssento";
+  }
+
   return (
     <div className={styles.container}>
-      <h1 className={styles.titulo}>Filmes em Cartaz</h1>
+      <header className={styles.header}>
+        <h1 className={styles.titulo}>Filmes em Cartaz</h1>
+        {dadosUsuario && (
+          <div className={styles.userInfo}>
+            <p>Bem-vindo(a), {dadosUsuario.nome}!</p>
+            {(dadosUsuario.estudante || dadosUsuario.deficiente) && (
+              <p className={styles.desconto}>
+                Você tem direito a {calcularDesconto()}% de desconto!
+              </p>
+            )}
+          </div>
+        )}
+      </header>
+
       <div className={styles.listaFilmes}>
         {filmes.map((filme) => (
           <div key={filme.id} className={styles.card}>
@@ -68,22 +128,25 @@ export default function EmCartaz() {
               alt={filme.faixaEtaria}
               className={styles.faixaEtaria}
             />
-          <button
-  className={styles.button}
-  onClick={() => {
-    localStorage.setItem("filmeSelecionado", JSON.stringify(filme));
-    window.location.href = "/EscolhaAssento";
-  }}
->
-  Comprar Ingresso
-</button>
-
+            
+            <button
+              className={styles.button}
+              onClick={() => handleComprarIngresso(filme)}
+            >
+              Comprar Ingresso
+              {dadosUsuario && (dadosUsuario.estudante || dadosUsuario.deficiente) && (
+                <span className={styles.descontoButton}>
+                  ({calcularDesconto()}% OFF)
+                </span>
+              )}
+            </button>
           </div>
         ))}
       </div>
+      
       <footer className={styles.footer}>
         <button className={styles.button}>
-          <Link href="../MenuPrincipal"> Menu Principal</Link>
+          <Link href="../MenuPrincipal">Menu Principal</Link>
         </button>
       </footer>
     </div>

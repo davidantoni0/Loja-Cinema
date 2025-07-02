@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,8 +10,9 @@ import {
   doc,
   query,
   where,
+  getDoc,
 } from "firebase/firestore";
-import { db } from "../../firebase/firebaseConfig";
+import { db, auth } from "../../firebase/firebaseConfig";
 import styles from "./page.module.css";
 
 export default function Carrinho() {
@@ -18,24 +20,103 @@ export default function Carrinho() {
   const [loading, setLoading] = useState(true);
   const [cartazes, setCartazes] = useState([]);
   const [ingressosSelecionados, setIngressosSelecionados] = useState(new Set());
+  const [dadosUsuario, setDadosUsuario] = useState(null);
+  const [infoCompra, setInfoCompra] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
+    carregarDadosUsuario();
+    carregarInfoCompra();
     buscarPendencias();
     carregarCartazes();
   }, []);
 
+  function carregarDadosUsuario() {
+    try {
+      const dadosUsuarioLogado = localStorage.getItem("dadosUsuarioLogado");
+      if (dadosUsuarioLogado) {
+        const dados = JSON.parse(dadosUsuarioLogado);
+        setDadosUsuario(dados);
+      } else {
+        const user = auth.currentUser;
+        if (user) {
+          setDadosUsuario({
+            uid: user.uid,
+            email: user.email,
+            nome: user.email,
+            estudante: false,
+            deficiente: false,
+            funcionario: false,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Erro ao carregar dados do usuário:", error);
+    }
+  }
+
+  function carregarInfoCompra() {
+    try {
+      const info = localStorage.getItem("infoCompra");
+      if (info) {
+        const dados = JSON.parse(info);
+        setInfoCompra(dados);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar informações da compra:", error);
+    }
+  }
+
   async function buscarPendencias() {
     setLoading(true);
-    const q = query(collection(db, "ingressos"), where("pago", "==", false));
-    const querySnapshot = await getDocs(q);
-    const dados = [];
-    querySnapshot.forEach((docu) => {
-      dados.push({ id: docu.id, ...docu.data() });
-    });
-    setPendencias(dados);
+    try {
+      let q;
+
+      if (dadosUsuario?.uid) {
+        q = query(
+          collection(db, "ingressos"),
+          where("pago", "==", false),
+          where("usuarioId", "==", dadosUsuario.uid)
+        );
+      } else {
+        q = query(collection(db, "ingressos"), where("pago", "==", false));
+      }
+
+      const querySnapshot = await getDocs(q);
+      const dados = [];
+
+      for (const docu of querySnapshot.docs) {
+        const ingressoData = docu.data();
+
+        let usuarioData = null;
+        if (ingressoData.usuarioId) {
+          const userDocRef = doc(db, "usuarios", ingressoData.usuarioId);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            usuarioData = userDocSnap.data();
+          }
+        }
+
+        dados.push({
+          id: docu.id,
+          ...ingressoData,
+          usuarioData,
+        });
+      }
+
+      setPendencias(dados);
+    } catch (error) {
+      console.error("Erro ao buscar pendências:", error);
+      alert("Erro ao carregar pendências");
+    }
     setLoading(false);
   }
+
+  useEffect(() => {
+    if (dadosUsuario) {
+      buscarPendencias();
+    }
+  }, [dadosUsuario]);
 
   async function carregarCartazes() {
     try {
@@ -49,9 +130,27 @@ export default function Carrinho() {
 
   async function apagarPendencia(id) {
     if (!confirm("Deseja realmente apagar essa pendência?")) return;
-    await deleteDoc(doc(db, "ingressos", id));
-    alert("Pendência apagada.");
-    buscarPendencias();
+    try {
+      await deleteDoc(doc(db, "ingressos", id));
+      alert("Pendência apagada.");
+
+      const ultimaCompra = localStorage.getItem("ultimaCompra");
+      if (ultimaCompra) {
+        try {
+          const compra = JSON.parse(ultimaCompra);
+          if (compra.id === id) {
+            localStorage.removeItem("ultimaCompra");
+          }
+        } catch (error) {
+          console.error("Erro ao atualizar localStorage:", error);
+        }
+      }
+
+      buscarPendencias();
+    } catch (error) {
+      console.error("Erro ao apagar pendência:", error);
+      alert("Erro ao apagar pendência.");
+    }
   }
 
   function formatarDataTimestamp(timestamp) {
@@ -83,8 +182,8 @@ export default function Carrinho() {
       : pendencias;
 
     return itensParaCalcular.reduce((acc, item) => {
-      const preco = parseFloat(item.preco) || 30;
-      return acc + preco * (item.quantidade || 1);
+      const preco = parseFloat(item.precoTotal ?? item.precoDesconto ?? item.preco) || 30;
+      return acc + preco;
     }, 0);
   }
 
@@ -95,6 +194,10 @@ export default function Carrinho() {
   }
 
   function handlePagamentoIndividual(ingressoId) {
+    const ingresso = pendencias.find((p) => p.id === ingressoId);
+    if (ingresso) {
+      localStorage.setItem("ingressoParaPagamento", JSON.stringify(ingresso));
+    }
     router.push(`/Pagamento?id=${ingressoId}`);
   }
 
@@ -109,6 +212,13 @@ export default function Carrinho() {
       handlePagamentoIndividual(id);
     } else {
       const ids = Array.from(ingressosSelecionados).join(",");
+      const ingressosSelecionadosData = pendencias.filter((p) =>
+        ingressosSelecionados.has(p.id)
+      );
+      localStorage.setItem(
+        "ingressosParaPagamento",
+        JSON.stringify(ingressosSelecionadosData)
+      );
       router.push(`/Pagamento?ids=${ids}`);
     }
   }
@@ -120,6 +230,7 @@ export default function Carrinho() {
       handlePagamentoIndividual(pendencias[0].id);
     } else {
       const ids = pendencias.map((p) => p.id).join(",");
+      localStorage.setItem("ingressosParaPagamento", JSON.stringify(pendencias));
       router.push(`/Pagamento?ids=${ids}`);
     }
   }
@@ -142,21 +253,62 @@ export default function Carrinho() {
     }
   }
 
+  function limparDadosLocais() {
+    localStorage.removeItem("ultimaCompra");
+    localStorage.removeItem("infoCompra");
+    localStorage.removeItem("ingressoParaPagamento");
+    localStorage.removeItem("ingressosParaPagamento");
+    alert("Dados locais limpos!");
+  }
+
   if (loading)
     return <p className={styles.loadingMessage}>Carregando pendências...</p>;
 
   return (
     <div className={styles.container}>
       <Link href="/EmCartaz">Voltar</Link>
+
+      {dadosUsuario && (
+        <div className={styles.userInfo}>
+          <h2>Olá, {dadosUsuario.nome}!</h2>
+          {(dadosUsuario.estudante || dadosUsuario.deficiente) && (
+            <div className={styles.descontoInfo}>
+              <p>✨ Você tem descontos especiais disponíveis!</p>
+              {dadosUsuario.estudante && (
+                <span className={styles.badge}>Estudante</span>
+              )}
+              {dadosUsuario.deficiente && <span className={styles.badge}>PcD</span>}
+              {dadosUsuario.funcionario && (
+                <span className={styles.badge}>Funcionário</span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       <h1>Ingressos Pendentes</h1>
 
-      {pendencias.length === 0 && <p>Não há pendências no momento.</p>}
+      {pendencias.length === 0 && (
+        <div>
+          <p>Não há pendências no momento.</p>
+          {dadosUsuario && (
+            <p>
+              Você pode continuar comprando ingressos e eles aparecerão aqui até
+              serem pagos.
+            </p>
+          )}
+        </div>
+      )}
 
       {pendencias.length > 1 && (
         <div style={{ marginBottom: 20 }}>
           <button
             onClick={selecionarTodos}
-            className={ingressosSelecionados.size === pendencias.length ? styles.btnCancel : styles.btnPrimary}
+            className={
+              ingressosSelecionados.size === pendencias.length
+                ? styles.btnCancel
+                : styles.btnPrimary
+            }
           >
             {ingressosSelecionados.size === pendencias.length
               ? "Desmarcar Todos"
@@ -164,7 +316,7 @@ export default function Carrinho() {
           </button>
 
           {ingressosSelecionados.size > 0 && (
-            <span style={{ color: "#666" }}>
+            <span style={{ color: "#666", marginLeft: 10 }}>
               {ingressosSelecionados.size} de {pendencias.length} selecionados
             </span>
           )}
@@ -172,57 +324,93 @@ export default function Carrinho() {
       )}
 
       <ul className={styles.lista}>
-        {pendencias.map((item) => (
-          <li key={item.id} className={styles.pendenciaItem}>
-            {pendencias.length > 1 && (
-              <input
-                type="checkbox"
-                checked={ingressosSelecionados.has(item.id)}
-                onChange={() => toggleSelecaoIngresso(item.id)}
-                style={{ marginRight: 10 }}
+        {pendencias.map((item) => {
+          return (
+            <li key={item.id} className={styles.pendenciaItem}>
+              {pendencias.length > 1 && (
+                <input
+                  type="checkbox"
+                  checked={ingressosSelecionados.has(item.id)}
+                  onChange={() => toggleSelecaoIngresso(item.id)}
+                  style={{ marginRight: 10 }}
+                />
+              )}
+
+              <img
+                src={getImagem(item.filme || item.nome)}
+                alt={item.filme || item.nome || "Imagem"}
+                className={styles.imagem}
               />
-            )}
 
-            <img
-              src={getImagem(item.filme || item.nome)}
-              alt={item.filme || item.nome || "Imagem"}
-              className={styles.imagem}
-            />
+              <div className={styles.descricao}>
+                <p>
+                  <strong>Filme:</strong> {item.filme || item.nome} <br />
+                  <strong>Quantidade:</strong> {item.quantidade || 1} <br />
+                  <strong>Preço Unitário:</strong>{" "}
+                  {`R$ ${(parseFloat(item.precoUnitario || item.preco) || 30).toFixed(
+                    2
+                  )}`}{" "}
+                  <br />
 
-            <div className={styles.descricao}>
-              <p>
-                <strong>Filme:</strong> {item.filme || item.nome} <br />
-                <strong>Quantidade:</strong> {item.quantidade || 1} <br />
-                <strong>Preço:</strong> R$ {(parseFloat(item.preco) || 30).toFixed(2)} <br />
-                <strong>Para a sessão em:</strong>{" "}
-                {item.dataSessao
-                  ? formatarDataTimestamp(item.dataSessao)
-                  : item.dataCompra
-                  ? formatarDataTimestamp(item.dataCompra)
-                  : "Indefinido"}{" "}
-                <br />
-                <strong>Assentos:</strong> {item.assentos?.join(", ") || "Nenhum"} <br />
-                <strong>Status:</strong> {item.pago ? "Pago" : "Pendente"}
-              </p>
+                  {item.precoTotal && (
+                    <>
+                      <strong>Preço Total:</strong>{" "}
+                      {item.desconto && item.desconto > 0 ? (
+                        <>
+                          <span
+                            style={{ textDecoration: "line-through", color: "gray" }}
+                          >
+                            {`R$ ${(
+                              parseFloat(item.precoTotal) /
+                              (1 - item.desconto / 100)
+                            ).toFixed(2)}`}
+                          </span>{" "}
+                          <span
+                            style={{ color: "green", fontWeight: "bold" }}
+                          >
+                            {`R$ ${parseFloat(item.precoTotal).toFixed(2)}`}
+                          </span>
+                          <br />
+                        </>
+                      ) : (
+                        <>
+                          {`R$ ${parseFloat(item.precoTotal).toFixed(2)}`} <br />
+                        </>
+                      )}
+                    </>
+                  )}
 
-              <div style={{ marginTop: 10 }}>
-                <button
-                  onClick={() => handlePagamentoIndividual(item.id)}
-                  className={styles.btnConfirm}
-                >
-                  Pagar Este
-                </button>
+                  <strong>Para a sessão em:</strong>{" "}
+                  {item.dataSessao
+                    ? formatarDataTimestamp(item.dataSessao)
+                    : item.dataCompra
+                    ? formatarDataTimestamp(item.dataCompra)
+                    : "Indefinido"}{" "}
+                  <br />
+                  <strong>Assentos:</strong> {item.assentos?.join(", ") || "Nenhum"}{" "}
+                  <br />
+                  <strong>Status:</strong> {item.pago ? "Pago" : "Pendente"}
+                </p>
 
-                <button
-                  className={styles.botaoExcluir}
-                  onClick={() => apagarPendencia(item.id)}
-                >
-                  Excluir
-                </button>
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    onClick={() => handlePagamentoIndividual(item.id)}
+                    className={styles.btnConfirm}
+                  >
+                    Pagar Este
+                  </button>
+
+                  <button
+                    className={styles.botaoExcluir}
+                    onClick={() => apagarPendencia(item.id)}
+                  >
+                    Excluir
+                  </button>
+                </div>
               </div>
-            </div>
-          </li>
-        ))}
+            </li>
+          );
+        })}
       </ul>
 
       {pendencias.length > 0 && (
@@ -242,7 +430,7 @@ export default function Carrinho() {
             </>
           ) : (
             <>
-              <h3>Subtotal Total: R$ {calcularSubtotal().toFixed(2)}</h3>
+              <h3 className="Subtotal">Subtotal Total: R$ {calcularSubtotal().toFixed(2)}</h3>
               <button onClick={handlePagamentoTodos} className={styles.btnPrimary}>
                 PAGAR TODOS
               </button>
@@ -251,18 +439,17 @@ export default function Carrinho() {
         </div>
       )}
 
-      {/* Debug info */}
-      {process.env.NODE_ENV === "development" && pendencias.length > 0 && (
-        <details className={styles.debugDetails}>
-          <summary>Debug - IDs dos Ingressos</summary>
-          <ul>
-            {pendencias.map((item) => (
-              <li key={item.id}>
-                {item.filme}: {item.id}
-              </li>
-            ))}
-          </ul>
-        </details>
+      {process.env.NODE_ENV === "development" && (
+        <div
+          style={{ marginTop: 20, padding: 10, backgroundColor: "#f0f0f0" }}
+        >
+          <p>
+            <small>Área de desenvolvimento:</small>
+          </p>
+          <button onClick={limparDadosLocais} className={styles.btnCancel}>
+            Limpar Dados Locais
+          </button>
+        </div>
       )}
     </div>
   );

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { auth, db } from "../../firebase/firebaseConfig";
+
 import {
   doc,
   getDoc,
@@ -15,6 +16,9 @@ import styles from "./page.module.css";
 
 export default function MenuPrincipal() {
   const [nome, setNome] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
+  const [estudante, setEstudante] = useState(false);
+  const [deficiente, setDeficiente] = useState(false);
   const [funcionario, setFuncionario] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -28,26 +32,54 @@ export default function MenuPrincipal() {
 
           if (docSnap.exists()) {
             const dados = docSnap.data();
+
             const nomeUsuario = dados.nome || usuarioAtual.email;
             const isFuncionario = dados.funcionario === true;
 
             setNome(nomeUsuario);
             setFuncionario(isFuncionario);
 
+            setDataNascimento(dados.data_nascimento || "");
+            setEstudante(dados.estudante === true);
+            setDeficiente(dados.deficiencia === true);
+
+            // Salvar dados pessoais no localStorage
+            localStorage.setItem(
+              "dadosUsuarioLogado",
+              JSON.stringify({
+                nome: nomeUsuario,
+                dataNascimento: dados.data_nascimento || "",
+                estudante: dados.estudante === true,
+                deficiente: dados.deficiencia === true,
+                funcionario: isFuncionario,
+                email: usuarioAtual.email,
+                uid: uid,
+              })
+            );
+
             localStorage.setItem("nomeUsuario", nomeUsuario);
             localStorage.setItem("usuarioFuncionario", isFuncionario ? "true" : "false");
           } else {
             setNome(usuarioAtual.email);
             setFuncionario(false);
+            setDataNascimento("");
+            setEstudante(false);
+            setDeficiente(false);
           }
         } catch (error) {
           console.error("Erro ao buscar dados do usuário:", error);
           setNome(usuarioAtual.email);
           setFuncionario(false);
+          setDataNascimento("");
+          setEstudante(false);
+          setDeficiente(false);
         }
       } else {
         setNome("");
         setFuncionario(false);
+        setDataNascimento("");
+        setEstudante(false);
+        setDeficiente(false);
       }
 
       setLoading(false);
@@ -75,8 +107,7 @@ export default function MenuPrincipal() {
 
     try {
       const uid = auth.currentUser.uid;
-      
-      // Deletar documento do usuário no Firestore antes de deletar a conta
+
       try {
         await deleteDoc(doc(db, "usuarios", uid));
         console.log("Dados do usuário removidos do Firestore");
@@ -84,7 +115,6 @@ export default function MenuPrincipal() {
         console.error("Erro ao remover dados do Firestore:", firestoreError);
       }
 
-      // Deletar a conta de autenticação
       await deleteUser(auth.currentUser);
       alert("Conta excluída com sucesso!");
       localStorage.clear();
@@ -102,23 +132,23 @@ export default function MenuPrincipal() {
     const confirm = window.confirm("Tem certeza que deseja apagar TODOS os dados do Firestore?");
     if (!confirm) return;
 
-    const secondConfirm = window.confirm("ATENÇÃO: Esta ação irá apagar TODOS os dados incluindo usuários e funcionários! Confirma?");
+    const secondConfirm = window.confirm(
+      "ATENÇÃO: Esta ação irá apagar TODOS os dados incluindo usuários e funcionários! Confirma?"
+    );
     if (!secondConfirm) return;
 
     try {
-      // Liste aqui todas as coleções que você tem no seu projeto
       const collectionsToDelete = [
-        "usuarios", 
+        "usuarios",
         "funcionarios",
-        "filmes", 
-        "sessoes", 
-        "ingressos", 
+        "filmes",
+        "sessoes",
+        "ingressos",
         "produtos",
         "vendas",
         "reservas",
         "salas",
         "horarios",
-        // Adicione aqui outras coleções que você possui
       ];
 
       let totalDeleted = 0;
@@ -133,8 +163,7 @@ export default function MenuPrincipal() {
             continue;
           }
 
-          // Deletar todos os documentos da coleção
-          const deletePromises = snapshot.docs.map(document => 
+          const deletePromises = snapshot.docs.map((document) =>
             deleteDoc(doc(db, collectionName, document.id))
           );
 
@@ -168,16 +197,36 @@ export default function MenuPrincipal() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h2>Olá, {nome}</h2>
-        <button onClick={handleLogout} className={styles.sair}>Sair</button>
+        <button onClick={handleLogout} className={styles.sair}>
+          Sair
+        </button>
       </header>
 
+      <section style={{ marginBottom: "1rem" }}>
+        <p>
+          <strong>Data de Nascimento:</strong> {dataNascimento || "Não informado"}
+        </p>
+        <p>
+          <strong>Estudante:</strong> {estudante ? "Sim" : "Não"}
+        </p>
+        <p>
+          <strong>Deficiente:</strong> {deficiente ? "Sim" : "Não"}
+        </p>
+      </section>
+
       <nav className={styles.nav}>
-        <Link href="/EmCartaz" className={styles.link}>Compre seu ingresso!</Link>
-        <br/>
-        <Link href="/lojaCinema" className={styles.link}>Conheça nossa Bomboniere!</Link>
-        <br/>
+        <Link href="/EmCartaz" className={styles.link}>
+          Compre seu ingresso!
+        </Link>
+        <br />
+        <Link href="/lojaCinema" className={styles.link}>
+          Conheça nossa Bomboniere!
+        </Link>
+        <br />
         {funcionario && (
-          <Link href="/Administrativo" className={styles.link}>Administrativo</Link>
+          <Link href="/Administrativo" className={styles.link}>
+            Administrativo
+          </Link>
         )}
       </nav>
 

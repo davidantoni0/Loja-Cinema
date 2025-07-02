@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "../../firebase/firebaseConfig";
+import { auth, db } from "../../firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -24,8 +25,41 @@ export default function Login() {
 
     try {
       const usuario = await signInWithEmailAndPassword(auth, email, senha);
-      const nome = usuario.user.displayName || "Usuário";
-      localStorage.setItem("nomeUsuario", nome);
+      
+      // Buscar dados pessoais no Firestore
+      const docRef = doc(db, "usuarios", usuario.user.uid);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        const dadosUsuario = docSnap.data();
+
+        // Salvar dados pessoais no localStorage
+        localStorage.setItem(
+          "dadosUsuarioLogado",
+          JSON.stringify({
+            nome: dadosUsuario.nome || usuario.user.email,
+            dataNascimento: dadosUsuario.dataNascimento || null,
+            estudante: dadosUsuario.estudante || false,
+            deficiente: dadosUsuario.deficiente || false,
+            email: usuario.user.email,
+            uid: usuario.user.uid,
+          })
+        );
+      } else {
+        // Caso não existam dados pessoais no Firestore
+        localStorage.setItem(
+          "dadosUsuarioLogado",
+          JSON.stringify({
+            nome: usuario.user.email,
+            dataNascimento: null,
+            estudante: false,
+            deficiente: false,
+            email: usuario.user.email,
+            uid: usuario.user.uid,
+          })
+        );
+      }
+
       localStorage.removeItem("tentativasLogin");
       router.push("/MenuPrincipal");
     } catch (erro) {
@@ -75,6 +109,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete="username"
             />
           </div>
           <div>
@@ -85,6 +120,7 @@ export default function Login() {
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               required
+              autoComplete="current-password"
             />
           </div>
 
