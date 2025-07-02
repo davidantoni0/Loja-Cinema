@@ -20,6 +20,153 @@ export default function Filmes() {
   const [cartazes, setCartazes] = useState([]);
   const [faixas, setFaixas] = useState([]);
 
+  // Função para extrair ID do Google Drive
+  function extrairDriveId(url) {
+    if (!url) return null;
+
+    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/) || 
+                  url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+                  url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+
+    return match ? match[1] : (/^[a-zA-Z0-9_-]{20,}$/.test(url) ? url : null);
+  }
+
+  // Função para formatar o link do Google Drive
+  function formatarLinkDrive(input) {
+    if (!input) return "";
+
+    input = input.trim();
+
+    const driveId = extrairDriveId(input);
+    if (driveId) {
+      return `https://drive.google.com/uc?export=view&id=${driveId}`;
+    }
+
+    return input;
+  }
+
+  // Componente para imagem com fallback no Google Drive
+  function ImagemComFallback({ src, alt, style = { width: "200px", marginTop: "10px" } }) {
+    const [urlAtual, setUrlAtual] = useState(src);
+    const [tentativa, setTentativa] = useState(0);
+
+    const driveId = extrairDriveId(src);
+    const urlsAlternativas = driveId
+      ? [
+          `https://drive.google.com/uc?export=view&id=${driveId}`,
+          `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000-h1000`,
+          `https://lh3.googleusercontent.com/d/${driveId}`,
+        ]
+      : [src];
+
+    function handleError() {
+      if (tentativa < urlsAlternativas.length - 1) {
+        setTentativa(tentativa + 1);
+        setUrlAtual(urlsAlternativas[tentativa + 1]);
+      }
+    }
+
+    function handleLoad() {
+      // imagem carregou com sucesso
+    }
+
+    useEffect(() => {
+      setUrlAtual(src);
+      setTentativa(0);
+    }, [src]);
+
+    return (
+      <img
+        src={urlAtual}
+        alt={alt}
+        style={style}
+        onError={handleError}
+        onLoad={handleLoad}
+      />
+    );
+  }
+
+  // Menu de filmes em cartaz
+function MenuFilmesEmCartaz() {
+  const filmesEmCartaz = filmes.filter(filme => filme.emCartaz);
+
+  if (filmesEmCartaz.length === 0) {
+    return (
+      <div style={{ 
+        backgroundColor: "#f5f5f5", 
+        padding: "20px", 
+        borderRadius: "8px", 
+        marginBottom: "30px",
+        textAlign: "center",
+        color: "#000"  // <- tudo herdará preto
+      }}>
+        <h3 style={{ color: "#000" }}>🎬 Filmes em Cartaz</h3>
+        <p style={{ color: "#000" }}>Nenhum filme em cartaz no momento</p>
+      </div>
+    );
+  }
+
+    return (
+      <div style={{ 
+        backgroundColor: "#f5f5f5", 
+        padding: "20px", 
+        borderRadius: "8px", 
+        marginBottom: "30px" ,
+        color:"black"
+      }}>
+        <h3 style={{ textAlign: "center", marginBottom: "20px" }}>🎬 Filmes em Cartaz ({filmesEmCartaz.length}/5)</h3>
+        <div style={{ 
+          display: "flex", 
+          flexWrap: "wrap", 
+          gap: "15px", 
+          justifyContent: "center" 
+        }}>
+          {filmesEmCartaz.map((filme) => (
+            <div key={filme.id} style={{
+              backgroundColor: "white",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+              padding: "10px",
+              textAlign: "center",
+              minWidth: "150px",
+              maxWidth: "180px",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+            }}>
+              {filme.cartaz && (
+                <ImagemComFallback
+                  src={filme.cartaz}
+                  alt={filme.nome}
+                  style={{ 
+                    width: "120px", 
+                    height: "160px", 
+                    objectFit: "cover",
+                    borderRadius: "4px",
+                    marginBottom: "8px"
+                  }}
+                />
+              )}
+              <h4 style={{ 
+                fontSize: "14px", 
+                margin: "8px 0 4px 0",
+                lineHeight: "1.2"
+              }}>
+                {filme.nome}
+              </h4>
+              <p style={{ 
+                fontSize: "12px", 
+                color: "#666", 
+                margin: "0",
+                fontWeight: "bold"
+              }}>
+                ⏰ {filme.horarioExibicao || "Horário não definido"}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   // Carregar filmes do Firestore
   useEffect(() => {
     buscarFilmes();
@@ -77,6 +224,15 @@ export default function Filmes() {
   }
 
   async function alternarEmCartaz(id, estadoAtual) {
+    // Verificar limite de 5 filmes em cartaz
+    if (!estadoAtual) {
+      const filmesEmCartaz = filmes.filter(f => f.emCartaz && f.id !== id);
+      if (filmesEmCartaz.length >= 5) {
+        alert("⚠️ Limite máximo de 5 filmes em cartaz atingido! Remova um filme do cartaz antes de adicionar outro.");
+        return;
+      }
+    }
+
     await updateDoc(doc(db, "filmes", id), {
       emCartaz: !estadoAtual,
     });
@@ -94,10 +250,16 @@ export default function Filmes() {
   }
 
   function alterarForm(campo, valor) {
+    if (campo === "cartaz") {
+      valor = formatarLinkDrive(valor);
+    }
     setForm((prev) => ({ ...prev, [campo]: valor }));
   }
 
   function alterarNovo(campo, valor) {
+    if (campo === "cartaz") {
+      valor = formatarLinkDrive(valor);
+    }
     setNovoFilme((prev) => ({ ...prev, [campo]: valor }));
   }
 
@@ -120,6 +282,15 @@ export default function Filmes() {
   }
 
   async function adicionarFilme() {
+    // Verificar limite de 5 filmes em cartaz para novos filmes
+    if (novoFilme.emCartaz) {
+      const filmesEmCartaz = filmes.filter(f => f.emCartaz);
+      if (filmesEmCartaz.length >= 5) {
+        alert("⚠️ Limite máximo de 5 filmes em cartaz atingido! Este filme será adicionado como 'Fora de cartaz'.");
+        novoFilme.emCartaz = false;
+      }
+    }
+
     const novo = { ...novoFilme };
     await addDoc(collection(db, "filmes"), novo);
     buscarFilmes();
@@ -131,7 +302,7 @@ export default function Filmes() {
 
   return (
     <div style={{ padding: "20px" }}>
-        <Link href="/Administrativo">Voltar</Link>
+      <Link href="/Administrativo">Voltar</Link>
       <h1>Cadastro de Novo Filme</h1>
       {novoFilme && (
         <div
@@ -217,30 +388,22 @@ export default function Filmes() {
           />
           <br />
 
-          <label>Cartaz / Filme:</label>
-          <select
+          <label>Cartaz / Filme (Google Drive ou link direto):</label>
+          <input
             value={novoFilme.cartaz}
             onChange={(e) => alterarNovo("cartaz", e.target.value)}
-          >
-            <option value="">Selecione...</option>
-            {cartazes.map((c) => (
-              <option key={c.cartaz} value={c.cartaz}>
-                {c.filme}
-              </option>
-            ))}
-          </select>
+          />
           <br />
           {novoFilme.cartaz && (
-            <img
-              src={novoFilme.cartaz}
-              alt="Cartaz selecionado"
-              style={{ width: "200px", marginTop: "10px" }}
-            />
+            <ImagemComFallback src={novoFilme.cartaz} alt="Cartaz selecionado" />
           )}
           <br />
           <button onClick={adicionarFilme}>Adicionar Filme</button>
         </div>
       )}
+
+      {/* Menu de Filmes em Cartaz */}
+      <MenuFilmesEmCartaz />
 
       <h2>Filmes Cadastrados</h2>
       <label>Pesquisar por nome: </label>
@@ -338,25 +501,14 @@ export default function Filmes() {
               />
               <br />
 
-              <label>Cartaz / Filme:</label>
-              <select
+              <label>Cartaz / Filme (Google Drive ou link direto):</label>
+              <input
                 value={form.cartaz}
                 onChange={(e) => alterarForm("cartaz", e.target.value)}
-              >
-                <option value="">Selecione...</option>
-                {cartazes.map((c) => (
-                  <option key={c.cartaz} value={c.cartaz}>
-                    {c.filme}
-                  </option>
-                ))}
-              </select>
+              />
               <br />
               {form.cartaz && (
-                <img
-                  src={form.cartaz}
-                  alt="Cartaz selecionado"
-                  style={{ width: "200px", marginTop: "10px" }}
-                />
+                <ImagemComFallback src={form.cartaz} alt="Cartaz selecionado" />
               )}
               <br />
               <button onClick={salvarEdicao}>Salvar</button>{" "}
@@ -369,7 +521,7 @@ export default function Filmes() {
                 <strong>Código:</strong> {filme.codigo}
               </p>
               {filme.cartaz && (
-                <img
+                <ImagemComFallback
                   src={filme.cartaz}
                   alt={filme.nome}
                   style={{ width: "200px" }}

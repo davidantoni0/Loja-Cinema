@@ -188,7 +188,7 @@ export default function MenuPrincipal() {
     return (
       <div>
         <p>Usuário não autenticado.</p>
-        <Link href="/Login">Ir para login</Link>
+        <Link href="/Home">Ir para login</Link>
       </div>
     );
   }
