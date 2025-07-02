@@ -268,21 +268,10 @@ export default function Carrinho() {
     <div className={styles.container}>
       <Link href="/EmCartaz">Voltar</Link>
 
-      {dadosUsuario && (
-        <div className={styles.userInfo}>
-          <h2>Olá, {dadosUsuario.nome}!</h2>
-          {(dadosUsuario.estudante || dadosUsuario.deficiente) && (
-            <div className={styles.descontoInfo}>
-              <p>✨ Você tem descontos especiais disponíveis!</p>
-              {dadosUsuario.estudante && (
-                <span className={styles.badge}>Estudante</span>
-              )}
-              {dadosUsuario.deficiente && <span className={styles.badge}>PcD</span>}
-              {dadosUsuario.funcionario && (
-                <span className={styles.badge}>Funcionário</span>
-              )}
-            </div>
-          )}
+      {/* Mensagem de descontos especiais (SEM nome e badges) */}
+      {dadosUsuario && (dadosUsuario.estudante || dadosUsuario.deficiente || dadosUsuario.funcionario) && (
+        <div className={styles.descontoInfo}>
+          <p>✨ Você tem descontos especiais disponíveis!</p>
         </div>
       )}
 
