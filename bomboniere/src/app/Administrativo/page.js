@@ -33,6 +33,8 @@ export default function Administrativo() {
             <Link href="/FinanceiroBomboniere">Financeiro da Bomboniere</Link>
             <br/>
             <Link href="/InserirFilme">Inserir Filme</Link>
+            <br/>
+            <Link href="/InserirProduto">Inserir Produto</Link>
         </main>
 
 
