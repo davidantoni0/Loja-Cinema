@@ -76,7 +76,7 @@
 
 .totalText {
   margin: 0;
-  color: #333;
+  color: #000000;
 }
 
 .formaPagamentoContainer {
@@ -155,4 +155,10 @@
   background: #f5f5f5;
   padding: 10px;
   margin-top: 10px;
+}
+
+
+.imagem
+{
+  width: 200px;
 }

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from 'next/link';
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   collection,
@@ -70,14 +70,18 @@ export default function Carrinho() {
       return "Data inválida";
     }
 
-    return dateObj.toLocaleDateString("pt-BR") + " " + dateObj.toLocaleTimeString("pt-BR");
+    return (
+      dateObj.toLocaleDateString("pt-BR") +
+      " " +
+      dateObj.toLocaleTimeString("pt-BR")
+    );
   }
 
   function calcularSubtotal(ids = null) {
-    const itensParaCalcular = ids 
-      ? pendencias.filter(item => ids.has(item.id))
+    const itensParaCalcular = ids
+      ? pendencias.filter((item) => ids.has(item.id))
       : pendencias;
-      
+
     return itensParaCalcular.reduce((acc, item) => {
       const preco = parseFloat(item.preco) || 30;
       return acc + preco * (item.quantidade || 1);
@@ -90,39 +94,32 @@ export default function Carrinho() {
     return "/placeholder.png";
   }
 
-  // Função para pagar um ingresso específico
   function handlePagamentoIndividual(ingressoId) {
-    console.log("Redirecionando para pagamento do ingresso:", ingressoId);
     router.push(`/Pagamento?id=${ingressoId}`);
   }
 
-  // Função para pagar múltiplos ingressos selecionados
   function handlePagamentoSelecionados() {
     if (ingressosSelecionados.size === 0) {
       alert("Selecione pelo menos um ingresso para pagar.");
       return;
     }
-    
+
     if (ingressosSelecionados.size === 1) {
-      // Se só tem um selecionado, vai direto para pagamento individual
       const id = Array.from(ingressosSelecionados)[0];
       handlePagamentoIndividual(id);
     } else {
-      // Para múltiplos ingressos, você pode criar uma página de pagamento em lote
-      // ou processar um por vez
-      const ids = Array.from(ingressosSelecionados).join(',');
+      const ids = Array.from(ingressosSelecionados).join(",");
       router.push(`/Pagamento?ids=${ids}`);
     }
   }
 
-  // Função para pagar todos os ingressos
   function handlePagamentoTodos() {
     if (pendencias.length === 0) return;
-    
+
     if (pendencias.length === 1) {
       handlePagamentoIndividual(pendencias[0].id);
     } else {
-      const ids = pendencias.map(p => p.id).join(',');
+      const ids = pendencias.map((p) => p.id).join(",");
       router.push(`/Pagamento?ids=${ids}`);
     }
   }
@@ -139,15 +136,14 @@ export default function Carrinho() {
 
   function selecionarTodos() {
     if (ingressosSelecionados.size === pendencias.length) {
-      // Se todos estão selecionados, desmarca todos
       setIngressosSelecionados(new Set());
     } else {
-      // Seleciona todos
-      setIngressosSelecionados(new Set(pendencias.map(p => p.id)));
+      setIngressosSelecionados(new Set(pendencias.map((p) => p.id)));
     }
   }
 
-  if (loading) return <p>Carregando pendências...</p>;
+  if (loading)
+    return <p className={styles.loadingMessage}>Carregando pendências...</p>;
 
   return (
     <div className={styles.container}>
@@ -158,21 +154,15 @@ export default function Carrinho() {
 
       {pendencias.length > 1 && (
         <div style={{ marginBottom: 20 }}>
-          <button 
+          <button
             onClick={selecionarTodos}
-            style={{
-              padding: "8px 15px",
-              backgroundColor: ingressosSelecionados.size === pendencias.length ? "#f44336" : "#2196F3",
-              color: "white",
-              border: "none",
-              borderRadius: 4,
-              cursor: "pointer",
-              marginRight: 10
-            }}
+            className={ingressosSelecionados.size === pendencias.length ? styles.btnCancel : styles.btnPrimary}
           >
-            {ingressosSelecionados.size === pendencias.length ? "Desmarcar Todos" : "Selecionar Todos"}
+            {ingressosSelecionados.size === pendencias.length
+              ? "Desmarcar Todos"
+              : "Selecionar Todos"}
           </button>
-          
+
           {ingressosSelecionados.size > 0 && (
             <span style={{ color: "#666" }}>
               {ingressosSelecionados.size} de {pendencias.length} selecionados
@@ -192,13 +182,13 @@ export default function Carrinho() {
                 style={{ marginRight: 10 }}
               />
             )}
-            
+
             <img
               src={getImagem(item.filme || item.nome)}
               alt={item.filme || item.nome || "Imagem"}
               className={styles.imagem}
             />
-            
+
             <div className={styles.descricao}>
               <p>
                 <strong>Filme:</strong> {item.filme || item.nome} <br />
@@ -214,23 +204,15 @@ export default function Carrinho() {
                 <strong>Assentos:</strong> {item.assentos?.join(", ") || "Nenhum"} <br />
                 <strong>Status:</strong> {item.pago ? "Pago" : "Pendente"}
               </p>
-              
+
               <div style={{ marginTop: 10 }}>
                 <button
                   onClick={() => handlePagamentoIndividual(item.id)}
-                  style={{
-                    padding: "8px 15px",
-                    backgroundColor: "#4CAF50",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 4,
-                    cursor: "pointer",
-                    marginRight: 10
-                  }}
+                  className={styles.btnConfirm}
                 >
                   Pagar Este
                 </button>
-                
+
                 <button
                   className={styles.botaoExcluir}
                   onClick={() => apagarPendencia(item.id)}
@@ -244,22 +226,16 @@ export default function Carrinho() {
       </ul>
 
       {pendencias.length > 0 && (
-        <div style={{ marginTop: 20, padding: 20, backgroundColor: "#f5f5f5", borderRadius: 8 }}>
+        <div className={styles.resumoCompra}>
           {ingressosSelecionados.size > 0 ? (
             <>
-              <h3>Subtotal Selecionados: R$ {calcularSubtotal(ingressosSelecionados).toFixed(2)}</h3>
-              <button 
+              <h3>
+                Subtotal Selecionados: R${" "}
+                {calcularSubtotal(ingressosSelecionados).toFixed(2)}
+              </h3>
+              <button
                 onClick={handlePagamentoSelecionados}
-                style={{
-                  padding: "12px 25px",
-                  backgroundColor: "#FF9800",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 4,
-                  cursor: "pointer",
-                  fontSize: "16px",
-                  marginRight: 10
-                }}
+                className={styles.btnPrimary}
               >
                 PAGAR SELECIONADOS
               </button>
@@ -267,31 +243,20 @@ export default function Carrinho() {
           ) : (
             <>
               <h3>Subtotal Total: R$ {calcularSubtotal().toFixed(2)}</h3>
-              <button 
-                onClick={handlePagamentoTodos}
-                style={{
-                  padding: "12px 25px",
-                  backgroundColor: "#2196F3",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 4,
-                  cursor: "pointer",
-                  fontSize: "16px"
-                }}
-              >
+              <button onClick={handlePagamentoTodos} className={styles.btnPrimary}>
                 PAGAR TODOS
               </button>
             </>
           )}
         </div>
       )}
-      
+
       {/* Debug info */}
-      {process.env.NODE_ENV === 'development' && pendencias.length > 0 && (
-        <details style={{ marginTop: 20, fontSize: "12px", color: "#666" }}>
+      {process.env.NODE_ENV === "development" && pendencias.length > 0 && (
+        <details className={styles.debugDetails}>
           <summary>Debug - IDs dos Ingressos</summary>
           <ul>
-            {pendencias.map(item => (
+            {pendencias.map((item) => (
               <li key={item.id}>
                 {item.filme}: {item.id}
               </li>

@@ -9,7 +9,6 @@ import {
   deleteDoc,
   getDocs,
   collection,
-  listCollections,
 } from "firebase/firestore";
 import { onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
 import styles from "./page.module.css";
@@ -75,13 +74,24 @@ export default function MenuPrincipal() {
     if (!confirm) return;
 
     try {
+      const uid = auth.currentUser.uid;
+      
+      // Deletar documento do usuário no Firestore antes de deletar a conta
+      try {
+        await deleteDoc(doc(db, "usuarios", uid));
+        console.log("Dados do usuário removidos do Firestore");
+      } catch (firestoreError) {
+        console.error("Erro ao remover dados do Firestore:", firestoreError);
+      }
+
+      // Deletar a conta de autenticação
       await deleteUser(auth.currentUser);
       alert("Conta excluída com sucesso!");
       localStorage.clear();
       window.location.href = "/Login";
     } catch (error) {
       if (error.code === "auth/requires-recent-login") {
-        alert("Você precisa fazer login novamente.");
+        alert("Você precisa fazer login novamente para excluir sua conta.");
       } else {
         alert("Erro ao excluir conta: " + error.message);
       }
@@ -92,18 +102,51 @@ export default function MenuPrincipal() {
     const confirm = window.confirm("Tem certeza que deseja apagar TODOS os dados do Firestore?");
     if (!confirm) return;
 
+    const secondConfirm = window.confirm("ATENÇÃO: Esta ação irá apagar TODOS os dados incluindo usuários e funcionários! Confirma?");
+    if (!secondConfirm) return;
+
     try {
-      const collections = await listCollections(db);
+      // Liste aqui todas as coleções que você tem no seu projeto
+      const collectionsToDelete = [
+        "usuarios", 
+        "funcionarios",
+        "filmes", 
+        "sessoes", 
+        "ingressos", 
+        "produtos",
+        "vendas",
+        "reservas",
+        "salas",
+        "horarios",
+        // Adicione aqui outras coleções que você possui
+      ];
 
-      for (const col of collections) {
-        const snapshot = await getDocs(col);
+      let totalDeleted = 0;
 
-        for (const document of snapshot.docs) {
-          await deleteDoc(doc(db, col.id, document.id));
+      for (const collectionName of collectionsToDelete) {
+        try {
+          const collectionRef = collection(db, collectionName);
+          const snapshot = await getDocs(collectionRef);
+
+          if (snapshot.empty) {
+            console.log(`Coleção ${collectionName} já está vazia`);
+            continue;
+          }
+
+          // Deletar todos os documentos da coleção
+          const deletePromises = snapshot.docs.map(document => 
+            deleteDoc(doc(db, collectionName, document.id))
+          );
+
+          await Promise.all(deletePromises);
+          totalDeleted += snapshot.docs.length;
+          console.log(`Coleção ${collectionName} limpa: ${snapshot.docs.length} documentos removidos`);
+        } catch (error) {
+          console.error(`Erro ao limpar coleção ${collectionName}:`, error);
         }
       }
 
-      alert("Todos os dados foram apagados com sucesso!");
+      alert(`Banco de dados limpo com sucesso! ${totalDeleted} documentos foram removidos.`);
     } catch (error) {
       console.error("Erro ao limpar o banco:", error);
       alert("Erro ao limpar o banco de dados: " + error.message);
@@ -144,7 +187,7 @@ export default function MenuPrincipal() {
 
       {funcionario && (
         <button onClick={handleLimparBanco} className={styles.limparBanco}>
-          Limpar Banco de Dados
+          Limpar Banco de Dados (CUIDADO!)
         </button>
       )}
     </div>

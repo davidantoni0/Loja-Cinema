@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { doc, getDoc, updateDoc, serverTimestamp, writeBatch } from "firebase/firestore";
 import { db } from "../../firebase/firebaseConfig";
-import styles from "./page.module.css";  // <-- importe o CSS module
+import styles from "./page.module.css";
 
 export default function Pagamento() {
   const searchParams = useSearchParams();
@@ -20,27 +20,21 @@ export default function Pagamento() {
   const [formaPagamento, setFormaPagamento] = useState("");
   const [processando, setProcessando] = useState(false);
   const [msg, setMsg] = useState("");
-  const [debugInfo, setDebugInfo] = useState("");
 
   useEffect(() => {
     async function buscarIngressos() {
       try {
-        setDebugInfo("Iniciando busca dos ingressos...");
-
         if (ingressoIds.length === 0) {
-          setDebugInfo("Nenhum ID de ingresso encontrado na URL");
           setLoading(false);
           return;
         }
 
         if (!db) {
-          setDebugInfo("Erro: Configuração do Firebase não encontrada");
           setLoading(false);
           return;
         }
 
         setLoading(true);
-        setDebugInfo(`Buscando ${ingressoIds.length} ingresso(s)...`);
 
         const ingressosData = [];
 
@@ -50,20 +44,16 @@ export default function Pagamento() {
 
           if (docSnap.exists()) {
             ingressosData.push({ id: docSnap.id, ...docSnap.data() });
-          } else {
-            setDebugInfo(`Ingresso ${id} não encontrado no banco de dados`);
           }
         }
 
         if (ingressosData.length === 0) {
-          setDebugInfo("Nenhum ingresso válido encontrado");
+          // Nenhum ingresso válido encontrado
         } else {
           setIngressos(ingressosData);
-          setDebugInfo(`${ingressosData.length} ingresso(s) carregado(s) com sucesso`);
         }
 
       } catch (error) {
-        setDebugInfo(`Erro ao buscar ingressos: ${error.message}`);
         setMsg(`Erro ao carregar ingressos: ${error.message}`);
       } finally {
         setLoading(false);
@@ -151,7 +141,6 @@ export default function Pagamento() {
     return (
       <div className={styles.container}>
         <p>Carregando ingresso(s)...</p>
-        {debugInfo && <div className={styles.debugBox}><strong>Debug:</strong> {debugInfo}</div>}
       </div>
     );
   }
@@ -161,15 +150,6 @@ export default function Pagamento() {
       <div className={styles.container}>
         <h1>Pagamento do Ingresso</h1>
         <p className={styles.errorMessage}>Nenhum ingresso encontrado.</p>
-
-        {debugInfo && <div className={styles.debugBox}><strong>Debug:</strong> {debugInfo}</div>}
-
-        <div className={styles.urlInfo}>
-          <p><strong>URL atual:</strong> {typeof window !== 'undefined' ? window.location.href : 'N/A'}</p>
-          <p><strong>ID único:</strong> {singleId || "Nenhum"}</p>
-          <p><strong>IDs múltiplos:</strong> {multipleIds || "Nenhum"}</p>
-          <p><strong>IDs processados:</strong> {ingressoIds.join(', ') || "Nenhum"}</p>
-        </div>
 
         <button
           onClick={() => window.location.href = "/Carrinho"}
@@ -198,7 +178,6 @@ export default function Pagamento() {
         {ingressos.map((ingresso, index) => {
           const precoOriginal = ingresso.preco || 30;
           const precoDesconto = ingresso.precoDesconto || null;
-          const precoFinal = precoDesconto || precoOriginal;
           const quantidade = ingresso.quantidade || 1;
 
           return (
@@ -292,23 +271,13 @@ export default function Pagamento() {
         </div>
       )}
 
-      {process.env.NODE_ENV === 'development' && (
-        <details className={styles.debugDetails}>
-          <summary>Debug Info</summary>
-          <pre className={styles.debugDetailsPre}>
-            {JSON.stringify({
-              singleId,
-              multipleIds,
-              ingressoIds,
-              loading,
-              debugInfo,
-              ingressosCount: ingressos.length,
-              total: total.toFixed(2),
-              ingressos: ingressos.map(i => ({ id: i.id, filme: i.filme, preco: i.preco }))
-            }, null, 2)}
-          </pre>
-        </details>
-      )}
+      <button
+        onClick={() => window.location.href = "/Carrinho"}
+        className={styles.btnPrimary}
+        style={{ marginTop: 20 }}
+      >
+        Voltar ao Carrinho
+      </button>
     </div>
   );
 }
