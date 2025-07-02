@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
+import styles from "./page.module.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -61,49 +62,42 @@ export default function Login() {
 
   return (
     <div>
-      <header>
-        <h1>Cine Senai</h1>
-        <Link href="/">Voltar</Link>
-      </header>
-      <main>
-        <form onSubmit={handleLogin}>
-          <div>
-            <label htmlFor="email">E-mail</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="senha">Senha</label>
-            <input
-              type="password"
-              id="senha"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              required
-            />
-          </div>
+      <header className={styles.header}>
+</header>
+<main className={styles.mainContainer}>
+  <form onSubmit={handleLogin}>
+    <div className={styles.formGroup}>
+      <label htmlFor="email">E-mail</label>
+      <input
+        type="email"
+        id="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        required
+      />
+    </div>
+    <div className={styles.formGroup}>
+      <label htmlFor="senha">Senha</label>
+      <input
+        type="password"
+        id="senha"
+        value={senha}
+        onChange={(e) => setSenha(e.target.value)}
+        required
+      />
+    </div>
 
-          {mensagem && <p style={{ color: "red" }}>{mensagem}</p>}
+    {mensagem && <p style={{ color: "red" }}>{mensagem}</p>}
 
-          <button type="submit" disabled={tentativas >= 3}>
-            Entrar
-          </button>
+    <button type="submit" disabled={tentativas >= 3}>Entrar</button>
+    <button type="button" onClick={handleRedefinirSenha}>Esqueci minha senha</button>
+    <nav className={styles.navLinks}>
+    <p>não possui uma conta?</p>
+    <Link href="/Cadastro">Cadastre-se</Link>
+  </nav>
+  </form>
+</main>
 
-          <button type="button" onClick={handleRedefinirSenha}>
-            Esqueci minha senha
-          </button>
-
-          <div>
-            <p>Não possui conta?</p>
-            <Link href="/Cadastro">Faça sua conta!</Link>
-          </div>
-        </form>
-      </main>
     </div>
   );
 }
