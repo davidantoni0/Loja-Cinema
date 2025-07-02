@@ -47,40 +47,6 @@
     text-align: center;
   }
   
-  .cartMenu {
-    background-color: #fff;
-    padding: 20px;
-    border: 2px solid #ff9248;
-    border-radius: 10px;
-  }
-  
-  .cartMenu h2 {
-    margin-bottom: 15px;
-    color: #d35400;
-  }
-  
-  .cartMenu ul {
-    list-style-type: none;
-    padding: 0;
-  }
-  
-  .cartMenu li {
-    color: #2c3e50;
-    margin-bottom: 10px;
-    font-size: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .total {
-    font-weight: bold;
-    font-size: 18px;
-    margin-top: 10px;
-    color: #2c3e50;
-  }
-  
-  
   .removeButton {
     background-color: #e74c3c;
     border: none;
