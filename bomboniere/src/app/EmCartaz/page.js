@@ -94,6 +94,9 @@ export default function EmCartaz() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.titulo}>Filmes em Cartaz</h1>
+        <button className={styles.button}>
+          <Link href="../MenuPrincipal">Menu Principal</Link>
+        </button>
         {/* Removido o bloco que mostrava o texto de boas-vindas e desconto */}
       </header>
 
@@ -139,12 +142,6 @@ export default function EmCartaz() {
           </div>
         ))}
       </div>
-
-      <footer className={styles.footer}>
-        <button className={styles.button}>
-          <Link href="../MenuPrincipal">Menu Principal</Link>
-        </button>
-      </footer>
     </div>
   );
 }

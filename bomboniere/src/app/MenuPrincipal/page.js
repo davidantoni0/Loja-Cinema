@@ -202,17 +202,7 @@ export default function MenuPrincipal() {
         </button>
       </header>
 
-      <section style={{ marginBottom: "1rem" }}>
-        <p>
-          <strong>Data de Nascimento:</strong> {dataNascimento || "Não informado"}
-        </p>
-        <p>
-          <strong>Estudante:</strong> {estudante ? "Sim" : "Não"}
-        </p>
-        <p>
-          <strong>Deficiente:</strong> {deficiente ? "Sim" : "Não"}
-        </p>
-      </section>
+      {/* Seção removida */}
 
       <nav className={styles.nav}>
         <Link href="/EmCartaz" className={styles.link}>
