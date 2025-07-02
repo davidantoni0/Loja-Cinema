@@ -20,6 +20,7 @@ function handleLogout() {
 export default function Administrativo() {
   return (
     <div>
+      
         <header>
             <h1>Administrativo</h1>
             <Link href="/MenuPrincipal">Voltar</Link>

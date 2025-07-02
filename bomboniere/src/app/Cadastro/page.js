@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -18,13 +18,15 @@ export default function Cadastro() {
     return `${ano}-${mes}-${dia}`;
   }, []);
 
+  const [isFuncionario, setIsFuncionario] = useState(false);
+
   async function handleSubmit(event) {
     event.preventDefault();
 
     const form = event.target;
     const nome = form.nome.value.trim();
     const nascimento = form.nascimento.value;
-    const cpf = form.cpf.value;
+    const cpf = form.cpf.value.trim();
     const estudante = form.estudante.value === "true";
     const deficiencia = form.deficiencia.value === "true";
     const email = form.email.value.trim();
@@ -61,7 +63,6 @@ export default function Cadastro() {
 
       alert(funcionario ? "Usuário cadastrado como Funcionário!" : "Usuário cadastrado com sucesso!");
       router.push("/Login");
-
     } catch (erro) {
       if (erro.code === "auth/email-already-in-use") {
         alert("Este e-mail já está cadastrado.");
@@ -72,44 +73,103 @@ export default function Cadastro() {
   }
 
   return (
-    <section>
+    <section style={{ maxWidth: "450px", margin: "auto", padding: "1rem" }}>
       <Link href="/Login">Voltar</Link>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <fieldset>
           <legend>Dados Pessoais</legend>
-          <label>Nome completo <input type="text" name="nome" required /></label>
-          <label>Data de nascimento <input type="date" name="nascimento" max={dataAtual} required /></label>
-          <label>CPF <input type="text" name="cpf" pattern="[0-9]{11}" required /></label>
+          <label>
+            Nome completo
+            <input type="text" name="nome" required />
+          </label>
+          <label>
+            Data de nascimento
+            <input type="date" name="nascimento" max={dataAtual} required />
+          </label>
+          <label>
+            CPF
+            <input type="text" name="cpf" pattern="\d{11}" title="11 números" required />
+          </label>
         </fieldset>
 
         <fieldset>
           <legend>Dados Sociais</legend>
           <p>É estudante?</p>
-          <input type="radio" name="estudante" value="true" required /> Sim
-          <input type="radio" name="estudante" value="false" /> Não
+          <label>
+            <input type="radio" name="estudante" value="true" required />
+            Sim
+          </label>
+          <label>
+            <input type="radio" name="estudante" value="false" />
+            Não
+          </label>
 
           <p>Possui alguma deficiência?</p>
-          <input type="radio" name="deficiencia" value="true" required /> Sim
-          <input type="radio" name="deficiencia" value="false" /> Não
+          <label>
+            <input type="radio" name="deficiencia" value="true" required />
+            Sim
+          </label>
+          <label>
+            <input type="radio" name="deficiencia" value="false" />
+            Não
+          </label>
         </fieldset>
 
         <fieldset>
           <legend>Funcionário</legend>
           <p>É novo funcionário?</p>
-          <input type="radio" name="funcionario" value="true" required /> Sim
-          <input type="radio" name="funcionario" value="false" defaultChecked /> Não
+          <label>
+            <input
+              type="radio"
+              name="funcionario"
+              value="true"
+              required
+              onChange={() => setIsFuncionario(true)}
+            />
+            Sim
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="funcionario"
+              value="false"
+              defaultChecked
+              onChange={() => setIsFuncionario(false)}
+            />
+            Não
+          </label>
 
-          <label> Senha do administrador <input type="password" name="senhaAdmin" /></label>
+          <label>
+            Senha do administrador
+            <input
+              type="password"
+              name="senhaAdmin"
+              disabled={!isFuncionario}
+              required={isFuncionario}
+            />
+          </label>
         </fieldset>
 
         <fieldset>
           <legend>Contato</legend>
-          <label>E-mail <input type="email" name="email" required /></label>
-          <label>Senha <input type="password" name="senha" required /></label>
+          <label>
+            E-mail
+            <input type="email" name="email" required />
+          </label>
+          <label>
+            Senha
+            <input type="password" name="senha" required />
+          </label>
         </fieldset>
 
-        <button type="submit">Cadastrar</button>
-        <button type="reset">Limpar</button>
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <button type="submit" style={{ flex: 1 }}>
+            Cadastrar
+          </button>
+          <button type="reset" style={{ flex: 1 }}>
+            Limpar
+          </button>
+        </div>
       </form>
     </section>
   );
