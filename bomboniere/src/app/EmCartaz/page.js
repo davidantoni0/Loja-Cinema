@@ -13,7 +13,6 @@ export default function EmCartaz() {
   const [dadosUsuario, setDadosUsuario] = useState(null);
 
   useEffect(() => {
-    // Buscar dados do usuário do localStorage
     function carregarDadosUsuario() {
       try {
         const dadosUsuarioLogado = localStorage.getItem("dadosUsuarioLogado");
@@ -63,15 +62,14 @@ export default function EmCartaz() {
     return item ? item.imagem : "";
   }
 
-  // Mantive a função, pois pode ser útil futuramente, mas não é usada para exibir nada
   function calcularDesconto() {
     if (!dadosUsuario) return 0;
 
     let desconto = 0;
-    if (dadosUsuario.estudante) desconto += 50; // 50% desconto para estudantes
-    if (dadosUsuario.deficiente) desconto += 50; // 50% desconto para deficientes
+    if (dadosUsuario.estudante) desconto += 50;
+    if (dadosUsuario.deficiente) desconto += 50;
 
-    return Math.min(desconto, 50); // Máximo de 50% de desconto
+    return Math.min(desconto, 50);
   }
 
   function handleComprarIngresso(filme) {
@@ -97,50 +95,38 @@ export default function EmCartaz() {
         <button className={styles.button}>
           <Link href="../MenuPrincipal">Menu Principal</Link>
         </button>
-        {/* Removido o bloco que mostrava o texto de boas-vindas e desconto */}
       </header>
 
       <div className={styles.listaFilmes}>
-        {filmes.map((filme) => (
-          <div key={filme.id} className={styles.card}>
-            <img
-              src={buscarCartaz(filme.nome)}
-              alt="Cartaz"
-              className={styles.cartaz}
-            />
-            <h2>{filme.nome}</h2>
-            <p>
-              <strong>Duração:</strong> {filme.duracao}
-            </p>
-            <p>
-              <strong>Gênero:</strong> {filme.genero}
-            </p>
-            <p>
-              <strong>Horário:</strong> {filme.horario}
-            </p>
-            <p>
-              <strong>Distribuidora:</strong> {filme.distribuidora}
-            </p>
-            <p>
-              <strong>Elenco:</strong> {filme.elenco}
-            </p>
-            <p>
-              <strong>Sinopse:</strong> {filme.sinopse}
-            </p>
-            <img
-              src={buscarFaixaEtaria(filme.faixaEtaria)}
-              alt={filme.faixaEtaria}
-              className={styles.faixaEtaria}
-            />
-
-            <button
-              className={styles.button}
-              onClick={() => handleComprarIngresso(filme)}
-            >
-              Comprar Ingresso
-            </button>
-          </div>
-        ))}
+        {filmes
+          .filter((filme) => filme.emCartaz === true)
+          .map((filme) => (
+            <div key={filme.id} className={styles.card}>
+              <img
+                src={buscarCartaz(filme.nome)}
+                alt="Cartaz"
+                className={styles.cartaz}
+              />
+              <h2>{filme.nome}</h2>
+              <p><strong>Duração:</strong> {filme.duracao}</p>
+              <p><strong>Gênero:</strong> {filme.genero}</p>
+              <p><strong>Horário:</strong> {filme.horario}</p>
+              <p><strong>Distribuidora:</strong> {filme.distribuidora}</p>
+              <p><strong>Elenco:</strong> {filme.elenco}</p>
+              <p><strong>Sinopse:</strong> {filme.sinopse}</p>
+              <img
+                src={buscarFaixaEtaria(filme.faixaEtaria)}
+                alt={filme.faixaEtaria}
+                className={styles.faixaEtaria}
+              />
+              <button
+                className={styles.button}
+                onClick={() => handleComprarIngresso(filme)}
+              >
+                Comprar Ingresso
+              </button>
+            </div>
+          ))}
       </div>
     </div>
   );
