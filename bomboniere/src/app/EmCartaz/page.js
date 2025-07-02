@@ -63,32 +63,30 @@ export default function EmCartaz() {
     return item ? item.imagem : "";
   }
 
-  // Função para calcular desconto baseado nos dados do usuário
+  // Mantive a função, pois pode ser útil futuramente, mas não é usada para exibir nada
   function calcularDesconto() {
     if (!dadosUsuario) return 0;
-    
+
     let desconto = 0;
     if (dadosUsuario.estudante) desconto += 50; // 50% desconto para estudantes
     if (dadosUsuario.deficiente) desconto += 50; // 50% desconto para deficientes
-    
+
     return Math.min(desconto, 50); // Máximo de 50% de desconto
   }
 
   function handleComprarIngresso(filme) {
-    // Salvar filme selecionado e dados do usuário no localStorage
     localStorage.setItem("filmeSelecionado", JSON.stringify(filme));
-    
-    // Adicionar informações de desconto
+
     const infoCompra = {
       filme: filme,
       usuario: dadosUsuario,
       desconto: calcularDesconto(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
+
     localStorage.setItem("infoCompra", JSON.stringify(infoCompra));
     console.log("Informações da compra salvas:", infoCompra);
-    
+
     window.location.href = "/EscolhaAssento";
   }
 
@@ -96,16 +94,7 @@ export default function EmCartaz() {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.titulo}>Filmes em Cartaz</h1>
-        {dadosUsuario && (
-          <div className={styles.userInfo}>
-            <p>Bem-vindo(a), {dadosUsuario.nome}!</p>
-            {(dadosUsuario.estudante || dadosUsuario.deficiente) && (
-              <p className={styles.desconto}>
-                Você tem direito a {calcularDesconto()}% de desconto!
-              </p>
-            )}
-          </div>
-        )}
+        {/* Removido o bloco que mostrava o texto de boas-vindas e desconto */}
       </header>
 
       <div className={styles.listaFilmes}>
@@ -117,33 +106,40 @@ export default function EmCartaz() {
               className={styles.cartaz}
             />
             <h2>{filme.nome}</h2>
-            <p><strong>Duração:</strong> {filme.duracao}</p>
-            <p><strong>Gênero:</strong> {filme.genero}</p>
-            <p><strong>Horário:</strong> {filme.horario}</p>
-            <p><strong>Distribuidora:</strong> {filme.distribuidora}</p>
-            <p><strong>Elenco:</strong> {filme.elenco}</p>
-            <p><strong>Sinopse:</strong> {filme.sinopse}</p>
-            <img 
+            <p>
+              <strong>Duração:</strong> {filme.duracao}
+            </p>
+            <p>
+              <strong>Gênero:</strong> {filme.genero}
+            </p>
+            <p>
+              <strong>Horário:</strong> {filme.horario}
+            </p>
+            <p>
+              <strong>Distribuidora:</strong> {filme.distribuidora}
+            </p>
+            <p>
+              <strong>Elenco:</strong> {filme.elenco}
+            </p>
+            <p>
+              <strong>Sinopse:</strong> {filme.sinopse}
+            </p>
+            <img
               src={buscarFaixaEtaria(filme.faixaEtaria)}
               alt={filme.faixaEtaria}
               className={styles.faixaEtaria}
             />
-            
+
             <button
               className={styles.button}
               onClick={() => handleComprarIngresso(filme)}
             >
               Comprar Ingresso
-              {dadosUsuario && (dadosUsuario.estudante || dadosUsuario.deficiente) && (
-                <span className={styles.descontoButton}>
-                  ({calcularDesconto()}% OFF)
-                </span>
-              )}
             </button>
           </div>
         ))}
       </div>
-      
+
       <footer className={styles.footer}>
         <button className={styles.button}>
           <Link href="../MenuPrincipal">Menu Principal</Link>
