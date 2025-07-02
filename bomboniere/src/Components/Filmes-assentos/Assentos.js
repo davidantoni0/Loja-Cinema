@@ -1,64 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import styles from './Assentos.module.css';
-const Assentos = ({ assentos, onToggleAssento, onConfirmar, onCancelar }) => {
-  const [assentosSelecionados, setAssentosSelecionados] = useState(assentos);
+"use client";
+import React from "react";
+import styles from "./Assentos.module.css";
 
-  useEffect(() => {
-    // Carregar os assentos selecionados do localStorage ao carregar a página
-    const assentosSalvos = JSON.parse(localStorage.getItem('assentosSelecionados'));
-    if (assentosSalvos) {
-      setAssentosSelecionados(assentosSalvos);
-    }
-  }, []);
-
-  const handleToggleAssento = (numero) => {
-    const novosAssentos = assentosSelecionados.map(assento =>
-      assento.numero === numero ? { ...assento, selecionado: !assento.selecionado } : assento
-    );
-    setAssentosSelecionados(novosAssentos);
-    onToggleAssento(numero);  // Passa a alteração para o componente pai
-  };
-
-  const handleConfirmar = () => {
-    // Salva os assentos selecionados no localStorage
-    localStorage.setItem('assentosSelecionados', JSON.stringify(assentosSelecionados));
-    alert('Seleção de assentos confirmada!');
-    onConfirmar();
-  };
-
-  const handleCancelar = () => {
-    // Restaura os assentos para o estado original
-    setAssentosSelecionados(assentos);
-    onCancelar();
-  };
-
+export default function Assentos({ assentos, onToggleAssento, onConfirmar, onCancelar }) {
   return (
     <div className={styles.container}>
       <h2>Selecione os Assentos</h2>
-      <div>
-        <div className={styles.cinemaScreen}></div>
-        {assentosSelecionados.map((assento) => (
-          <button className={styles.assentosButton}
-            key={assento.numero}
-            style={{
-              height: '40px',
-              width: '50px',
-              backgroundColor: assento.selecionado ? 'green' : assento.disponivel ? 'lightblue' : 'gray',
-              cursor: assento.disponivel ? 'pointer' : 'not-allowed',
-            }}
-            onClick={() => assento.disponivel && handleToggleAssento(assento.numero)}
-            disabled={!assento.disponivel}
-          >
-            {assento.numero}
-          </button>
-        ))}
+      <div className={styles.cinemaScreen}></div>
+      <div className={styles.assentosGrid}>
+        {assentos.map((assento) => {
+          // Define a classe com base no estado do assento
+          let classeBotao = styles.assento;
+          if (!assento.disponivel) {
+            classeBotao = styles.assentoIndisponivel;
+          } else if (assento.selecionado) {
+            classeBotao = styles.assentoSelecionado;
+          }
+
+          return (
+            <button
+              key={assento.numero}
+              className={classeBotao}
+              onClick={() => assento.disponivel && onToggleAssento(assento.numero)}
+              disabled={!assento.disponivel}
+            >
+              {assento.numero}
+            </button>
+          );
+        })}
       </div>
-      <div className={styles.confirmCancelButtons}>
-        <button className ={styles.confirm} onClick={handleConfirmar}>Confirmar</button>
-        <button className ={styles.cancel} onClick={handleCancelar}>Cancelar</button>
+      <div className={styles.botoes}>
+        <button onClick={onConfirmar} className={styles.confirm}>Confirmar</button>
+        <button onClick={onCancelar} className={styles.cancel}>Cancelar</button>
       </div>
     </div>
   );
-};
-
-export default Assentos;
+}

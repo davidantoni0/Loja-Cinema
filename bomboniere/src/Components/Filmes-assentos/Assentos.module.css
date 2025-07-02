@@ -1,45 +1,62 @@
-.container{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    background-color: #8586da;
-    justify-content: center;
-    min-width: 700px;
-    max-width: 700px;
-}
-.cinemaScreen{
-    align-self: center;
-    width: 100%;
-    height: 15px;
-    background-color: #080606;
-    margin-bottom: 20px;
-}
-.assentosButton{
-    background-color: #f0f0f0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 10px;
-    margin: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-.confirmCancelButtons{
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
-.confirm, .cancel{
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    margin-right: 10px;
-    cursor: pointer;
-}
-.confirm{
-    background-color:  Green 
+.container {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-.cancel{
-    background-color: Red;
+.cinemaScreen {
+  width: 100%;
+  height: 20px;
+  background: #ccc;
+  margin-bottom: 15px;
+  border-radius: 5px;
+}
+
+.assentosGrid {
+  display: grid;
+  grid-template-columns: repeat(8, 40px);
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.assento {
+  background-color: #eee;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 40px;
+  width: 40px;
+  font-weight: bold;
+  user-select: none;
+  color: black;
+}
+
+.assentoSelecionado {
+  background-color: #4caf50;
+  color: white;
+  border: 1px solid #388e3c;
+}
+
+.botoes {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.confirm, .cancel {
+  padding: 8px 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.confirm {
+  background-color: #4caf50;
+  color: white;
+}
+
+.cancel {
+  background-color: #f44336;
+  color: white;
 }

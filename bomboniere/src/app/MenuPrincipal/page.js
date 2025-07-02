@@ -2,9 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { auth, db } from "../firebase/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../../firebase/firebaseConfig";
+import {
+  doc,
+  getDoc,
+  deleteDoc,
+  getDocs,
+  collection,
+  listCollections,
+} from "firebase/firestore";
 import { onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
+import styles from "./page.module.css";
 
 export default function MenuPrincipal() {
   const [nome, setNome] = useState("");
@@ -37,7 +45,6 @@ export default function MenuPrincipal() {
           console.error("Erro ao buscar dados do usuário:", error);
           setNome(usuarioAtual.email);
           setFuncionario(false);
-
         }
       } else {
         setNome("");
@@ -50,6 +57,17 @@ export default function MenuPrincipal() {
     return () => unsubscribe();
   }, []);
 
+  function handleLogout() {
+    signOut(auth)
+      .then(() => {
+        localStorage.clear();
+        window.location.href = "/Login";
+      })
+      .catch((error) => {
+        alert("Erro ao sair: " + error.message);
+      });
+  }
+
   async function handleExcluirConta() {
     if (!auth.currentUser) return;
 
@@ -61,28 +79,35 @@ export default function MenuPrincipal() {
       alert("Conta excluída com sucesso!");
       localStorage.clear();
       window.location.href = "/Login";
-
     } catch (error) {
       if (error.code === "auth/requires-recent-login") {
         alert("Você precisa fazer login novamente.");
-
       } else {
         alert("Erro ao excluir conta: " + error.message);
       }
-
-
     }
   }
 
-  function handleLogout() {
-    signOut(auth)
-      .then(() => {
-        localStorage.clear();
-        window.location.href = "/Login";
-      })
-      .catch((error) => {
-        alert("Erro ao sair: " + error.message);
-      });
+  async function handleLimparBanco() {
+    const confirm = window.confirm("Tem certeza que deseja apagar TODOS os dados do Firestore?");
+    if (!confirm) return;
+
+    try {
+      const collections = await listCollections(db);
+
+      for (const col of collections) {
+        const snapshot = await getDocs(col);
+
+        for (const document of snapshot.docs) {
+          await deleteDoc(doc(db, col.id, document.id));
+        }
+      }
+
+      alert("Todos os dados foram apagados com sucesso!");
+    } catch (error) {
+      console.error("Erro ao limpar o banco:", error);
+      alert("Erro ao limpar o banco de dados: " + error.message);
+    }
   }
 
   if (loading) return <p>Carregando dados do usuário...</p>;
@@ -97,31 +122,31 @@ export default function MenuPrincipal() {
   }
 
   return (
-    <div>
-      <header>
+    <div className={styles.container}>
+      <header className={styles.header}>
         <h2>Olá, {nome}</h2>
-        <button onClick={handleLogout}>Sair</button>
+        <button onClick={handleLogout} className={styles.sair}>Sair</button>
       </header>
 
-      <nav>
-        <Link href="/filmes-assentos">Compre seu ingresso!</Link><br />
-        <Link href="/lojaCinema">Conheça nossa Bomboniere!</Link><br />
-        {funcionario && <><Link href="/Administrativo">Administrativo</Link><br /></>}
+      <nav className={styles.nav}>
+        <Link href="/EmCartaz" className={styles.link}>Compre seu ingresso!</Link>
+        <br/>
+        <Link href="/lojaCinema" className={styles.link}>Conheça nossa Bomboniere!</Link>
+        <br/>
+        {funcionario && (
+          <Link href="/Administrativo" className={styles.link}>Administrativo</Link>
+        )}
       </nav>
 
-      <button
-        onClick={handleExcluirConta}
-        style={{
-          marginTop: "1.5rem",
-          backgroundColor: "#f44336",
-          color: "white",
-          border: "none",
-          padding: "0.5rem 1rem",
-          cursor: "pointer",
-        }}
-      >
+      <button onClick={handleExcluirConta} className={styles.excluirConta}>
         Excluir minha conta
       </button>
- </div>
+
+      {funcionario && (
+        <button onClick={handleLimparBanco} className={styles.limparBanco}>
+          Limpar Banco de Dados
+        </button>
+      )}
+    </div>
   );
 }
