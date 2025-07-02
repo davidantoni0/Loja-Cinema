@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import Assentos from "../../Components/Filmes-assentos/Assentos";
@@ -10,6 +11,7 @@ import {
   getDocs,
   query,
   where,
+  serverTimestamp,
 } from "firebase/firestore";
 
 export default function EscolhaAssento() {
@@ -17,6 +19,10 @@ export default function EscolhaAssento() {
   const [faixas, setFaixas] = useState([]);
   const [cartaz, setCartaz] = useState("");
   const [pendentesCount, setPendentesCount] = useState(0);
+  const [dataSelecionada, setDataSelecionada] = useState(() => {
+    // Data padrão: hoje, formato yyyy-mm-dd para input date
+    return new Date().toISOString().substring(0, 10);
+  });
 
   useEffect(() => {
     const filmeStorage = localStorage.getItem("filmeSelecionado");
@@ -40,10 +46,10 @@ export default function EscolhaAssento() {
   }, []);
 
   useEffect(() => {
-    if (filme) {
+    if (filme && dataSelecionada) {
       buscarAssentosOcupados();
     }
-  }, [filme]);
+  }, [filme, dataSelecionada]);
 
   async function contarPendentes() {
     const q = query(collection(db, "ingressos"), where("pago", "==", false));
@@ -72,11 +78,19 @@ export default function EscolhaAssento() {
   }
 
   async function buscarAssentosOcupados() {
+    // Para consultar Firestore, precisamos construir intervalo de timestamps para o dia selecionado:
+    // 00:00:00 até 23:59:59 no horário local
+    const dataInicio = new Date(dataSelecionada + "T00:00:00");
+    const dataFim = new Date(dataSelecionada + "T23:59:59");
+
     const q = query(
       collection(db, "ingressos"),
       where("filme", "==", filme.nome),
-      where("pago", "==", true)
+      where("pago", "==", true),
+      where("dataCompra", ">=", dataInicio),
+      where("dataCompra", "<=", dataFim)
     );
+
     const querySnapshot = await getDocs(q);
 
     const assentosOcupados = [];
@@ -117,7 +131,8 @@ export default function EscolhaAssento() {
 
     const dadosIngresso = {
       filme: filme.nome,
-      dataCompra: new Date().toLocaleString("pt-BR"),
+      dataCompra: serverTimestamp(), // timestamp Firestore para facilitar consultas
+      dataSessao: dataSelecionada, // string para referência e exibição
       quantidade: assentosSelecionados.length,
       assentos: assentosSelecionados.map((a) => a.numero),
       pago: false,
@@ -141,22 +156,44 @@ export default function EscolhaAssento() {
   return (
     <div className={styles.container}>
       <h1>{filme.nome}</h1>
+
       {cartaz && <img src={cartaz} alt="Cartaz" className={styles.cartaz} />}
 
-      <p><strong>Sinopse:</strong> {filme.sinopse}</p>
-      <p><strong>Duração:</strong> {filme.duracao}</p>
-      <p><strong>Gênero:</strong> {filme.genero}</p>
-      <p><strong>Horário:</strong> {filme.horario}</p>
-      <p><strong>Distribuidora:</strong> {filme.distribuidora}</p>
-      <p><strong>Elenco:</strong> {filme.elenco}</p>
+      <p>
+        <strong>Sinopse:</strong> {filme.sinopse}
+      </p>
+      <p>
+        <strong>Duração:</strong> {filme.duracao}
+      </p>
+      <p>
+        <strong>Gênero:</strong> {filme.genero}
+      </p>
+      <p>
+        <strong>Horário:</strong> {filme.horario}
+      </p>
+      <p>
+        <strong>Distribuidora:</strong> {filme.distribuidora}
+      </p>
+      <p>
+        <strong>Elenco:</strong> {filme.elenco}
+      </p>
 
       {faixaImg && (
-        <img
-          src={faixaImg}
-          alt={filme.faixaEtaria}
-          className={styles.faixaEtaria}
-        />
+        <img src={faixaImg} alt={filme.faixaEtaria} className={styles.faixaEtaria} />
       )}
+
+      {/* Seletor de data da sessão */}
+      <label htmlFor="dataSessao" style={{ marginTop: 20, display: "block" }}>
+        Selecione a data da sessão:
+      </label>
+      <input
+        type="date"
+        id="dataSessao"
+        value={dataSelecionada}
+        min={new Date().toISOString().substring(0, 10)} // não permite datas anteriores
+        onChange={(e) => setDataSelecionada(e.target.value)}
+        style={{ marginBottom: 20 }}
+      />
 
       <h2>Selecione seus assentos:</h2>
       <Assentos
@@ -176,11 +213,9 @@ export default function EscolhaAssento() {
             width="32"
             height="32"
           >
-            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm0 2zm10-2c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zm0 2zm-9.83-4l.84-4h7.92l.86 4H7.17zM7 4h10v2H7V4zm-2 4h14l-1.25 6H6.8L5 8z"/>
+            <path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zm0 2zm10-2c-1.1 0-1.99.9-1.99 2S15.9 22 17 22s2-.9 2-2-.9-2-2-2zm0 2zm-9.83-4l.84-4h7.92l.86 4H7.17zM7 4h10v2H7V4zm-2 4h14l-1.25 6H6.8L5 8z" />
           </svg>
-          {pendentesCount > 0 && (
-            <span className={styles.badge}>{pendentesCount}</span>
-          )}
+          {pendentesCount > 0 && <span className={styles.badge}>{pendentesCount}</span>}
         </div>
       </Link>
 
