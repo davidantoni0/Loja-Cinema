@@ -11,7 +11,7 @@ function Cart({ cart, total, handleClickRemoveItem, handleClickClearCart, setSte
                 <ul>
                     {cart.map((item, index) => (
                         <li key={index}>
-                            {item.item} - Tamanho {item.size} - R${item.price.toFixed(2)}
+                            {item.item.replace(/s$/, "")} - Tamanho {item.size} - R${item.price.toFixed(2)}
                             <button className={styles.removeButton} onClick={() => handleClickRemoveItem(index)}>Remover</button>
                         </li>
                     ))}
@@ -30,5 +30,14 @@ function Cart({ cart, total, handleClickRemoveItem, handleClickClearCart, setSte
         </div>
     );
 }
+
+//npm install pluralize
+
+//import pluralize from 'pluralize';
+
+//function getSingular(label) {
+//    return pluralize.singular(label);
+//}
+
 
 export default Cart;

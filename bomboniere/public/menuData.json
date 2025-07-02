@@ -1,9 +1,9 @@
 {
   "menuItems": [
-    { "label": "Pipocas", "imageSrc": "/ImagesLoja/pipoca.jpg" },
-    { "label": "Refrigerantes", "imageSrc": "/ImagesLoja/refrigerante.jpg" },
-    { "label": "Doces", "imageSrc": "/ImagesLoja/doce.jpg" },
-    { "label": "Biscoitos", "imageSrc": "/ImagesLoja/biscoito.jpg" }
+    { "label": "Pipocas", "imageSrc": "/ImagesLoja/pipoca.png" },
+    { "label": "Refrigerantes", "imageSrc": "/ImagesLoja/refrigerante.png" },
+    { "label": "Doces", "imageSrc": "/ImagesLoja/doce.png" },
+    { "label": "Biscoitos", "imageSrc": "/ImagesLoja/biscoito.png" }
   ],
   "prices": {
     "Pipocas": { "Pequeno": 5.0, "Médio": 7.5, "Grande": 10.0 },

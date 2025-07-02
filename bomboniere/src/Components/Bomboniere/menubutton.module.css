@@ -7,7 +7,9 @@
     border-radius: 8px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    width: 200px;
+    width: 250px;
+    display: flex;
+    align-items: center;
 }
 
 .button:hover {

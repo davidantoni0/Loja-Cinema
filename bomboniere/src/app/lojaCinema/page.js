@@ -103,7 +103,7 @@ export default function MenuLoja() {
             {step === "submenu" && selectedItem && (
                 <div className={styles.row}>
                     <div className={styles.submenuTitle}>
-                        Selecione o tamanho de {selectedItem}:
+                        Selecione o tamanho de {selectedItem.replace(/s$/, "")}:
                     </div>
                     {selectedItem && menuData.prices[selectedItem] ? (
                         Object.keys(menuData.prices[selectedItem]).map((size) => {
