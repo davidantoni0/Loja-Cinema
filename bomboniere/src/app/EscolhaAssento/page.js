@@ -30,7 +30,7 @@ export default function EscolhaAssento() {
   // Dados do usuário vindo do localStorage
   const [dadosUsuario, setDadosUsuario] = useState(null);
   const [infoCompra, setInfoCompra] = useState(null);
-  const [precoBase] = useState(25.00); // Preço base do ingresso
+  const [precoBase] = useState(25.0); // Preço base do ingresso
 
   useEffect(() => {
     // Carregar dados do usuário do localStorage
@@ -50,7 +50,7 @@ export default function EscolhaAssento() {
               nome: user.email,
               estudante: false,
               deficiente: false,
-              funcionario: false
+              funcionario: false,
             });
           }
         }
@@ -96,7 +96,6 @@ export default function EscolhaAssento() {
     carregarDadosUsuario();
     carregarInfoCompra();
     buscarFaixas();
-
   }, []);
 
   useEffect(() => {
@@ -114,11 +113,11 @@ export default function EscolhaAssento() {
   // Função para calcular desconto
   function calcularDesconto() {
     if (!dadosUsuario) return 0;
-    
+
     let desconto = 0;
     if (dadosUsuario.estudante) desconto += 50;
     if (dadosUsuario.deficiente) desconto += 50;
-    
+
     return Math.min(desconto, 50); // Máximo de 50% de desconto
   }
 
@@ -130,7 +129,7 @@ export default function EscolhaAssento() {
       precoUnitario: precoComDesconto,
       precoTotal: precoComDesconto * quantidade,
       desconto: desconto,
-      economizado: (precoBase - precoComDesconto) * quantidade
+      economizado: (precoBase - precoComDesconto) * quantidade,
     };
   }
 
@@ -239,7 +238,7 @@ export default function EscolhaAssento() {
     setLoading(true);
 
     const precoInfo = calcularPreco(assentosSelecionados.length);
-    
+
     const dadosIngresso = {
       filme: filme.nome,
       dataCompra: serverTimestamp(),
@@ -263,17 +262,23 @@ export default function EscolhaAssento() {
 
     try {
       await addDoc(collection(db, "ingressos"), dadosIngresso);
-      
+
       // Salvar detalhes da compra no localStorage para uso posterior
       const detalheCompra = {
         ...dadosIngresso,
         timestamp: new Date().toISOString(),
-        assentosSelecionados: assentosSelecionados
+        assentosSelecionados: assentosSelecionados,
       };
       localStorage.setItem("ultimaCompra", JSON.stringify(detalheCompra));
-      
-      alert(`Ingresso reservado com sucesso!\nTotal: R$ ${precoInfo.precoTotal.toFixed(2)}\nDesconto aplicado: ${precoInfo.desconto}%\nEconomizado: R$ ${precoInfo.economizado.toFixed(2)}`);
-      
+
+      alert(
+        `Ingresso reservado com sucesso!\nTotal: R$ ${precoInfo.precoTotal.toFixed(
+          2
+        )}\nDesconto aplicado: ${precoInfo.desconto}%\nEconomizado: R$ ${precoInfo.economizado.toFixed(
+          2
+        )}`
+      );
+
       setFilme({ ...filme, assentos: gerarAssentos(40) });
       contarPendentes();
     } catch (error) {
@@ -292,30 +297,31 @@ export default function EscolhaAssento() {
 
   return (
     <div className={styles.container}>
-      {/* Informações do usuário */}
-      {dadosUsuario && (
-        <div className={styles.userInfo}>
-          <p>Olá, {dadosUsuario.nome}!</p>
-          {(dadosUsuario.estudante || dadosUsuario.deficiente) && (
-            <div className={styles.descontoInfo}>
-              <p>✨ Você tem {calcularDesconto()}% de desconto!</p>
-              {dadosUsuario.estudante && <span className={styles.badge}>Estudante</span>}
-              {dadosUsuario.deficiente && <span className={styles.badge}>PcD</span>}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Informações do usuário - REMOVIDO O BLOCO COM A MENSAGEM */}
+      {/* Apenas um espaço para usuário logado, se desejar você pode reativar mais tarde */}
 
       <h1>{filme.nome}</h1>
 
       {cartaz && <img src={cartaz} alt="Cartaz" className={styles.cartaz} />}
 
-      <p><strong>Sinopse:</strong> {filme.sinopse}</p>
-      <p><strong>Duração:</strong> {filme.duracao}</p>
-      <p><strong>Gênero:</strong> {filme.genero}</p>
-      <p><strong>Horário:</strong> {filme.horario}</p>
-      <p><strong>Distribuidora:</strong> {filme.distribuidora}</p>
-      <p><strong>Elenco:</strong> {filme.elenco}</p>
+      <p>
+        <strong>Sinopse:</strong> {filme.sinopse}
+      </p>
+      <p>
+        <strong>Duração:</strong> {filme.duracao}
+      </p>
+      <p>
+        <strong>Gênero:</strong> {filme.genero}
+      </p>
+      <p>
+        <strong>Horário:</strong> {filme.horario}
+      </p>
+      <p>
+        <strong>Distribuidora:</strong> {filme.distribuidora}
+      </p>
+      <p>
+        <strong>Elenco:</strong> {filme.elenco}
+      </p>
 
       {faixaImg && (
         <img src={faixaImg} alt={filme.faixaEtaria} className={styles.faixaEtaria} />
@@ -335,11 +341,15 @@ export default function EscolhaAssento() {
 
       {/* Informações de preço */}
       <div className={styles.precoInfo}>
-        <p><strong>Preço por ingresso:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}</p>
+        <p>
+          <strong>Preço por ingresso:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}
+        </p>
         {precoInfo.desconto > 0 && (
           <p className={styles.desconto}>
-            <span style={{ textDecoration: 'line-through' }}>R$ {precoBase.toFixed(2)}</span>
-            {' '} → R$ {precoInfo.precoUnitario.toFixed(2)} ({precoInfo.desconto}% OFF)
+            <span style={{ textDecoration: "line-through" }}>
+              R$ {precoBase.toFixed(2)}
+            </span>{" "}
+            → R$ {precoInfo.precoUnitario.toFixed(2)} ({precoInfo.desconto}% OFF)
           </p>
         )}
       </div>
@@ -357,10 +367,19 @@ export default function EscolhaAssento() {
       {assentosSelecionados.length > 0 && (
         <div className={styles.resumoCompra}>
           <h3>Resumo da Compra</h3>
-          <p><strong>Assentos selecionados:</strong> {assentosSelecionados.map(a => a.numero).join(', ')}</p>
-          <p><strong>Quantidade:</strong> {assentosSelecionados.length}</p>
-          <p><strong>Preço unitário:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}</p>
-          <p><strong>Total:</strong> R$ {precoInfo.precoTotal.toFixed(2)}</p>
+          <p>
+            <strong>Assentos selecionados:</strong>{" "}
+            {assentosSelecionados.map((a) => a.numero).join(", ")}
+          </p>
+          <p>
+            <strong>Quantidade:</strong> {assentosSelecionados.length}
+          </p>
+          <p>
+            <strong>Preço unitário:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}
+          </p>
+          <p>
+            <strong>Total:</strong> R$ {precoInfo.precoTotal.toFixed(2)}
+          </p>
           {precoInfo.economizado > 0 && (
             <p className={styles.economia}>
               <strong>Você economizou:</strong> R$ {precoInfo.economizado.toFixed(2)}

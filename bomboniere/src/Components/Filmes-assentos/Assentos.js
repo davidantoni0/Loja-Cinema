@@ -5,7 +5,6 @@ import styles from "./Assentos.module.css";
 export default function Assentos({ assentos, onToggleAssento, onConfirmar, onCancelar }) {
   return (
     <div className={styles.container}>
-      <h2>Selecione os Assentos</h2>
       <div className={styles.cinemaScreen}></div>
       <div className={styles.assentosGrid}>
         {assentos.map((assento) => {
