@@ -1,0 +1,14 @@
+.header{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 5vh;
+    width: 100%;
+    background-color: #eb3737;
+}
+.loginContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+  
