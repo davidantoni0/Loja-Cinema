@@ -1,172 +1,78 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
-<<<<<<< HEAD:bomboniere/src/app/Login/page.js
 import { auth, db } from "../../firebase/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
-=======
-import { auth } from "../../firebase/firebaseConfig";
 import styles from "./page.module.css";
->>>>>>> 01442353d4795b315befceb5c12a303ad2e293a7:bomboniere/src/Components/Login/page.js
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [tentativas, setTentativas] = useState(0);
-  const [mensagem, setMensagem] = useState("");
+  const [erro, setErro] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    const tentativasSalvas = localStorage.getItem("tentativasLogin");
-    if (tentativasSalvas) {
-      setTentativas(parseInt(tentativasSalvas));
-    }
-  }, []);
-
-  async function handleLogin(event) {
-    event.preventDefault();
-
+  const handleLogin = async (e) => {
+    e.preventDefault();
     try {
-      const usuario = await signInWithEmailAndPassword(auth, email, senha);
-      
-      // Buscar dados pessoais no Firestore
-      const docRef = doc(db, "usuarios", usuario.user.uid);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        const dadosUsuario = docSnap.data();
-
-        // Salvar dados pessoais no localStorage
-        localStorage.setItem(
-          "dadosUsuarioLogado",
-          JSON.stringify({
-            nome: dadosUsuario.nome || usuario.user.email,
-            dataNascimento: dadosUsuario.dataNascimento || null,
-            estudante: dadosUsuario.estudante || false,
-            deficiente: dadosUsuario.deficiente || false,
-            email: usuario.user.email,
-            uid: usuario.user.uid,
-          })
-        );
-      } else {
-        // Caso não existam dados pessoais no Firestore
-        localStorage.setItem(
-          "dadosUsuarioLogado",
-          JSON.stringify({
-            nome: usuario.user.email,
-            dataNascimento: null,
-            estudante: false,
-            deficiente: false,
-            email: usuario.user.email,
-            uid: usuario.user.uid,
-          })
-        );
+      const credenciais = await signInWithEmailAndPassword(auth, email, senha);
+      const usuarioDoc = await getDoc(doc(db, "usuarios", credenciais.user.uid));
+      if (!usuarioDoc.exists()) {
+        setErro("Usuário não encontrado.");
+        return;
       }
-
-      localStorage.removeItem("tentativasLogin");
-      router.push("/MenuPrincipal");
-    } catch (erro) {
-      const novasTentativas = tentativas + 1;
-      setTentativas(novasTentativas);
-      localStorage.setItem("tentativasLogin", novasTentativas);
-
-      if (novasTentativas >= 3) {
-        setMensagem("⚠️ Usuário bloqueado após 3 tentativas.");
-      } else {
-        setMensagem("❌ Email ou senha incorretos.");
-      }
+      router.push("/Home");
+    } catch (error) {
+      setErro("Email ou senha inválidos.");
     }
-  }
+  };
 
-  async function handleRedefinirSenha() {
+  const handleEsqueciSenha = async () => {
     if (!email) {
-      setMensagem("Digite seu e-mail para redefinir a senha.");
+      setErro("Informe seu email para redefinir a senha.");
       return;
     }
-
     try {
       await sendPasswordResetEmail(auth, email);
-      setMensagem("📧 E-mail de redefinição enviado. Verifique sua caixa de entrada.");
-    } catch (erro) {
-      if (erro.code === "auth/user-not-found") {
-        setMensagem("❌ E-mail não cadastrado.");
-      } else {
-        setMensagem("❌ Erro ao enviar redefinição de senha.");
-      }
+      alert("Email de redefinição enviado.");
+    } catch (error) {
+      setErro("Erro ao enviar email de redefinição.");
     }
-  }
+  };
 
   return (
-    <div>
-<<<<<<< HEAD:bomboniere/src/app/Login/page.js
+    <div className={styles.container}>
       <header>
         <h1>Cine Senai</h1>
         <Link href="/">Voltar</Link>
       </header>
-      <main>
-        <form onSubmit={handleLogin}>
-          <div>
-            <label htmlFor="email">E-mail</label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="username"
-            />
-          </div>
-          <div>
-            <label htmlFor="senha">Senha</label>
-            <input
-              type="password"
-              id="senha"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              required
-              autoComplete="current-password"
-            />
-          </div>
-=======
-      <header className={styles.header}>
-</header>
-<main className={styles.mainContainer}>
-  <form onSubmit={handleLogin}>
-    <div className={styles.formGroup}>
-      <label htmlFor="email">E-mail</label>
-      <input
-        type="email"
-        id="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-    </div>
-    <div className={styles.formGroup}>
-      <label htmlFor="senha">Senha</label>
-      <input
-        type="password"
-        id="senha"
-        value={senha}
-        onChange={(e) => setSenha(e.target.value)}
-        required
-      />
-    </div>
->>>>>>> 01442353d4795b315befceb5c12a303ad2e293a7:bomboniere/src/Components/Login/page.js
 
-    {mensagem && <p style={{ color: "red" }}>{mensagem}</p>}
+      <form onSubmit={handleLogin} className={styles.form}>
+        <h2>Login</h2>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Senha"
+          value={senha}
+          onChange={(e) => setSenha(e.target.value)}
+        />
+        <button type="submit">Entrar</button>
+        <button type="button" onClick={handleEsqueciSenha}>
+          Esqueci minha senha
+        </button>
+        {erro && <p className={styles.erro}>{erro}</p>}
+        <p>
+          Não tem conta? <Link href="/Cadastro">Cadastre-se</Link>
 
-    <button type="submit" disabled={tentativas >= 3}>Entrar</button>
-    <button type="button" onClick={handleRedefinirSenha}>Esqueci minha senha</button>
-    <nav className={styles.navLinks}>
-    <p>não possui uma conta?</p>
-    <Link href="/Cadastro">Cadastre-se</Link>
-  </nav>
-  </form>
-</main>
-
+        </p>
+      </form>
     </div>
   );
 }
