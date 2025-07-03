@@ -82,15 +82,8 @@ function Home() {
         </section>
       </main>
 
-      <h1>CineSenai</h1>
-      <p>This is the home page of the Bomboniere application.</p>
-      <ol>
-        <li>Explore our features.</li>
-        <li>Check out the latest updates.</li>
-      </ol>
-
       <footer>
-        <p>&copy; 2023 Bomboniere. All rights reserved.</p>
+        <p>&copy; 2025 Bomboniere. All rights reserved.</p>
       </footer>
     </div>
   );

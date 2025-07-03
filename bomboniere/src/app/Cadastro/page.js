@@ -78,7 +78,7 @@ export default function Cadastro() {
       localStorage.setItem("usuarioFuncionario", funcionario ? "true" : "false");
 
       alert(funcionario ? "Usuário cadastrado como Funcionário!" : "Usuário cadastrado com sucesso!");
-      router.push("/Login");
+      router.push("/MenuPrincipal");
     } catch (erro) {
       if (erro.code === "auth/email-already-in-use") {
         alert("Este e-mail já está cadastrado.");
@@ -121,7 +121,7 @@ export default function Cadastro() {
 
   return (
     <section style={{ maxWidth: "450px", margin: "auto", padding: "1rem" }}>
-      <Link href="/Login">Voltar</Link>
+      <Link href="/MenuPrincipal">Voltar</Link>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <fieldset>
           <legend>Dados Pessoais</legend>
