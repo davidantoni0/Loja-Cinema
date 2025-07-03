@@ -1,14 +1,60 @@
-.header{
+.header {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 5vh;
+    justify-content: flex-end;
+    padding: 1rem;
+    background-color: #222;
+  }
+  
+  .loginButton {
+    background-color: #008cff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  
+  .loginButton:hover {
+    background-color: #005fa3;
+  }
+  
+  .mostruario {
+    margin: 2rem;
+  }
+  
+  .listaFilmes {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+    gap: 1.5rem;
+  }
+  
+  .itemFilme {
+    background-color: #f8f8f8;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .cartaz {
     width: 100%;
-    background-color: #eb3737;
-}
-.loginContainer {
-    width: 100%;
-    display: flex;
-    justify-content: center;
+    height: auto;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .imagemClassificacao {
+    width: 50px;
+    height: auto;
+    margin: 0.5rem 0;
+    display: block;
+  }
+  
+  .sinopse {
+    margin-top: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: #333;
   }
   

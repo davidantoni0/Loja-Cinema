@@ -13,13 +13,6 @@ export default function FinanceiroLanchonete() {
     porMes: {},
     porAno: {},
   });
-  const [debugInfo, setDebugInfo] = useState({
-    totalDocumentos: 0,
-    documentosPagos: 0,
-    documentosNaoPagos: 0,
-    errosProcessamento: [],
-    ultimaAtualizacao: null,
-  });
 
   useEffect(() => {
     async function carregarPedidos() {
@@ -28,23 +21,15 @@ export default function FinanceiroLanchonete() {
         const querySnapshot = await getDocs(q);
 
         const dados = [];
-        let totalDocs = 0;
-        let docsPagos = 0;
-        let docsNaoPagos = 0;
-        const erros = [];
 
         querySnapshot.forEach((doc) => {
-          totalDocs++;
           const data = doc.data();
 
           if (data.pago !== true) {
-            docsNaoPagos++;
             return;
           }
-          docsPagos++;
 
           try {
-            // converter dataCompra
             if (data.dataCompra?.toDate) {
               data.dataCompra = data.dataCompra.toDate();
             } else if (data.dataCompra && typeof data.dataCompra === "string") {
@@ -52,30 +37,19 @@ export default function FinanceiroLanchonete() {
             }
 
             if (!Array.isArray(data.itens)) {
-              erros.push(`Documento ${doc.id} não tem campo 'itens' como array.`);
+              // Não processa documentos sem array itens
               return;
             }
 
             dados.push(data);
-          } catch (error) {
-            erros.push(`Erro ao processar documento ${doc.id}: ${error.message}`);
+          } catch {
+            // Ignora erros individuais
           }
         });
 
         setPedidos(dados);
-        setDebugInfo({
-          totalDocumentos: totalDocs,
-          documentosPagos: docsPagos,
-          documentosNaoPagos: docsNaoPagos,
-          errosProcessamento: erros,
-          ultimaAtualizacao: new Date().toLocaleString(),
-        });
-      } catch (error) {
-        setDebugInfo((prev) => ({
-          ...prev,
-          errosProcessamento: [...prev.errosProcessamento, `Erro geral: ${error.message}`],
-          ultimaAtualizacao: new Date().toLocaleString(),
-        }));
+      } catch {
+        // Ignora erro geral
       }
     }
 
@@ -98,9 +72,9 @@ export default function FinanceiroLanchonete() {
       const dt = pedido.dataCompra;
       if (!(dt instanceof Date) || isNaN(dt)) return;
 
-      const dia = dt.toISOString().slice(0, 10); // "YYYY-MM-DD"
-      const mes = dia.slice(0, 7); // "YYYY-MM"
-      const ano = dia.slice(0, 4); // "YYYY"
+      const dia = dt.toISOString().slice(0, 10);
+      const mes = dia.slice(0, 7);
+      const ano = dia.slice(0, 4);
 
       pedido.itens.forEach((item) => {
         const nomeProduto = item.item ?? "Produto desconhecido";
@@ -108,15 +82,12 @@ export default function FinanceiroLanchonete() {
         const nomeComTamanho = `${nomeProduto} (tamanho: ${tamanho})`;
         const qtd = Number(item.quantidade ?? item.qtd ?? 1);
 
-        // Por Dia
         if (!resumo.porDia[dia]) resumo.porDia[dia] = {};
         resumo.porDia[dia][nomeComTamanho] = (resumo.porDia[dia][nomeComTamanho] || 0) + qtd;
 
-        // Por Mês
         if (!resumo.porMes[mes]) resumo.porMes[mes] = {};
         resumo.porMes[mes][nomeComTamanho] = (resumo.porMes[mes][nomeComTamanho] || 0) + qtd;
 
-        // Por Ano
         if (!resumo.porAno[ano]) resumo.porAno[ano] = {};
         resumo.porAno[ano][nomeComTamanho] = (resumo.porAno[ano][nomeComTamanho] || 0) + qtd;
       });
@@ -201,23 +172,6 @@ export default function FinanceiroLanchonete() {
       <button onClick={exportarExcel} style={{ marginTop: 20 }}>
         Exportar para Excel
       </button>
-
-      <div style={{ marginTop: 30, fontSize: 12, color: "#666" }}>
-        <p>Total documentos: {debugInfo.totalDocumentos}</p>
-        <p>Documentos pagos: {debugInfo.documentosPagos}</p>
-        <p>Documentos não pagos (filtrados): {debugInfo.documentosNaoPagos}</p>
-        <p>Última atualização: {debugInfo.ultimaAtualizacao}</p>
-        {debugInfo.errosProcessamento.length > 0 && (
-          <div>
-            <strong>Erros no processamento:</strong>
-            <ul>
-              {debugInfo.errosProcessamento.map((err, i) => (
-                <li key={i}>{err}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
