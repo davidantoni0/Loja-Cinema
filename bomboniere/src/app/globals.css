@@ -1,14 +1,16 @@
 :root 
 {
-  --corAzul:"#294D61";
-  --corPreto:"#1C1C1C";
-  --corOuro:"#C6A664";
-  --corCinza:"#F5F5F5";
-  --corPrata:"#B0B0B0";
-  --corVermelho:"#7B1E3B";
+  --corAzul:#294D61;
+  --corPreto:#1C1C1C;
+  --corOuro:#C6A664;
+  --corCinza:#F5F5F5;
+  --corPrata:#B0B0B0;
+  --corVermelho:#7B1E3B;
 }
 
 body
 {
   background-color: var(--corPreto);
+  padding: 0;
+  margin: 0;
 }

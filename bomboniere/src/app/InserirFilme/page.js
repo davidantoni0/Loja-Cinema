@@ -75,6 +75,19 @@ export default function Filmes() {
       setTentativa(0);
     }, [src]);
 
+    function faixaEtariaParaNumero(faixa) {
+  const mapa = {
+    "Livre": 0,
+    "10 anos": 10,
+    "12 anos": 12,
+    "14 anos": 14,
+    "16 anos": 16,
+    "18 anos": 18,
+  };
+  return mapa[faixa] ?? faixa;
+}
+
+
     return (
       <img
         src={urlAtual}
@@ -291,7 +304,10 @@ function MenuFilmesEmCartaz() {
       }
     }
 
-    const novo = { ...novoFilme };
+    const novo = {
+  ...novoFilme,
+  faixaEtaria: faixaEtariaParaNumero(novoFilme.faixaEtaria),
+};
     await addDoc(collection(db, "filmes"), novo);
     buscarFilmes();
   }
