@@ -5,7 +5,7 @@ import styles from "./page.module.css";
 import Assentos from "../../Components/Filmes-assentos/Assentos";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { db, auth } from "../../firebase/firebaseConfig";
+import { db } from "../../firebase/firebaseConfig";
 import {
   collection,
   addDoc,
@@ -14,6 +14,7 @@ import {
   where,
   serverTimestamp,
 } from "firebase/firestore";
+import useUsuario from "../../hooks/useUsuario";
 
 export default function EscolhaAssento() {
   const router = useRouter();
@@ -22,52 +23,14 @@ export default function EscolhaAssento() {
   const [faixas, setFaixas] = useState([]);
   const [cartaz, setCartaz] = useState("");
   const [pendentesCount, setPendentesCount] = useState(0);
-  const [dataSelecionada, setDataSelecionada] = useState(() => {
-    return new Date().toISOString().substring(0, 10);
-  });
+  const [dataSelecionada, setDataSelecionada] = useState(() => new Date().toISOString().substring(0, 10));
   const [loading, setLoading] = useState(false);
 
-  const [dadosUsuario, setDadosUsuario] = useState(null);
+  const { usuario, loadingUsuario } = useUsuario();
   const [infoCompra, setInfoCompra] = useState(null);
-  const [precoBase] = useState(25.0); // Preço base do ingresso
+  const [precoBase] = useState(25.0);
 
   useEffect(() => {
-    function carregarDadosUsuario() {
-      try {
-        const dadosUsuarioLogado = localStorage.getItem("dadosUsuarioLogado");
-        if (dadosUsuarioLogado) {
-          const dados = JSON.parse(dadosUsuarioLogado);
-          setDadosUsuario(dados);
-        } else {
-          const user = auth.currentUser;
-          if (user) {
-            setDadosUsuario({
-              uid: user.uid,
-              email: user.email,
-              nome: user.email,
-              estudante: false,
-              deficiente: false,
-              funcionario: false,
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Erro ao carregar dados do usuário:", error);
-      }
-    }
-
-    function carregarInfoCompra() {
-      try {
-        const info = localStorage.getItem("infoCompra");
-        if (info) {
-          const dados = JSON.parse(info);
-          setInfoCompra(dados);
-        }
-      } catch (error) {
-        console.error("Erro ao carregar informações da compra:", error);
-      }
-    }
-
     const filmeStorage = localStorage.getItem("filmeSelecionado");
     if (filmeStorage) {
       const dados = JSON.parse(filmeStorage);
@@ -88,16 +51,19 @@ export default function EscolhaAssento() {
       }
     }
 
-    carregarDadosUsuario();
-    carregarInfoCompra();
     buscarFaixas();
+
+    const info = localStorage.getItem("infoCompra");
+    if (info) {
+      setInfoCompra(JSON.parse(info));
+    }
   }, []);
 
   useEffect(() => {
-    if (dadosUsuario?.uid) {
+    if (usuario?.uid) {
       contarPendentes();
     }
-  }, [dadosUsuario]);
+  }, [usuario]);
 
   useEffect(() => {
     if (filme && dataSelecionada) {
@@ -105,16 +71,14 @@ export default function EscolhaAssento() {
     }
   }, [filme, dataSelecionada]);
 
-  // Calcula o desconto máximo 50%
   function calcularDesconto() {
-    if (!dadosUsuario) return 0;
+    if (!usuario) return 0;
     let desconto = 0;
-    if (dadosUsuario.estudante) desconto += 50;
-    if (dadosUsuario.deficiente) desconto += 50;
+    if (usuario.estudante) desconto += 50;
+    if (usuario.deficiente) desconto += 50;
     return Math.min(desconto, 50);
   }
 
-  // Calcula preço unitário e total com desconto, além do valor economizado
   function calcularPreco(quantidade) {
     const desconto = calcularDesconto();
     const precoComDesconto = precoBase * (1 - desconto / 100);
@@ -128,14 +92,14 @@ export default function EscolhaAssento() {
   }
 
   async function contarPendentes() {
-    if (!dadosUsuario?.uid) {
+    if (!usuario?.uid) {
       setPendentesCount(0);
       return;
     }
 
     const q = query(
       collection(db, "ingressos"),
-      where("usuarioId", "==", dadosUsuario.uid),
+      where("usuarioId", "==", usuario.uid),
       where("pago", "==", false)
     );
     const snapshot = await getDocs(q);
@@ -221,7 +185,7 @@ export default function EscolhaAssento() {
       return;
     }
 
-    if (!dadosUsuario?.uid || !dadosUsuario?.email) {
+    if (!usuario?.uid || !usuario?.email) {
       alert("Você precisa fazer login para comprar ingressos.");
       router.push("/Login");
       return;
@@ -238,16 +202,16 @@ export default function EscolhaAssento() {
       quantidade: assentosSelecionados.length,
       assentos: assentosSelecionados.map((a) => a.numero),
       pago: false,
-      usuarioId: dadosUsuario.uid,
-      usuarioEmail: dadosUsuario.email,
-      usuarioNome: dadosUsuario.nome,
+      usuarioId: usuario.uid,
+      usuarioEmail: usuario.email,
+      usuarioNome: usuario.nome,
       precoUnitario: precoInfo.precoUnitario,
       precoTotal: precoInfo.precoTotal,
       desconto: precoInfo.desconto,
       valorEconomizado: precoInfo.economizado,
-      usuarioEstudante: dadosUsuario.estudante || false,
-      usuarioDeficiente: dadosUsuario.deficiente || false,
-      usuarioFuncionario: dadosUsuario.funcionario || false,
+      usuarioEstudante: usuario.estudante || false,
+      usuarioDeficiente: usuario.deficiente || false,
+      usuarioFuncionario: usuario.funcionario || false,
     };
 
     try {
@@ -277,6 +241,8 @@ export default function EscolhaAssento() {
       setLoading(false);
     }
   }
+
+  if (loadingUsuario) return <p>Carregando dados do usuário...</p>;
 
   if (!filme) return <p>Carregando filme...</p>;
 
@@ -366,11 +332,14 @@ export default function EscolhaAssento() {
           <p>
             {precoInfo.desconto > 0 ? (
               <>
-                <span style={{ textDecoration: "line-through", color: "#888", marginRight: 8 }}>
+                <span
+                  style={{ textDecoration: "line-through", color: "#888", marginRight: 8 }}
+                >
                   Preço unitário: R$ {precoInfo.precoOriginal.toFixed(2)}
                 </span>
                 <span>
-                  Preço unitário com desconto: R$ {precoInfo.precoUnitario.toFixed(2)} ({precoInfo.desconto}% OFF)
+                  Preço unitário com desconto: R$ {precoInfo.precoUnitario.toFixed(2)} (
+                  {precoInfo.desconto}% OFF)
                 </span>
               </>
             ) : (

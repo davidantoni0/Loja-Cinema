@@ -5,29 +5,15 @@ import { db } from "../../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import styles from "./page.module.css";
 import Link from "next/link";
+import useUsuario from "../../hooks/useUsuario";
 
 export default function EmCartaz() {
   const [filmes, setFilmes] = useState([]);
   const [faixas, setFaixas] = useState([]);
   const [cartazes, setCartazes] = useState([]);
-  const [dadosUsuario, setDadosUsuario] = useState(null);
+  const { usuario, loadingUsuario } = useUsuario();
 
   useEffect(() => {
-    function carregarDadosUsuario() {
-      try {
-        const dadosUsuarioLogado = localStorage.getItem("dadosUsuarioLogado");
-        if (dadosUsuarioLogado) {
-          const dados = JSON.parse(dadosUsuarioLogado);
-          setDadosUsuario(dados);
-          console.log("Dados do usuário carregados:", dados);
-        } else {
-          console.log("Nenhum dado de usuário encontrado no localStorage");
-        }
-      } catch (error) {
-        console.error("Erro ao carregar dados do localStorage:", error);
-      }
-    }
-
     async function fetchFilmes() {
       const snapshot = await getDocs(collection(db, "filmes"));
       const lista = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
@@ -46,7 +32,6 @@ export default function EmCartaz() {
       setFaixas(data);
     }
 
-    carregarDadosUsuario();
     fetchFilmes();
     fetchCartazes();
     fetchFaixas();
@@ -63,11 +48,11 @@ export default function EmCartaz() {
   }
 
   function calcularDesconto() {
-    if (!dadosUsuario) return 0;
+    if (!usuario) return 0;
 
     let desconto = 0;
-    if (dadosUsuario.estudante) desconto += 50;
-    if (dadosUsuario.deficiente) desconto += 50;
+    if (usuario.estudante) desconto += 50;
+    if (usuario.deficiente) desconto += 50;
 
     return Math.min(desconto, 50);
   }
@@ -77,7 +62,7 @@ export default function EmCartaz() {
 
     const infoCompra = {
       filme: filme,
-      usuario: dadosUsuario,
+      usuario: usuario,
       desconto: calcularDesconto(),
       timestamp: new Date().toISOString(),
     };
@@ -88,12 +73,17 @@ export default function EmCartaz() {
     window.location.href = "/EscolhaAssento";
   }
 
+  if (loadingUsuario) return <p>Carregando dados do usuário...</p>;
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.titulo}>Filmes em Cartaz</h1>
         <button className={styles.button}>
           <Link href="../MenuPrincipal">Menu Principal</Link>
+        </button>
+        <button className={styles.button} style={{ marginLeft: "10px" }}>
+          <Link href="../Carrinho">Meu Carrinho</Link>
         </button>
       </header>
 
@@ -108,12 +98,24 @@ export default function EmCartaz() {
                 className={styles.cartaz}
               />
               <h2>{filme.nome}</h2>
-              <p><strong>Duração:</strong> {filme.duracao}</p>
-              <p><strong>Gênero:</strong> {filme.genero}</p>
-              <p><strong>Horário:</strong> {filme.horario}</p>
-              <p><strong>Distribuidora:</strong> {filme.distribuidora}</p>
-              <p><strong>Elenco:</strong> {filme.elenco}</p>
-              <p><strong>Sinopse:</strong> {filme.sinopse}</p>
+              <p>
+                <strong>Duração:</strong> {filme.duracao}
+              </p>
+              <p>
+                <strong>Gênero:</strong> {filme.genero}
+              </p>
+              <p>
+                <strong>Horário:</strong> {filme.horario}
+              </p>
+              <p>
+                <strong>Distribuidora:</strong> {filme.distribuidora}
+              </p>
+              <p>
+                <strong>Elenco:</strong> {filme.elenco}
+              </p>
+              <p>
+                <strong>Sinopse:</strong> {filme.sinopse}
+              </p>
               <img
                 src={buscarFaixaEtaria(filme.faixaEtaria)}
                 alt={filme.faixaEtaria}

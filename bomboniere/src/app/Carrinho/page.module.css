@@ -1,169 +1,130 @@
 .container {
   padding: 20px;
-  max-width: 600px;
-  margin: auto;
-  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.loadingMessage {
-  /* mesma estilização do container para carregamento */
-}
-
-.debugBox {
-  background-color: #f0f0f0;
-  padding: 10px;
-  margin-top: 10px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.errorMessage {
-  color: red;
-}
-
-.urlInfo {
-  margin-top: 20px;
-  font-size: 12px;
-  color: #666;
-  background-color: #f9f9f9;
-  padding: 10px;
-  border-radius: 4px;
-}
-
-.btnPrimary {
-  margin-top: 20px;
-  padding: 10px 15px;
-  background-color: #2196f3;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.resumoCompra {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 8px;
+.titulo {
+  font-size: 24px;
+  font-weight: bold;
   margin-bottom: 20px;
+  color: #222;
 }
 
-.resumoItem {
-  margin-bottom: 15px;
-  padding-bottom: 15px;
+.produto {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
   border-bottom: 1px solid #ddd;
 }
 
-.resumoItem:last-child {
-  border-bottom: none;
+.produto img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-right: 10px;
 }
 
-.priceOriginal {
-  text-decoration: line-through;
-  color: #888;
-  margin-right: 8px;
-}
-
-.priceDiscount {
-  color: green;
-  font-weight: bold;
-}
-
-.totalContainer {
-  margin-top: 15px;
-  padding: 10px 0;
-  border-top: 2px solid #333;
-}
-
-.totalText {
-  margin: 0;
-  color: #000000;
-}
-
-.formaPagamentoContainer {
-  margin-bottom: 20px;
-}
-
-.formaPagamentoSelect {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  font-size: 16px;
-}
-
-.buttonsContainer {
-  display: flex;
-  gap: 10px;
-}
-
-.btnConfirm {
+.produtoInfo {
   flex: 1;
-  padding: 12px 15px;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.produtoTitulo {
   font-weight: bold;
-  cursor: pointer;
-  background-color: #4caf50; /* padrão habilitado */
+  font-size: 18px;
+  color: #333;
 }
 
-.btnConfirmDisabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.btnCancel {
-  padding: 12px 15px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.btnCancelDisabled {
-  cursor: not-allowed;
-}
-
-.feedbackMsg {
-  margin-top: 20px;
-  padding: 15px;
-  border-radius: 4px;
-  border: 1px solid;
-}
-
-.feedbackMsgError {
-  background-color: #ffebee;
-  color: #c62828;
-  border-color: #ef5350;
-}
-
-.feedbackMsgSuccess {
-  background-color: #e8f5e8;
-  color: #2e7d32;
-  border-color: #4caf50;
-}
-
-.debugDetails {
-  margin-top: 20px;
-  font-size: 12px;
+.produtoTamanho {
+  font-size: 14px;
   color: #666;
 }
 
-.debugDetailsPre {
-  background: #f5f5f5;
-  padding: 10px;
-  margin-top: 10px;
+.quantidadeControle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-
-.imagem
-{
-  width: 200px;
+.botaoQtd {
+  background-color: #ccc;
+  border: none;
+  padding: 6px 12px;
+  font-size: 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-.TextoBox
-{
-  color:black;
+.botaoQtd:hover {
+  background-color: #aaa;
+}
+
+.totalProduto {
+  font-size: 16px;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.resumo {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #000;
+  text-align: right;
+}
+
+.resumo span {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.botaoPagar {
+  background-color: #28a745;
+  color: white;
+  font-weight: bold;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-top: 20px;
+}
+
+.botaoPagar:hover {
+  background-color: #218838;
+}
+
+.botaoExcluir {
+  background-color: #dc3545;
+  color: white;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 14px;
+}
+
+.botaoExcluir:hover {
+  background-color: #c82333;
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+}
+
+.checkboxContainer :global(input[type="checkbox"]) {
+  cursor: pointer;
+}
+
+.semItens {
+  text-align: center;
+  font-size: 18px;
+  margin-top: 40px;
+  color: #555;
 }

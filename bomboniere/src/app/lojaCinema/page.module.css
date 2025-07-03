@@ -69,3 +69,6 @@
     border-top: 1px solid #ccc;
   }
   
+  .totalGeral, .preco, .qtd{
+    color: black;
+  }

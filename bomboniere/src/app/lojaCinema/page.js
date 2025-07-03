@@ -1,320 +1,158 @@
-/*"use client";
-import { useState, useEffect } from "react";
-import styles from "./page.module.css";
-import MenuButton from "@/Components/Bomboniere/menubutton";
-import SubMenuButton from "@/Components/Bomboniere/submenubutton";
-import Cart from "@/Components/Bomboniere/cart";
-import Link from "next/link";
-
-export default function MenuLoja() {
-    const [step, setStep] = useState("mainMenu");
-    const [selectedItem, setSelectedItem] = useState();
-    const [cart, setCart] = useState([]);
-    const [menuData, setMenuData] = useState(null);  // Estado para armazenar os dados do menu
-
-    // Carregar dados do JSON externamente
-    useEffect(() => {
-        const loadMenuData = async () => {
-            const response = await fetch("menuData.json");
-            if (!response.ok) {
-                throw new Error(`Erro ao carregar o JSON: ${response.status}`);
-            }
-            const data = await response.json();
-            setMenuData(data);
-        };
-
-        loadMenuData();
-    }, []);
-
-    const total = cart.reduce((acc, item) => acc + item.price, 0);
-
-    // Carregar o estado do carrinho do localStorage
-    useEffect(() => {
-        const storedData = JSON.parse(localStorage.getItem("cartData"));
-        if (storedData) {
-            setCart(storedData.cart);
-            setStep(storedData.step || "mainMenu");
-            setSelectedItem(storedData.selectedItem);
-        }
-    }, []);
-
-    // Salvar o estado do carrinho no localStorage
-    useEffect(() => {
-        const cartData = {
-            cart,
-            step,
-            selectedItem,
-            timestamp: new Date().toISOString()
-        };
-        localStorage.setItem("cartData", JSON.stringify(cartData));
-    }, [cart, step, selectedItem]);
-
-    function handleClickMenu(item) {
-        setSelectedItem(item.label);  // Ajuste aqui
-        setStep("submenu");
-    }
-
-    function handleClickAddItem(size) {
-        if (menuData && menuData.prices[selectedItem]) {
-            const price = menuData.prices[selectedItem][size];
-            const newItem = {
-                item: selectedItem,
-                size,
-                price
-            };
-
-            setCart([...cart, newItem]);
-            setStep("mainMenu");
-        }
-    }
-
-    function handleClickRemoveItem(index) {
-        const newCart = [...cart];
-        newCart.splice(index, 1);
-        setCart(newCart);
-    }
-
-    function handleClickClearCart() {
-        setCart([]);
-        localStorage.removeItem("cartData");  // Limpar os dados do localStorage
-    }
-
-    if (!menuData) {
-        return <div>Carregando...</div>;
-    }
-
-    return (
-        <div className={styles.menuLoja}>
-            <div className={styles.menuInicio}>Bomboniere</div>
-
-            {step === "mainMenu" && (
-                <div className={styles.row}>
-                    {menuData.menuItems.map((item, index) => (
-                        <MenuButton 
-                            key={index} 
-                            label={item.label} 
-                            onClick={() => handleClickMenu(item)}  // Passa o item completo
-                            imageSrc={item.imageSrc} 
-                        />
-                    ))}
-                </div>
-            )}
-
-            {step === "submenu" && selectedItem && (
-                <div className={styles.row}>
-                    <div className={styles.submenuTitle}>
-                        Selecione o tamanho de {selectedItem.replace(/s$/, "")}:
-                    </div>
-                    {selectedItem && menuData.prices[selectedItem] ? (
-                        Object.keys(menuData.prices[selectedItem]).map((size) => {
-                            const price = menuData.prices[selectedItem][size];
-                            return (
-                                <SubMenuButton
-                                    key={size}
-                                    size={size}
-                                    price={price}
-                                    onClick={() => handleClickAddItem(size)}
-                                />
-                            );
-                        })
-                    ) : (
-                        <p>Não há preços disponíveis para este item.</p>
-                    )}
-                    <button className={styles.button} onClick={() => setStep("mainMenu")}>Voltar ao Menu</button>
-                </div>
-            )}
-
-            {step === "cart" && (
-                <Cart 
-                    cart={cart} 
-                    total={total} 
-                    handleClickRemoveItem={handleClickRemoveItem} 
-                    handleClickClearCart={handleClickClearCart} 
-                    setStep={setStep} 
-                />
-            )}
-        
-
-            <footer className={styles.footer}>
-                <button className={styles.button} onClick={() => setStep("cart")}>Veja o Carrinho ({cart.length} itens)</button>
-                
-                <button className={styles.button}>
-                    <Link href="../MenuPrincipal"> Menu Principal</Link>
-                </button>
-            </footer>
-        </div>
-    );
-}
-*/
-
 "use client";
+
 import { useState, useEffect } from "react";
 import styles from "./page.module.css";
 import MenuButton from "@/Components/Bomboniere/menubutton";
-import SubMenuButton from "@/Components/Bomboniere/submenubutton";
-import Cart from "@/Components/Bomboniere/cart";
 import Link from "next/link";
-
-import { collection, addDoc } from "firebase/firestore";
-import { db, auth } from "../../firebase/firebaseConfig";
+import { collection, getDocs, addDoc, query, where } from "firebase/firestore";
+import { db } from "../../firebase/firebaseConfig";
 
 export default function MenuLoja() {
-    const [step, setStep] = useState("mainMenu");
-    const [selectedItem, setSelectedItem] = useState();
-    const [cart, setCart] = useState([]);
-    const [menuData, setMenuData] = useState(null);  // Estado para armazenar os dados do menu
+  const [menuItems, setMenuItems] = useState([]);
+  const [quantities, setQuantities] = useState({});
 
-    // Carregar dados do JSON externamente
-    useEffect(() => {
-        const loadMenuData = async () => {
-            const response = await fetch("menuData.json");
-            if (!response.ok) {
-                throw new Error(`Erro ao carregar o JSON: ${response.status}`);
-            }
-            const data = await response.json();
-            setMenuData(data);
-        };
+  useEffect(() => {
+    const loadProdutos = async () => {
+      try {
+        const produtosRef = collection(db, "produtos");
+        const q = query(produtosRef, where("emEstoque", "==", true));
+        const snapshot = await getDocs(q);
 
-        loadMenuData();
-    }, []);
+        const items = [];
+        const initialQuantities = {};
 
-    const total = cart.reduce((acc, item) => acc + item.price, 0);
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const nomeCapitalizado = data.tamanho
+            ? data.tamanho.charAt(0).toUpperCase() + data.tamanho.slice(1)
+            : "";
 
-    // Carregar o estado do carrinho do localStorage
-    useEffect(() => {
-        const storedData = JSON.parse(localStorage.getItem("cartData"));
-        if (storedData) {
-            setCart(storedData.cart);
-            setStep(storedData.step || "mainMenu");
-            setSelectedItem(storedData.selectedItem);
+          const nomeExibido =
+            data.tamanho && data.tamanho.toLowerCase() !== "único"
+              ? `${data.nome} ${nomeCapitalizado}`
+              : data.nome;
+
+          items.push({
+            id: doc.id,
+            nomeOriginal: data.nome,
+            nomeExibido,
+            tamanho: data.tamanho,
+            imagem: data.imagem,
+            preco: parseFloat(data.preco),
+          });
+
+          initialQuantities[nomeExibido] = 0;
+        });
+
+        setMenuItems(items);
+        setQuantities(initialQuantities);
+      } catch (error) {
+        console.error("Erro ao carregar produtos:", error);
+      }
+    };
+
+    loadProdutos();
+  }, []);
+
+  const totalGeral = menuItems.reduce((acc, item) => {
+    const qtd = quantities[item.nomeExibido] || 0;
+    return acc + qtd * item.preco;
+  }, 0);
+
+  const handleQuantityChange = (nomeExibido, delta) => {
+    setQuantities((prev) => {
+      const novaQtd = Math.max(0, (prev[nomeExibido] || 0) + delta);
+      return { ...prev, [nomeExibido]: novaQtd };
+    });
+  };
+
+  const handleFinalizarPedido = async () => {
+    const userDataLocal = localStorage.getItem("dadosUsuarioLogado");
+    const user = userDataLocal ? JSON.parse(userDataLocal) : null;
+
+    const itensSelecionados = menuItems
+      .map((item) => {
+        const qtd = quantities[item.nomeExibido];
+        if (qtd > 0) {
+          return {
+            item: item.nomeExibido,
+            tamanho: item.tamanho,
+            precoUnitario: item.preco,
+            quantidade: qtd,
+            precoTotal: item.preco * qtd,
+          };
         }
-    }, []);
+        return null;
+      })
+      .filter(Boolean);
 
-    // Salvar o estado do carrinho no localStorage
-    useEffect(() => {
-        const cartData = {
-            cart,
-            step,
-            selectedItem,
-            timestamp: new Date().toISOString()
-        };
-        localStorage.setItem("cartData", JSON.stringify(cartData));
-    }, [cart, step, selectedItem]);
-
-    function handleClickMenu(item) {
-        setSelectedItem(item.label);  // Ajuste aqui
-        setStep("submenu");
+    if (itensSelecionados.length === 0) {
+      alert("Selecione pelo menos um produto para finalizar o pedido.");
+      return;
     }
 
-    async function handleClickAddItem(size) {
-        if (menuData && menuData.prices[selectedItem]) {
-            const price = menuData.prices[selectedItem][size];
-            const newItem = {
-                item: selectedItem,
-                size,
-                price
-            };
+    const pedido = {
+      usuarioId: user?.uid || null,
+      nome: user?.nome || "",
+      email: user?.email || "",
+      itens: itensSelecionados,
+      total: totalGeral,
+      pago: false,
+      dataCompra: new Date(),
+    };
 
-            // Atualiza localmente
-            setCart([...cart, newItem]);
-            setStep("mainMenu");
-
-            // Salvar no Firestore
-            const user = auth.currentUser;
-
-            const novoItem = {
-                usuarioId: user?.uid || null,
-                item: selectedItem,
-                tamanho: size,
-                preco: price,
-                pago: false,
-                dataCompra: new Date()
-            };
-
-            try {
-                await addDoc(collection(db, "pedidosLanchonete"), novoItem);
-                alert("Produto adicionado com sucesso!");
-            } catch (error) {
-                console.error("Erro ao salvar produto no Firestore:", error);
-                alert("Erro ao salvar produto. Tente novamente.");
-            }
-        }
+    try {
+      await addDoc(collection(db, "pedidosLanchonete"), pedido);
+      alert("Pedido salvo com sucesso!");
+      const zerarQuantidades = {};
+      menuItems.forEach((item) => (zerarQuantidades[item.nomeExibido] = 0));
+      setQuantities(zerarQuantidades);
+    } catch (error) {
+      console.error("Erro ao salvar pedido:", error);
+      alert("Erro ao finalizar pedido.");
     }
+  };
 
-    function handleClickRemoveItem(index) {
-        const newCart = [...cart];
-        newCart.splice(index, 1);
-        setCart(newCart);
-    }
+  if (menuItems.length === 0) {
+    return <div>Carregando produtos...</div>;
+  }
 
-    function handleClickClearCart() {
-        setCart([]);
-        localStorage.removeItem("cartData");  // Limpar os dados do localStorage
-    }
+  return (
+    <div className={styles.menuLoja}>
+      <div className={styles.menuInicio}>Bomboniere</div>
 
-    if (!menuData) {
-        return <div>Carregando...</div>;
-    }
+      <div className={styles.row}>
+        {menuItems.map((item, index) => {
+          const qtd = quantities[item.nomeExibido] || 0;
+          const total = (item.preco * qtd).toFixed(2);
+          const unitario = item.preco.toFixed(2);
+          return (
+            <div key={index} className={styles.produto}>
+              <MenuButton label={item.nomeExibido} imageSrc={item.imagem} />
+              <div className={styles.controles}>
+                <button onClick={() => handleQuantityChange(item.nomeExibido, -1)}>-</button>
+                <span className={styles.qtd}>{qtd}</span>
+                <button onClick={() => handleQuantityChange(item.nomeExibido, 1)}>+</button>
+              </div>
+              <div className={styles.preco}>
+                R$ {unitario} x {qtd} = <strong>R$ {total}</strong>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
-    return (
-        <div className={styles.menuLoja}>
-            <div className={styles.menuInicio}>Bomboniere</div>
-
-            {step === "mainMenu" && (
-                <div className={styles.row}>
-                    {menuData.menuItems.map((item, index) => (
-                        <MenuButton 
-                            key={index} 
-                            label={item.label} 
-                            onClick={() => handleClickMenu(item)}  // Passa o item completo
-                            imageSrc={item.imageSrc} 
-                        />
-                    ))}
-                </div>
-            )}
-
-            {step === "submenu" && selectedItem && (
-                <div className={styles.row}>
-                    <div className={styles.submenuTitle}>
-                        Selecione o tamanho de {selectedItem.replace(/s$/, "")}:
-                    </div>
-                    {selectedItem && menuData.prices[selectedItem] ? (
-                        Object.keys(menuData.prices[selectedItem]).map((size) => {
-                            const price = menuData.prices[selectedItem][size];
-                            return (
-                                <SubMenuButton
-                                    key={size}
-                                    size={size}
-                                    price={price}
-                                    onClick={() => handleClickAddItem(size)}
-                                />
-                            );
-                        })
-                    ) : (
-                        <p>Não há preços disponíveis para este item.</p>
-                    )}
-                    <button className={styles.button} onClick={() => setStep("mainMenu")}>Voltar ao Menu</button>
-                </div>
-            )}
-
-            {step === "cart" && (
-                <Cart 
-                    cart={cart} 
-                    total={total} 
-                    handleClickRemoveItem={handleClickRemoveItem} 
-                    handleClickClearCart={handleClickClearCart} 
-                    setStep={setStep} 
-                />
-            )}
-        
-
-            <footer className={styles.footer}>
-                <button className={styles.button} onClick={() => setStep("cart")}>Veja o Carrinho ({cart.length} itens)</button>
-                
-                <button className={styles.button}>
-                    <Link href="../MenuPrincipal"> Menu Principal</Link>
-                </button>
-            </footer>
+      <footer className={styles.footer}>
+        <div className={styles.totalGeral}>
+          Total Geral: <strong>R$ {totalGeral.toFixed(2)}</strong>
         </div>
-    );
+        <button className={styles.button} onClick={handleFinalizarPedido}>
+          Finalizar Pedido
+        </button>
+        <button className={styles.button}>
+          <Link href="../MenuPrincipal">Menu Principal</Link>
+        </button>
+      </footer>
+    </div>
+  );
 }
