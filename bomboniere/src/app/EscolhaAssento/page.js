@@ -27,13 +27,11 @@ export default function EscolhaAssento() {
   });
   const [loading, setLoading] = useState(false);
 
-  // Dados do usuário vindo do localStorage
   const [dadosUsuario, setDadosUsuario] = useState(null);
   const [infoCompra, setInfoCompra] = useState(null);
   const [precoBase] = useState(25.0); // Preço base do ingresso
 
   useEffect(() => {
-    // Carregar dados do usuário do localStorage
     function carregarDadosUsuario() {
       try {
         const dadosUsuarioLogado = localStorage.getItem("dadosUsuarioLogado");
@@ -41,7 +39,6 @@ export default function EscolhaAssento() {
           const dados = JSON.parse(dadosUsuarioLogado);
           setDadosUsuario(dados);
         } else {
-          // Fallback para auth.currentUser caso não tenha no localStorage
           const user = auth.currentUser;
           if (user) {
             setDadosUsuario({
@@ -59,7 +56,6 @@ export default function EscolhaAssento() {
       }
     }
 
-    // Carregar informações da compra do localStorage
     function carregarInfoCompra() {
       try {
         const info = localStorage.getItem("infoCompra");
@@ -72,7 +68,6 @@ export default function EscolhaAssento() {
       }
     }
 
-    // Buscar filme no localStorage
     const filmeStorage = localStorage.getItem("filmeSelecionado");
     if (filmeStorage) {
       const dados = JSON.parse(filmeStorage);
@@ -110,18 +105,16 @@ export default function EscolhaAssento() {
     }
   }, [filme, dataSelecionada]);
 
-  // Função para calcular desconto
+  // Calcula o desconto máximo 50%
   function calcularDesconto() {
     if (!dadosUsuario) return 0;
-
     let desconto = 0;
     if (dadosUsuario.estudante) desconto += 50;
     if (dadosUsuario.deficiente) desconto += 50;
-
-    return Math.min(desconto, 50); // Máximo de 50% de desconto
+    return Math.min(desconto, 50);
   }
 
-  // Função para calcular preço com desconto
+  // Calcula preço unitário e total com desconto, além do valor economizado
   function calcularPreco(quantidade) {
     const desconto = calcularDesconto();
     const precoComDesconto = precoBase * (1 - desconto / 100);
@@ -130,6 +123,7 @@ export default function EscolhaAssento() {
       precoTotal: precoComDesconto * quantidade,
       desconto: desconto,
       economizado: (precoBase - precoComDesconto) * quantidade,
+      precoOriginal: precoBase,
     };
   }
 
@@ -139,7 +133,6 @@ export default function EscolhaAssento() {
       return;
     }
 
-    // Contar ingressos pendentes do usuário logado
     const q = query(
       collection(db, "ingressos"),
       where("usuarioId", "==", dadosUsuario.uid),
@@ -209,7 +202,6 @@ export default function EscolhaAssento() {
   }
 
   function toggleAssento(numero) {
-    // Não permite selecionar assento indisponível
     const assento = filme.assentos.find((a) => a.numero === numero);
     if (!assento || !assento.disponivel) return;
 
@@ -221,7 +213,7 @@ export default function EscolhaAssento() {
   }
 
   async function confirmarIngresso() {
-    if (loading) return; // evita clique múltiplo
+    if (loading) return;
 
     const assentosSelecionados = filme.assentos.filter((a) => a.selecionado);
     if (assentosSelecionados.length === 0) {
@@ -249,12 +241,10 @@ export default function EscolhaAssento() {
       usuarioId: dadosUsuario.uid,
       usuarioEmail: dadosUsuario.email,
       usuarioNome: dadosUsuario.nome,
-      // Informações de preço e desconto
       precoUnitario: precoInfo.precoUnitario,
       precoTotal: precoInfo.precoTotal,
       desconto: precoInfo.desconto,
       valorEconomizado: precoInfo.economizado,
-      // Dados do perfil do usuário
       usuarioEstudante: dadosUsuario.estudante || false,
       usuarioDeficiente: dadosUsuario.deficiente || false,
       usuarioFuncionario: dadosUsuario.funcionario || false,
@@ -263,7 +253,6 @@ export default function EscolhaAssento() {
     try {
       await addDoc(collection(db, "ingressos"), dadosIngresso);
 
-      // Salvar detalhes da compra no localStorage para uso posterior
       const detalheCompra = {
         ...dadosIngresso,
         timestamp: new Date().toISOString(),
@@ -297,9 +286,6 @@ export default function EscolhaAssento() {
 
   return (
     <div className={styles.container}>
-      {/* Informações do usuário - REMOVIDO O BLOCO COM A MENSAGEM */}
-      {/* Apenas um espaço para usuário logado, se desejar você pode reativar mais tarde */}
-
       <h1>{filme.nome}</h1>
 
       {cartaz && <img src={cartaz} alt="Cartaz" className={styles.cartaz} />}
@@ -341,15 +327,18 @@ export default function EscolhaAssento() {
 
       {/* Informações de preço */}
       <div className={styles.precoInfo}>
-        <p>
-          <strong>Preço por ingresso:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}
-        </p>
-        {precoInfo.desconto > 0 && (
+        {precoInfo.desconto > 0 ? (
           <p className={styles.desconto}>
-            <span style={{ textDecoration: "line-through" }}>
-              R$ {precoBase.toFixed(2)}
-            </span>{" "}
-            → R$ {precoInfo.precoUnitario.toFixed(2)} ({precoInfo.desconto}% OFF)
+            <span style={{ textDecoration: "line-through", marginRight: 8 }}>
+              R$ {precoInfo.precoOriginal.toFixed(2)}
+            </span>
+            <span>
+              R$ {precoInfo.precoUnitario.toFixed(2)} ({precoInfo.desconto}% OFF)
+            </span>
+          </p>
+        ) : (
+          <p>
+            <strong>Preço por ingresso:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}
           </p>
         )}
       </div>
@@ -375,7 +364,18 @@ export default function EscolhaAssento() {
             <strong>Quantidade:</strong> {assentosSelecionados.length}
           </p>
           <p>
-            <strong>Preço unitário:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}
+            {precoInfo.desconto > 0 ? (
+              <>
+                <span style={{ textDecoration: "line-through", color: "#888", marginRight: 8 }}>
+                  Preço unitário: R$ {precoInfo.precoOriginal.toFixed(2)}
+                </span>
+                <span>
+                  Preço unitário com desconto: R$ {precoInfo.precoUnitario.toFixed(2)} ({precoInfo.desconto}% OFF)
+                </span>
+              </>
+            ) : (
+              <>Preço unitário: R$ {precoInfo.precoUnitario.toFixed(2)}</>
+            )}
           </p>
           <p>
             <strong>Total:</strong> R$ {precoInfo.precoTotal.toFixed(2)}
