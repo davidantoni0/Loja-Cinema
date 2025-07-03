@@ -41,6 +41,7 @@ export default function Cadastro() {
     const nome = form.nome.value.trim();
     const nascimento = form.nascimento.value;
     const cpf = form.cpf.value.trim();
+    const cep = form.cep.value.trim();
     const estudante = form.estudante.value === "true";
     const deficiencia = form.deficiencia.value === "true";
     const email = form.email.value.trim();
@@ -62,7 +63,7 @@ export default function Cadastro() {
       await setDoc(doc(db, "usuarios", uid), {
         nome,
         cpf,
-        endereco,
+        endereco: { ...endereco, cep },
         data_nascimento: nascimento,
         estudante,
         deficiencia,
@@ -103,6 +104,7 @@ export default function Cadastro() {
       
       if (!data.erro) {
         setEndereco({
+          cep: data.cep,  
           rua: data.logradouro,
           bairro: data.bairro,
           cidade: data.localidade,
