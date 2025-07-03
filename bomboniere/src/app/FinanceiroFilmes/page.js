@@ -10,28 +10,93 @@ export default function FinanceiroFilmes() {
   const [ingressos, setIngressos] = useState([]);
   const [dataEscolhida, setDataEscolhida] = useState("");
   const [resumo, setResumo] = useState({});
+  const [debugInfo, setDebugInfo] = useState({
+    totalDocumentos: 0,
+    documentosPagos: 0,
+    documentosNaoPagos: 0,
+    errosProcessamento: [],
+    ultimaAtualizacao: null
+  });
 
   useEffect(() => {
     async function carregarIngressos() {
-      const querySnapshot = await getDocs(collection(db, "ingressos"));
-      const dados = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        // Converte timestamp Firestore para Date, se necessário
-        if (data.dataCompra?.toDate) {
-          data.dataCompra = data.dataCompra.toDate();
-        }
-        if (data.usuarioDataNascimento?.toDate) {
-          data.usuarioDataNascimento = data.usuarioDataNascimento.toDate();
-        }
-        dados.push(data);
-      });
-      setIngressos(dados);
+      try {
+        const querySnapshot = await getDocs(collection(db, "ingressos"));
+        const dados = [];
+        let totalDocs = 0;
+        let docsPagos = 0;
+        let docsNaoPagos = 0;
+        const erros = [];
+
+        querySnapshot.forEach((doc) => {
+          totalDocs++;
+          const data = doc.data();
+          
+          if (data.pago !== true) {
+            docsNaoPagos++;
+            return; // Pula este documento
+          }
+          
+          docsPagos++;
+          
+          try {
+            if (data.dataCompra?.toDate) {
+              data.dataCompra = data.dataCompra.toDate();
+            } else if (data.dataCompra && typeof data.dataCompra === 'string') {
+              data.dataCompra = new Date(data.dataCompra);
+            }
+            
+            if (data.usuarioDataNascimento?.toDate) {
+              data.usuarioDataNascimento = data.usuarioDataNascimento.toDate();
+            } else if (data.usuarioDataNascimento && typeof data.usuarioDataNascimento === 'string') {
+              data.usuarioDataNascimento = new Date(data.usuarioDataNascimento);
+            }
+            
+            if (!data.inteira && !data.meia) {
+              if (data.desconto > 0 || data.usuarioEstudante || data.usuarioDeficiente) {
+                data.meia = data.quantidade || 1;
+                data.inteira = 0;
+              } else {
+                data.inteira = data.quantidade || 1;
+                data.meia = 0;
+              }
+            }
+            
+            if (!data.preco && data.precoUnitario) {
+              data.preco = data.precoUnitario;
+            }
+            
+            if (!data.usuario && data.usuarioNome) {
+              data.usuario = data.usuarioNome;
+            }
+            
+            dados.push(data);
+          } catch (error) {
+            erros.push(`Erro ao processar documento ${doc.id}: ${error.message}`);
+          }
+        });
+
+        setIngressos(dados);
+        setDebugInfo({
+          totalDocumentos: totalDocs,
+          documentosPagos: docsPagos,
+          documentosNaoPagos: docsNaoPagos,
+          errosProcessamento: erros,
+          ultimaAtualizacao: new Date().toLocaleString()
+        });
+        
+      } catch (error) {
+        setDebugInfo(prev => ({
+          ...prev,
+          errosProcessamento: [...prev.errosProcessamento, `Erro geral: ${error.message}`],
+          ultimaAtualizacao: new Date().toLocaleString()
+        }));
+      }
     }
+    
     carregarIngressos();
   }, []);
 
-  // Calcula idade baseado na data
   function calcularIdade(dataNascimento) {
     if (!dataNascimento) return null;
     const hoje = new Date();
@@ -44,15 +109,16 @@ export default function FinanceiroFilmes() {
     return idade;
   }
 
-  // Verifica se o ingresso tem direito a desconto
   function temDesconto(ingresso) {
     const idade = calcularIdade(ingresso.usuarioDataNascimento);
     const deficiente = ingresso.usuarioDeficiente === true;
     const estudante = ingresso.usuarioEstudante === true;
+    const funcionario = ingresso.usuarioFuncionario === true;
 
     if (idade !== null && (idade < 18 || idade > 65)) return true;
     if (deficiente) return true;
     if (estudante) return true;
+    if (funcionario) return true;
 
     return false;
   }
@@ -70,7 +136,9 @@ export default function FinanceiroFilmes() {
     };
 
     ingressos.forEach((ing) => {
-      if (!ing.dataCompra) return; // pula se não tem dataCompra
+      if (!ing.dataCompra) {
+        return;
+      }
 
       const dataStr = ing.dataCompra.toISOString().split("T")[0];
       const semana = getSemana(ing.dataCompra);
@@ -81,11 +149,14 @@ export default function FinanceiroFilmes() {
       const meia = ing.meia || 0;
       const qtd = inteira + meia;
 
-      // Decide valor usado (com ou sem desconto)
-      const precoUnitario = temDesconto(ing) && ing.precoDesconto ? ing.precoDesconto : ing.preco || 0;
-      const valorTotal = precoUnitario * qtd;
+      let valorTotal = ing.precoTotal || 0;
+      if (!valorTotal && ing.precoUnitario) {
+        valorTotal = ing.precoUnitario * qtd;
+      }
+      if (!valorTotal && ing.preco) {
+        valorTotal = ing.preco * qtd;
+      }
 
-      // Atualiza resumo por data (só para data escolhida)
       if (dataStr === dataEscolhida) {
         if (!resumo.porData[dataStr]) resumo.porData[dataStr] = { inteira: 0, meia: 0, montante: 0 };
         resumo.porData[dataStr].inteira += inteira;
@@ -93,31 +164,26 @@ export default function FinanceiroFilmes() {
         resumo.porData[dataStr].montante += valorTotal;
       }
 
-      // Por Filme
       if (!resumo.porFilme[ing.filme]) resumo.porFilme[ing.filme] = { inteira: 0, meia: 0, montante: 0 };
       resumo.porFilme[ing.filme].inteira += inteira;
       resumo.porFilme[ing.filme].meia += meia;
       resumo.porFilme[ing.filme].montante += valorTotal;
 
-      // Por Semana
       if (!resumo.porSemana[semana]) resumo.porSemana[semana] = { inteira: 0, meia: 0, montante: 0 };
       resumo.porSemana[semana].inteira += inteira;
       resumo.porSemana[semana].meia += meia;
       resumo.porSemana[semana].montante += valorTotal;
 
-      // Por Mês
       if (!resumo.porMes[mes]) resumo.porMes[mes] = { inteira: 0, meia: 0, montante: 0 };
       resumo.porMes[mes].inteira += inteira;
       resumo.porMes[mes].meia += meia;
       resumo.porMes[mes].montante += valorTotal;
 
-      // Por Horário
       if (!resumo.porHorario[hora]) resumo.porHorario[hora] = { inteira: 0, meia: 0, montante: 0 };
       resumo.porHorario[hora].inteira += inteira;
       resumo.porHorario[hora].meia += meia;
       resumo.porHorario[hora].montante += valorTotal;
 
-      // Por Usuário
       if (ing.usuario) {
         if (!resumo.porUsuario[ing.usuario]) resumo.porUsuario[ing.usuario] = { qtd: 0 };
         resumo.porUsuario[ing.usuario].qtd += qtd;
@@ -168,7 +234,7 @@ export default function FinanceiroFilmes() {
       />
 
       <h2>Por Data</h2>
-      {dataEscolhida && resumo.porData[dataEscolhida] ? (
+      {dataEscolhida && resumo.porData && resumo.porData[dataEscolhida] ? (
         <p>
           Inteira: {resumo.porData[dataEscolhida].inteira} | Meia: {resumo.porData[dataEscolhida].meia} | Total:{" "}
           {resumo.porData[dataEscolhida].inteira + resumo.porData[dataEscolhida].meia} | Montante: R$ {resumo.porData[dataEscolhida].montante.toFixed(2)}
@@ -216,7 +282,7 @@ export default function FinanceiroFilmes() {
       <h2>Média por Usuário</h2>
       <ul>
         {Object.entries(resumo.porUsuario || {}).map(([user, val]) => (
-          <li key={user}>{user} – Média: {(val.qtd).toFixed(2)}</li>
+          <li key={user}>{user} – Total de ingressos: {val.qtd}</li>
         ))}
       </ul>
 

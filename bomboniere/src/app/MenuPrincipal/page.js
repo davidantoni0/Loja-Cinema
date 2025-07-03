@@ -129,6 +129,10 @@ export default function MenuPrincipal() {
           Conheça nossa Bomboniere!
         </Link>
         <br />
+        <Link href="/Carrinho" className={styles.link}>
+          Carrinho
+        </Link>
+        <br />
         {usuario.funcionario && (
           <Link href="/Administrativo" className={styles.link}>
             Administrativo
