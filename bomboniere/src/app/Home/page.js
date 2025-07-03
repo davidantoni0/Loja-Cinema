@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react';
 import Login from "@/Components/Login/page";
 import styles from './page.module.css';
 import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from '../../firebase/firebaseConfig'; // ajuste o caminho conforme sua estrutura
+import { db } from '../../firebase/firebaseConfig';
 
-function Home() {
+export default function Home({ Component, pageProps }) {
   const [menuState, setMenuState] = React.useState("mainMenu");
   const [filmesEmCartaz, setFilmesEmCartaz] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,7 +52,6 @@ function Home() {
           <ul className={styles.listaFilmes}>
             {filmesEmCartaz.map((filme) => (
               <li key={filme.id} className={styles.itemFilme}>
-                {/* Cartaz */}
                 {filme.cartaz && (
                   <img 
                     src={filme.cartaz} 
@@ -60,11 +59,8 @@ function Home() {
                     className={styles.cartaz} 
                   />
                 )}
-                {/* Nome */}
                 <h3>{filme.nome}</h3>
-                {/* Horário */}
                 <p><strong>Horário:</strong> {filme.horarioExibicao}</p>
-                {/* Imagem da classificação */}
                 {filme.classificacaoImg && (
                   <img
                     src={filme.classificacaoImg}
@@ -72,7 +68,6 @@ function Home() {
                     className={styles.imagemClassificacao}
                   />
                 )}
-                {/* Sinopse completa */}
                 {filme.sinopse && (
                   <p className={styles.sinopse}>{filme.sinopse}</p>
                 )}
@@ -88,5 +83,3 @@ function Home() {
     </div>
   );
 }
-
-export default Home;
