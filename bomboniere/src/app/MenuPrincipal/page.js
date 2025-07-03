@@ -15,7 +15,7 @@ export default function MenuPrincipal() {
     try {
       await auth.signOut();
       localStorage.clear();
-      window.location.href = "/Login";
+      window.location.href = "/Home";
     } catch (error) {
       alert("Erro ao sair: " + error.message);
     }
@@ -40,7 +40,7 @@ export default function MenuPrincipal() {
       await auth.currentUser.delete();
       alert("Conta excluída com sucesso!");
       localStorage.clear();
-      window.location.href = "/Login";
+      window.location.href = "/Home";
     } catch (error) {
       if (error.code === "auth/requires-recent-login") {
         alert("Você precisa fazer login novamente para excluir sua conta.");
