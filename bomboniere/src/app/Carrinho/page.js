@@ -26,13 +26,13 @@ export default function Carrinho() {
 
   useEffect(() => {
     carregarDadosUsuario();
-    carregarLanchoneteCarrinho();
     carregarCartazes();
   }, []);
 
   useEffect(() => {
     if (dadosUsuario) {
       buscarPendencias();
+      carregarLanchoneteCarrinho();
     }
   }, [dadosUsuario]);
 
@@ -42,17 +42,22 @@ export default function Carrinho() {
       if (dadosUsuarioLogado) {
         const dados = JSON.parse(dadosUsuarioLogado);
         setDadosUsuario(dados);
+        console.log("Dados usuário do localStorage:", dados);
       } else {
         const user = auth.currentUser;
         if (user) {
-          setDadosUsuario({
+          const dados = {
             uid: user.uid,
             email: user.email,
             nome: user.email,
             estudante: false,
             deficiente: false,
             funcionario: false,
-          });
+          };
+          setDadosUsuario(dados);
+          console.log("Dados usuário do Firebase Auth:", dados);
+        } else {
+          console.log("Usuário não está logado");
         }
       }
     } catch (error) {
@@ -60,38 +65,77 @@ export default function Carrinho() {
     }
   }
 
-  function carregarLanchoneteCarrinho() {
+  async function carregarLanchoneteCarrinho() {
     try {
-      const dados = localStorage.getItem("cartData");
-      if (dados) {
-        const parsed = JSON.parse(dados);
-        if (parsed.cart) {
-          setLanchoneteCarrinho(parsed.cart);
-        }
+      if (!dadosUsuario?.uid) {
+        console.log("carregarLanchoneteCarrinho: usuário sem uid");
+        setLanchoneteCarrinho([]);
+        return;
       }
-    } catch (error) {
-      console.error("Erro ao carregar carrinho da lanchonete:", error);
-    }
-  }
 
-  async function carregarCartazes() {
-    try {
-      const filmesCol = collection(db, "filmes");
-      const filmesSnapshot = await getDocs(filmesCol);
+      console.log("Carregando pedidos lanchonete do Firestore para usuário:", dadosUsuario.uid);
 
-      const cartazesData = [];
+      const pedidosFirestore = [];
+      const q = query(
+        collection(db, "pedidosLanchonete"),
+        where("pago", "==", false),
+        where("usuarioId", "==", dadosUsuario.uid)
+      );
 
-      filmesSnapshot.forEach((docu) => {
-        const data = docu.data();
-        cartazesData.push({
-          filme: data.nome || data.titulo || "", 
-          cartaz: data.cartaz || "/placeholder.png", 
-        });
+      const snapshot = await getDocs(q);
+      snapshot.forEach((docu) => {
+        console.log("Pedido Firestore:", docu.id, docu.data());
+        const pedidoData = docu.data();
+        
+        // Se o pedido tem array de itens, processa cada item individualmente
+        if (pedidoData.itens && Array.isArray(pedidoData.itens)) {
+          pedidoData.itens.forEach((item, index) => {
+            pedidosFirestore.push({
+              id: `${docu.id}-${index}`, // ID único para cada item
+              pedidoId: docu.id, // ID do pedido original
+              ...item,
+              origem: "firestore",
+              // Dados do pedido para contexto
+              dataPedido: pedidoData.dataCompra,
+              emailUsuario: pedidoData.email,
+              nomeUsuario: pedidoData.nome
+            });
+          });
+        } else {
+          // Se não tem array de itens, trata como item único
+          pedidosFirestore.push({ 
+            id: docu.id, 
+            ...pedidoData, 
+            origem: "firestore" 
+          });
+        }
       });
 
-      setCartazes(cartazesData);
+      const dadosLocalStorageRaw = localStorage.getItem("cartData");
+      console.log("Dados locais (raw):", dadosLocalStorageRaw);
+
+      let pedidosLocal = [];
+      if (dadosLocalStorageRaw) {
+        const dadosLocalStorage = JSON.parse(dadosLocalStorageRaw);
+        if (dadosLocalStorage && Array.isArray(dadosLocalStorage.cart)) {
+          pedidosLocal = dadosLocalStorage.cart.map((item, index) => ({
+            ...item,
+            localIndex: index,
+            origem: "local",
+          }));
+          console.log("Pedidos locais parseados:", pedidosLocal);
+        } else {
+          console.log("Não há array 'cart' no localStorage cartData.");
+        }
+      } else {
+        console.log("Não existe cartData no localStorage.");
+      }
+
+      const carrinhoCompleto = [...pedidosFirestore, ...pedidosLocal];
+      setLanchoneteCarrinho(carrinhoCompleto);
+      console.log("Carrinho completo montado:", carrinhoCompleto);
     } catch (error) {
-      console.error("Erro ao carregar cartazes do Firestore:", error);
+      console.error("Erro ao carregar pedidos da lanchonete:", error);
     }
   }
 
@@ -139,50 +183,24 @@ export default function Carrinho() {
     setLoading(false);
   }
 
-  async function apagarPendencia(id) {
-    if (!confirm("Deseja realmente apagar essa pendência?")) return;
+  async function carregarCartazes() {
     try {
-      await deleteDoc(doc(db, "ingressos", id));
-      alert("Pendência apagada.");
+      const filmesCol = collection(db, "filmes");
+      const filmesSnapshot = await getDocs(filmesCol);
 
-      const ultimaCompra = localStorage.getItem("ultimaCompra");
-      if (ultimaCompra) {
-        try {
-          const compra = JSON.parse(ultimaCompra);
-          if (compra.id === id) {
-            localStorage.removeItem("ultimaCompra");
-          }
-        } catch (error) {
-          console.error("Erro ao atualizar localStorage:", error);
-        }
-      }
+      const cartazesData = [];
 
-      buscarPendencias();
+      filmesSnapshot.forEach((docu) => {
+        const data = docu.data();
+        cartazesData.push({
+          filme: data.nome || data.titulo || "",
+          cartaz: data.cartaz || "/placeholder.png",
+        });
+      });
+
+      setCartazes(cartazesData);
     } catch (error) {
-      console.error("Erro ao apagar pendência:", error);
-      alert("Erro ao apagar pendência.");
-    }
-  }
-
-  function apagarItemLanchonete(idx) {
-    if (!confirm("Deseja realmente excluir este item do carrinho da lanchonete?")) return;
-
-    const novoCarrinho = [...lanchoneteCarrinho];
-    novoCarrinho.splice(idx, 1);
-
-    setLanchoneteCarrinho(novoCarrinho);
-
-    const cartDataRaw = localStorage.getItem("cartData");
-    if (cartDataRaw) {
-      try {
-        const cartData = JSON.parse(cartDataRaw);
-        cartData.cart = novoCarrinho;
-        localStorage.setItem("cartData", JSON.stringify(cartData));
-      } catch {
-        localStorage.setItem("cartData", JSON.stringify({ cart: novoCarrinho }));
-      }
-    } else {
-      localStorage.setItem("cartData", JSON.stringify({ cart: novoCarrinho }));
+      console.error("Erro ao carregar cartazes do Firestore:", error);
     }
   }
 
@@ -215,45 +233,66 @@ export default function Carrinho() {
     return "/placeholder.png";
   }
 
-  function handlePagamentoIndividual(ingressoId) {
-    const ingresso = pendencias.find((p) => p.id === ingressoId);
-    if (ingresso) {
-      localStorage.setItem("ingressoParaPagamento", JSON.stringify(ingresso));
-    }
-    router.push(`/Pagamento?id=${ingressoId}`);
-  }
+  async function apagarPendencia(id) {
+    if (!confirm("Deseja realmente apagar essa pendência?")) return;
+    try {
+      await deleteDoc(doc(db, "ingressos", id));
+      alert("Pendência apagada.");
 
-  function handlePagamentoSelecionados() {
-    if (ingressosSelecionados.size === 0) {
-      alert("Selecione pelo menos um ingresso para pagar.");
-      return;
-    }
+      const ultimaCompra = localStorage.getItem("ultimaCompra");
+      if (ultimaCompra) {
+        try {
+          const compra = JSON.parse(ultimaCompra);
+          if (compra.id === id) {
+            localStorage.removeItem("ultimaCompra");
+          }
+        } catch (error) {
+          console.error("Erro ao atualizar localStorage:", error);
+        }
+      }
 
-    if (ingressosSelecionados.size === 1) {
-      const id = Array.from(ingressosSelecionados)[0];
-      handlePagamentoIndividual(id);
-    } else {
-      const ingressosSelecionadosData = pendencias.filter((p) =>
-        ingressosSelecionados.has(p.id)
-      );
-      localStorage.setItem(
-        "ingressosParaPagamento",
-        JSON.stringify(ingressosSelecionadosData)
-      );
-      const ids = Array.from(ingressosSelecionados).join(",");
-      router.push(`/Pagamento?ids=${ids}`);
+      buscarPendencias();
+    } catch (error) {
+      console.error("Erro ao apagar pendência:", error);
+      alert("Erro ao apagar pendência.");
     }
   }
 
-  function handlePagamentoTodos() {
-    if (pendencias.length === 0) return;
+  async function apagarItemLanchonete(idx) {
+    if (!confirm("Deseja realmente excluir este item da lanchonete?")) return;
 
-    if (pendencias.length === 1) {
-      handlePagamentoIndividual(pendencias[0].id);
-    } else {
-      localStorage.setItem("ingressosParaPagamento", JSON.stringify(pendencias));
-      const ids = pendencias.map((p) => p.id).join(",");
-      router.push(`/Pagamento?ids=${ids}`);
+    const item = lanchoneteCarrinho[idx];
+    const novoCarrinho = [...lanchoneteCarrinho];
+    novoCarrinho.splice(idx, 1);
+    setLanchoneteCarrinho(novoCarrinho);
+
+    if (item.origem === "local") {
+      try {
+        const cartDataRaw = localStorage.getItem("cartData");
+        if (cartDataRaw) {
+          const cartData = JSON.parse(cartDataRaw);
+          cartData.cart.splice(item.localIndex, 1);
+          localStorage.setItem("cartData", JSON.stringify(cartData));
+        }
+      } catch (error) {
+        console.error("Erro ao excluir item local:", error);
+      }
+    } else if (item.origem === "firestore") {
+      try {
+        // Se o item tem pedidoId, significa que é parte de um pedido com múltiplos itens
+        if (item.pedidoId) {
+          // Aqui você pode implementar lógica para remover apenas este item do pedido
+          // Por enquanto, vamos apenas avisar que o item foi removido localmente
+          console.log("Item removido localmente. Para remover permanentemente, implemente lógica específica.");
+          alert("Item removido do carrinho. Para remover permanentemente do pedido, será necessário lógica adicional.");
+        } else if (item.id) {
+          // Se é um pedido individual, remove completamente
+          await deleteDoc(doc(db, "pedidosLanchonete", item.id));
+          console.log("Pedido excluído do Firestore:", item.id);
+        }
+      } catch (error) {
+        console.error("Erro ao excluir item do Firestore:", error);
+      }
     }
   }
 
@@ -293,10 +332,10 @@ export default function Carrinho() {
   }
 
   function calcularSubtotalLanchonete() {
-    return lanchoneteCarrinho.reduce(
-      (acc, item) => acc + (parseFloat(item.price) || 0),
-      0
-    );
+    return lanchoneteCarrinho.reduce((acc, item) => {
+      const preco = parseFloat(item.precoTotal || item.price || item.preco || item.valor || 0);
+      return acc + preco;
+    }, 0);
   }
 
   function calcularTotalCompleto(idsSelecionados = null) {
@@ -434,7 +473,10 @@ export default function Carrinho() {
 
               <div style={{ marginTop: 10 }}>
                 <button
-                  onClick={() => handlePagamentoIndividual(item.id)}
+                  onClick={() => {
+                    localStorage.setItem("ingressoParaPagamento", JSON.stringify(item));
+                    router.push(`/Pagamento?id=${item.id}`);
+                  }}
                   className={styles.btnConfirm}
                 >
                   Pagar Este
@@ -452,19 +494,34 @@ export default function Carrinho() {
         ))}
       </ul>
 
-      {/* Lista do carrinho da lanchonete */}
       {lanchoneteCarrinho.length > 0 && (
         <>
           <h2>Produtos no Carrinho da Lanchonete</h2>
           <ul className={styles.lista}>
             {lanchoneteCarrinho.map((item, idx) => (
-              <li key={idx} className={styles.pendenciaItem}>
+              <li key={item.id || idx} className={styles.pendenciaItem}>
                 <div className={styles.descricao}>
                   <p>
-                    <strong>Produto:</strong> {item.item} <br />
-                    <strong>Tamanho:</strong> {item.size} <br />
-                    <strong>Preço:</strong> R$ {parseFloat(item.price).toFixed(2)}
+                    <strong>Produto:</strong> {item.item || item.nome || item.produto || item.title || "Produto não identificado"} <br />
+                    <strong>Tamanho:</strong> {item.tamanho || item.size || item.categoria || "Não especificado"} <br />
+                    <strong>Quantidade:</strong> {item.quantidade || item.qtd || item.qty || 1} <br />
+                    <strong>Preço Unitário:</strong> R$ {parseFloat(item.precoUnitario || item.preco || item.valor || 0).toFixed(2)} <br />
+                    <strong>Preço Total:</strong> R$ {parseFloat(item.precoTotal || item.price || item.preco || item.valor || 0).toFixed(2)}
+                    {item.dataPedido && (
+                      <>
+                        <br />
+                        <strong>Data do Pedido:</strong> {formatarDataTimestamp(item.dataPedido)}
+                      </>
+                    )}
                   </p>
+
+                  {/* Debug - Área de desenvolvimento para ver todos os campos */}
+                  {process.env.NODE_ENV === "development" && (
+                    <details style={{ marginTop: 10, fontSize: "12px", color: "#666" }}>
+                      <summary>Debug - Dados do item</summary>
+                      <pre>{JSON.stringify(item, null, 2)}</pre>
+                    </details>
+                  )}
 
                   <button
                     className={styles.botaoExcluir}
@@ -480,55 +537,22 @@ export default function Carrinho() {
         </>
       )}
 
-      {pendencias.length > 0 || lanchoneteCarrinho.length > 0 ? (
+      {(pendencias.length > 0 || lanchoneteCarrinho.length > 0) && (
         <div className={styles.resumoCompra}>
-          {ingressosSelecionados.size > 0 ? (
-            <>
-              <h3>
-                Subtotal Ingressos Selecionados: R${" "}
-                {calcularSubtotalIngressos(ingressosSelecionados).toFixed(2)}
-              </h3>
-              <h3>
-                Total Produtos Lanchonete: R$ {calcularSubtotalLanchonete().toFixed(2)}
-              </h3>
-              <h2>
-                <strong>
-                  Total a Pagar (Ingressos + Lanchonete): R${" "}
-                  {calcularTotalCompleto(ingressosSelecionados).toFixed(2)}
-                </strong>
-              </h2>
-              <button
-                onClick={handlePagamentoSelecionados}
-                className={styles.btnPrimary}
-              >
-                PAGAR SELECIONADOS (Ingressos)
-              </button>
-            </>
-          ) : (
-            <>
-              <div className={styles.TextoBox}>
-                <h3>
-                  Subtotal Ingressos (Todos): R$ {calcularSubtotalIngressos().toFixed(2)}
-                </h3>
-                <h3>
-                  Total Produtos Lanchonete: R$ {calcularSubtotalLanchonete().toFixed(2)}
-                </h3>
-                <h2>
-                  <strong>
-                    Total a Pagar (Ingressos + Lanchonete): R${" "}
-                    {calcularTotalCompleto().toFixed(2)}
-                  </strong>
-                </h2>
-              </div>
-
-              <button onClick={handlePagamentoTodos} className={styles.btnPrimary}>
-                Realizar Pagamento
-              </button>
-            </>
-          )}
+          <h3>
+            Subtotal Ingressos (Selecionados): R${" "}
+            {calcularSubtotalIngressos(ingressosSelecionados).toFixed(2)}
+          </h3>
+          <h3>
+            Total Produtos Lanchonete: R$ {calcularSubtotalLanchonete().toFixed(2)}
+          </h3>
+          <h2>
+            <strong>
+              Total a Pagar (Ingressos + Lanchonete): R${" "}
+              {calcularTotalCompleto(ingressosSelecionados).toFixed(2)}
+            </strong>
+          </h2>
         </div>
-      ) : (
-        <p>Seu carrinho está vazio.</p>
       )}
 
       {process.env.NODE_ENV === "development" && (
