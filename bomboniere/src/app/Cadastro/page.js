@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebaseConfig";
+import axios from "axios";
 
 export default function Cadastro() {
   const router = useRouter();
@@ -17,6 +18,19 @@ export default function Cadastro() {
     const dia = String(hoje.getDate()).padStart(2, "0");
     return `${ano}-${mes}-${dia}`;
   }, []);
+
+  const [endereco, setEndereco] = useState(
+    {
+      cep: "",
+      rua: "",
+      bairro: "",
+      cidade: "",
+      estado: ""
+  });
+
+  const [bloquearEndereco, setBloquearEndereco] = useState(false);
+
+  
 
   const [isFuncionario, setIsFuncionario] = useState(false);
 
@@ -48,6 +62,7 @@ export default function Cadastro() {
       await setDoc(doc(db, "usuarios", uid), {
         nome,
         cpf,
+        endereco,
         data_nascimento: nascimento,
         estudante,
         deficiencia,
@@ -72,6 +87,36 @@ export default function Cadastro() {
     }
   }
 
+  async function handleBuscarEndereco(event) {
+    console.log(event);
+    
+    const cep = event.target.value.replace(/\D/g, "");
+    if (cep.length !== 8){
+      setBloquearEndereco(false);
+      return;
+    }
+      
+    
+    try {
+      const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
+      const data = response.data;
+      
+      if (!data.erro) {
+        setEndereco({
+          rua: data.logradouro,
+          bairro: data.bairro,
+          cidade: data.localidade,
+          estado: data.uf
+        });
+        setBloquearEndereco(true);
+      } else {
+        alert("CEP não encontrado.");
+      }
+    } catch (error) {
+      alert("Erro ao buscar o endereço.");
+    }
+  }
+
   return (
     <section style={{ maxWidth: "450px", margin: "auto", padding: "1rem" }}>
       <Link href="/Login">Voltar</Link>
@@ -90,6 +135,32 @@ export default function Cadastro() {
             CPF
             <input type="text" name="cpf" pattern="\d{11}" title="11 números" required />
           </label>
+          <label>
+            CEP
+              <input type="text" name="cep" pattern="\d{8}" required onBlur={handleBuscarEndereco} />
+          </label>
+
+          <label>
+            Rua
+            <input type="text" name="rua" value={endereco.rua} readOnly={bloquearEndereco}
+            onChange={e => setEndereco(prev => ({ ...prev, rua: e.target.value }))}/>
+          </label>
+          <label>
+            Bairro
+            <input type="text" name="bairro" value={endereco.bairro} readOnly={bloquearEndereco}
+            onChange={e => setEndereco(prev => ({ ...prev, bairro: e.target.value }))} />
+          </label>
+          <label>
+            Cidade
+            <input type="text" name="cidade" value={endereco.cidade} readOnly={bloquearEndereco}
+            onChange={e => setEndereco(prev => ({ ...prev, cidade: e.target.value }))} />
+          </label>
+          <label>
+            Estado
+            <input type="text" name="estado" value={endereco.estado} readOnly={bloquearEndereco}
+            onChange={e => setEndereco(prev => ({ ...prev, estado: e.target.value }))} />
+          </label>
+
         </fieldset>
 
         <fieldset>
