@@ -121,10 +121,10 @@ export default function Cadastro() {
 
   return (
     <section style={{ maxWidth: "500px", margin: "auto"}}>
-      <Link className="voltar" href="/MenuPrincipal">Voltar</Link>
+      <Link className="voltar" href="/Home">Voltar</Link>
 
       <h1 className="titulo">Cadastro</h1>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <form className="form" onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <fieldset>
           <legend>Dados Pessoais</legend>
           <label className="labelcadastro">

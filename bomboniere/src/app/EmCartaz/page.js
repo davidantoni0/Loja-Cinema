@@ -178,13 +178,11 @@ export default function EmCartaz() {
 
   return (
     <div className={styles.container}>
+      <Link className="voltar" href="../MenuPrincipal">Menu Principal</Link>
       <header className={styles.header}>
-        <h1 className={styles.titulo}>Filmes em Cartaz</h1>
-        <button className={styles.button}>
-          <Link href="../MenuPrincipal">Menu Principal</Link>
-        </button>
-        <button className={styles.button} style={{ marginLeft: "10px" }}>
-          <Link href="../Carrinho">Meu Carrinho</Link>
+        <h1 className="titulo">Filmes em Cartaz</h1>
+        <button className={styles.carrinho} onClick={() => window.location.href = "/Carrinho"}>
+          Meu Carrinho
         </button>
       </header>
 
