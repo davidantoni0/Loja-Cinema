@@ -298,9 +298,6 @@ export default function Home() {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <h1>Cinema</h1>
-      </header>
 
       <main className={styles.main}>
         {/* Seção de Login - Sempre visível */}

@@ -55,43 +55,52 @@ export default function Login() {
 
   return (
     <div className={styles.container}>
-      <header>
-        <h1>Cine Senai</h1>
-        <Link href="/">Voltar</Link>
-      </header>
-
       <form onSubmit={handleLogin} className={styles.form}>
-        <h2>Login</h2>
+        <h2 className={styles.titulo}>Login</h2>
+        <div className="styles.centro"> 
+          <input
+            className={styles.campo}
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+          <input
+            className={styles.campo}
+            type="password"
+            placeholder="Senha"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+            required
+          />
 
-        <input
-          type="password"
-          placeholder="Senha"
-          value={senha}
-          onChange={(e) => setSenha(e.target.value)}
-          required
-        />
+          <div className={styles.esqueci}>
+            <button 
+              type="button" 
+              onClick={handleEsqueciSenha}
+              className={styles.linkButton}
+            >
+              Esqueci minha senha
+            </button>
+          </div>
 
-        <button type="submit" disabled={carregando}>
-          {carregando ? "Entrando..." : "Entrar"}
-        </button>
+        </div>
+        
+        <div className={styles.botoes}>
+          <button className={styles.entrar} type="submit" disabled={carregando}>
+            {carregando ? "Entrando..." : "Entrar"}
+          </button>
 
-        <button type="button" onClick={handleEsqueciSenha}>
-          Esqueci minha senha
-        </button>
+          <Link href="/Cadastro" className={styles.criar}>
+            Criar nova conta
+          </Link>
+
+        </div>
 
         {erro && <p className={styles.erro}>{erro}</p>}
 
-        <p>
-          Não tem conta? <Link href="/Cadastro">Cadastre-se</Link>
-        </p>
       </form>
     </div>
   );
