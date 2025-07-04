@@ -219,16 +219,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Seção de Debug - Comentada para não afetar layout */}
-        {process.env.NODE_ENV === 'development' && (
-          <details style={{ backgroundColor: '#f0f0f0', padding: '10px', margin: '10px 0' }}>
-            <summary>Debug Info (clique para expandir)</summary>
-            <pre style={{ whiteSpace: 'pre-wrap', maxHeight: '200px', overflow: 'auto', fontSize: '11px' }}>
-              {debugInfo.join('\n')}
-            </pre>
-          </details>
-        )}
-
         <section className={styles.mostruario}>
           <h2>Filmes em Cartaz</h2>
           {loading && <p>Carregando filmes...</p>}

@@ -1,4 +1,3 @@
-// bomboniere/src/app/layout.js
 import './globals.css';
 
 export default function RootLayout({ children }) {
@@ -9,19 +8,21 @@ export default function RootLayout({ children }) {
         <meta charSet="UTF-8" />
         <meta name="description" content="Site clássico e sofisticado" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        {/* favicon, etc */}
       </head>
       <body>
-        <header>
-          <h1>Cine Senai</h1>
+        <header class="topo">
+          <img 
+            class="imagem"
+            src="/Filmes/Logo/CineSenai 2.png"
+            alt="CineSenai"
+            style={{ maxWidth: '200px', height: 'auto' }}
+          />
         </header>
 
-        <main>
-          {children}
-        </main>
+        <main>{children}</main>
 
-        <footer style={{ padding: '1rem', background: '#222', color: 'white', marginTop: '2rem' }}>
-          © 2025 Cine Senai - Todos os direitos reservados
+        <footer class="rodape">
+          © 2025 CineSENAI - Todos os direitos reservados
         </footer>
       </body>
     </html>

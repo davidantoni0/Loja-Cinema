@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Poiret+One&display=swap');
+
 :root 
 {
   --corAzul:#294D61;
@@ -6,6 +8,10 @@
   --corCinza:#F5F5F5;
   --corPrata:#B0B0B0;
   --corVermelho:#7B1E3B;
+
+  --fonteTitulo: "Libre Baskerville";
+  --fonteTexto: "Merriweather";
+  --fonteDestaque: "Poiret One";
 }
 
 body
@@ -13,4 +19,33 @@ body
   background-color: var(--corPreto);
   padding: 0;
   margin: 0;
+}
+
+.topo
+{
+  display: flex;
+  justify-content: center;
+  background-color: var(--corPreto);
+}
+
+.imagem
+{
+  width: 200px;
+}
+
+main
+{
+  font-family: var(--fonteTexto);
+}
+
+footer
+{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--corVermelho);
+  font-family: var(--fonteDestaque);
+  font-weight: 900;
+  letter-spacing: 2px;
+  height: 2em;
 }
