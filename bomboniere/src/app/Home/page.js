@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import Login from "@/Components/Login/page";
 import styles from './page.module.css';
 import {
@@ -13,10 +13,16 @@ import {
 import { db } from '../../firebase/firebaseConfig';
 
 export default function Home() {
-  const [menuState, setMenuState] = useState("mainMenu");
   const [filmesEmCartaz, setFilmesEmCartaz] = useState([]);
   const [loading, setLoading] = useState(true);
   const [debugInfo, setDebugInfo] = useState([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [filmesExtendidos, setFilmesExtendidos] = useState([]);
+  const carrosselRef = useRef(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Configurações do carrossel
+  const itemsPerView = 4; // Número de filmes visíveis por vez (sempre 4 no desktop)
 
   // Função para converter URLs do Google Drive para formato público
   const convertGoogleDriveUrl = useCallback((url) => {
@@ -31,6 +37,24 @@ export default function Home() {
     }
     return url;
   }, []);
+
+  // Função para criar array infinito
+  const createInfiniteArray = useCallback((filmes) => {
+    if (filmes.length === 0) return [];
+    
+    // Se temos menos filmes que o número de itens visíveis, duplicamos até ter o suficiente
+    let filmesParaUsar = [...filmes];
+    while (filmesParaUsar.length < itemsPerView * 2) {
+      filmesParaUsar = [...filmesParaUsar, ...filmes];
+    }
+    
+    // Criamos um array com filmes extras no início e no fim para rolagem infinita
+    const filmesExtras = itemsPerView;
+    const filmesInicio = filmesParaUsar.slice(-filmesExtras);
+    const filmesFim = filmesParaUsar.slice(0, filmesExtras);
+    
+    return [...filmesInicio, ...filmesParaUsar, ...filmesFim];
+  }, [itemsPerView]);
 
   // Memoizar a função fetchFilmes para evitar execuções desnecessárias
   const fetchFilmes = useCallback(async () => {
@@ -124,6 +148,14 @@ export default function Home() {
       }
 
       setFilmesEmCartaz(filmesList);
+      
+      // Criar array infinito para o carrossel
+      const filmesInfinitos = createInfiniteArray(filmesList);
+      setFilmesExtendidos(filmesInfinitos);
+      
+      // Definir posição inicial (começar no meio do array)
+      setCurrentIndex(itemsPerView);
+      
       setDebugInfo(debugMessages);
       
     } catch (error) {
@@ -133,7 +165,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  }, [convertGoogleDriveUrl]);
+  }, [convertGoogleDriveUrl, createInfiniteArray, itemsPerView]);
 
   // useEffect que executa apenas uma vez
   useEffect(() => {
@@ -204,70 +236,173 @@ export default function Home() {
     }
   }, []);
 
+  // Função para resetar posição sem animação
+  const resetPosition = useCallback(() => {
+    if (!carrosselRef.current || filmesEmCartaz.length === 0) return;
+    
+    setIsTransitioning(false);
+    
+    // Remover transição temporariamente
+    carrosselRef.current.style.transition = 'none';
+    
+    // Resetar para posição equivalente no meio do array
+    const novoIndex = currentIndex % filmesEmCartaz.length + itemsPerView;
+    setCurrentIndex(novoIndex);
+    
+    // Restaurar transição após um frame
+    requestAnimationFrame(() => {
+      if (carrosselRef.current) {
+        carrosselRef.current.style.transition = 'transform 0.3s ease';
+      }
+    });
+  }, [currentIndex, filmesEmCartaz.length, itemsPerView]);
+
+  // Funções de navegação do carrossel
+  const handlePrevious = useCallback(() => {
+    if (isTransitioning || filmesEmCartaz.length === 0) return;
+    
+    setIsTransitioning(true);
+    setCurrentIndex(prev => prev - 1);
+    
+    // Após a transição, verificar se precisa resetar
+    setTimeout(() => {
+      setIsTransitioning(false);
+      if (currentIndex - 1 < 0) {
+        resetPosition();
+      }
+    }, 300);
+  }, [isTransitioning, filmesEmCartaz.length, currentIndex, resetPosition]);
+
+  const handleNext = useCallback(() => {
+    if (isTransitioning || filmesEmCartaz.length === 0) return;
+    
+    setIsTransitioning(true);
+    setCurrentIndex(prev => prev + 1);
+    
+    // Após a transição, verificar se precisa resetar
+    setTimeout(() => {
+      setIsTransitioning(false);
+      if (currentIndex + 1 >= filmesExtendidos.length - itemsPerView) {
+        resetPosition();
+      }
+    }, 300);
+  }, [isTransitioning, filmesEmCartaz.length, currentIndex, filmesExtendidos.length, itemsPerView, resetPosition]);
+
+  // Efeito para atualizar a posição do carrossel
+  useEffect(() => {
+    if (carrosselRef.current && filmesExtendidos.length > 0) {
+      const translateX = currentIndex * (100 / itemsPerView);
+      carrosselRef.current.style.transform = `translateX(-${translateX}%)`;
+    }
+  }, [currentIndex, itemsPerView, filmesExtendidos.length]);
+
   return (
-    <div>
+    <div className={styles.container}>
       <header className={styles.header}>
-        <button className={styles.loginButton} onClick={() => setMenuState("login")}>
-          Login
-        </button>
+        <h1>Cinema</h1>
       </header>
 
-      <main>
-        {menuState === "login" && (
+      <main className={styles.main}>
+        {/* Seção de Login - Sempre visível */}
+        <section className={styles.loginSection}>
           <div className={styles.loginContainer}>
             <Login />
           </div>
-        )}
+        </section>
 
-        <section className={styles.mostruario}>
-          <h2>Filmes em Cartaz</h2>
-          {loading && <p>Carregando filmes...</p>}
-          {!loading && filmesEmCartaz.length === 0 && <p>Nenhum filme em cartaz no momento.</p>}
+        {/* Seção de Filmes em Cartaz */}
+        <section className={styles.filmesSection}>
+          <h2 className={styles.sectionTitle}>Filmes em Cartaz</h2>
+          
+          {loading && <p className={styles.loadingMessage}>Carregando filmes...</p>}
+          {!loading && filmesEmCartaz.length === 0 && (
+            <p className={styles.noFilmsMessage}>Nenhum filme em cartaz no momento.</p>
+          )}
 
-          <ul className={styles.listaFilmes}>
-            {filmesEmCartaz.map((filme) => (
-              <li key={filme.id} className={styles.itemFilme}>
-                {filme.cartaz && (
-                  <img 
-                    src={filme.cartaz} 
-                    alt={`Cartaz do filme ${filme.nome}`} 
-                    className={styles.cartaz}
-                    onError={(e) => handleCartazError(e, filme)}
-                    onLoad={() => {
-                      console.log(`✓ Cartaz carregado para ${filme.nome}`);
-                    }}
-                  />
-                )}
-                <h3>{filme.nome}</h3>
-                <p><strong>Horário:</strong> {filme.horarioExibicao}</p>
-                <p><strong>Classificação:</strong> {filme.faixaEtaria === 0 ? 'Livre' : `${filme.faixaEtaria} anos`}</p>
-                
-                {filme.classificacaoImg && (
-                  <div className={styles.classificacaoContainer}>
-                    <img
-                      src={filme.classificacaoImg}
-                      alt={`Classificação ${filme.faixaEtaria === 0 ? 'Livre' : `${filme.faixaEtaria} anos`}`}
-                      className={styles.imagemClassificacao}
-                      style={{ 
-                        maxWidth: '80px', 
-                        height: 'auto',
-                        display: 'block',
-                        margin: '5px 0'
-                      }}
-                      onLoad={() => {
-                        console.log(`✓ Imagem de classificação carregada para ${filme.nome}`);
-                      }}
-                      onError={(e) => handleImageError(e, filme)}
-                    />
-                  </div>
-                )}
-                
-                {filme.sinopse && (
-                  <p className={styles.sinopse}>{filme.sinopse}</p>
-                )}
-              </li>
-            ))}
-          </ul>
+          {!loading && filmesEmCartaz.length > 0 && (
+            <div className={styles.carrosselContainer}>
+              {/* Botão Anterior */}
+              <button 
+                className={`${styles.carrosselButton} ${styles.prevButton}`}
+                onClick={handlePrevious}
+                disabled={isTransitioning}
+                aria-label="Filme anterior"
+              >
+                &#8249;
+              </button>
+
+              {/* Container do Carrossel */}
+              <div className={styles.carrosselViewport}>
+                <div 
+                  ref={carrosselRef}
+                  className={styles.carrosselTrack}
+                  style={{ 
+                    width: `${(filmesExtendidos.length / itemsPerView) * 100}%`,
+                    transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)`,
+                    transition: isTransitioning ? 'transform 0.3s ease' : 'none'
+                  }}
+                >
+                  {filmesExtendidos.map((filme, index) => (
+                    <div key={`${filme.id}-${index}`} className={styles.carrosselItem}>
+                      <div className={styles.filmeCard}>
+                        {filme.cartaz && (
+                          <div className={styles.cartazContainer}>
+                            <img 
+                              src={filme.cartaz} 
+                              alt={`Cartaz do filme ${filme.nome}`} 
+                              className={styles.cartaz}
+                              onError={(e) => handleCartazError(e, filme)}
+                              onLoad={() => {
+                                console.log(`✓ Cartaz carregado para ${filme.nome}`);
+                              }}
+                            />
+                          </div>
+                        )}
+                        
+                        <div className={styles.filmeInfo}>
+                          <h3 className={styles.filmeNome}>{filme.nome}</h3>
+                          <p className={styles.filmeHorario}>
+                            <strong>Horário:</strong> {filme.horarioExibicao}
+                          </p>
+                          <p className={styles.filmeClassificacao}>
+                            <strong>Classificação:</strong> {filme.faixaEtaria === 0 ? 'Livre' : `${filme.faixaEtaria} anos`}
+                          </p>
+                          
+                          {filme.classificacaoImg && (
+                            <div className={styles.classificacaoContainer}>
+                              <img
+                                src={filme.classificacaoImg}
+                                alt={`Classificação ${filme.faixaEtaria === 0 ? 'Livre' : `${filme.faixaEtaria} anos`}`}
+                                className={styles.imagemClassificacao}
+                                onLoad={() => {
+                                  console.log(`✓ Imagem de classificação carregada para ${filme.nome}`);
+                                }}
+                                onError={(e) => handleImageError(e, filme)}
+                              />
+                            </div>
+                          )}
+                          
+                          {filme.sinopse && (
+                            <p className={styles.sinopse}>{filme.sinopse}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Botão Próximo */}
+              <button 
+                className={`${styles.carrosselButton} ${styles.nextButton}`}
+                onClick={handleNext}
+                disabled={isTransitioning}
+                aria-label="Próximo filme"
+              >
+                &#8250;
+              </button>
+            </div>
+          )}
         </section>
       </main>
     </div>
