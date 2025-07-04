@@ -120,46 +120,47 @@ export default function Cadastro() {
   }
 
   return (
-    <section style={{ maxWidth: "450px", margin: "auto", padding: "1rem" }}>
-      <Link href="/MenuPrincipal">Voltar</Link>
+    <section style={{ maxWidth: "500px", margin: "auto"}}>
+      <Link className="voltar" href="/MenuPrincipal">Voltar</Link>
+
+      <h1 className="titulo">Cadastro</h1>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
         <fieldset>
           <legend>Dados Pessoais</legend>
-          <label>
-            Nome completo
-            <input type="text" name="nome" required />
+          <label className="labelcadastro">
+            <div>Nome completo</div>
+            <input className="campo" type="text" name="nome" required />
           </label>
-          <label>
-            Data de nascimento
-            <input type="date" name="nascimento" max={dataAtual} required />
+          <label className="labelcadastro">
+            <div>Data de nascimento</div>
+            <input className="campo" type="date" name="nascimento" max={dataAtual} required />
           </label>
-          <label>
-            CPF
-            <input type="text" name="cpf" pattern="\d{11}" title="11 números" required />
+          <label className="labelcadastro">
+            <div>C.P.F.</div>
+            <input className="campo" type="text" name="cpf" pattern="\d{11}" title="11 números" required />
           </label>
-          <label>
-            CEP
-              <input type="text" name="cep" pattern="\d{8}" required onBlur={handleBuscarEndereco} />
+          <label className="labelcadastro">
+            <div>C.E.P.</div>
+              <input className="campo" type="text" name="cep" pattern="\d{8}" required onBlur={handleBuscarEndereco} />
           </label>
-
-          <label>
-            Rua
-            <input type="text" name="rua" value={endereco.rua} readOnly={bloquearEndereco}
+          <label className="labelcadastro">
+            <div>Logradouro</div>
+            <input className="campo" type="text" name="rua" value={endereco.rua} readOnly={bloquearEndereco}
             onChange={e => setEndereco(prev => ({ ...prev, rua: e.target.value }))}/>
           </label>
-          <label>
-            Bairro
-            <input type="text" name="bairro" value={endereco.bairro} readOnly={bloquearEndereco}
+          <label className="labelcadastro">
+            <div>Bairro</div>
+            <input className="campo" type="text" name="bairro" value={endereco.bairro} readOnly={bloquearEndereco}
             onChange={e => setEndereco(prev => ({ ...prev, bairro: e.target.value }))} />
           </label>
-          <label>
-            Cidade
-            <input type="text" name="cidade" value={endereco.cidade} readOnly={bloquearEndereco}
+          <label className="labelcadastro">
+            <div>Cidade</div>
+            <input className="campo" type="text" name="cidade" value={endereco.cidade} readOnly={bloquearEndereco}
             onChange={e => setEndereco(prev => ({ ...prev, cidade: e.target.value }))} />
           </label>
-          <label>
-            Estado
-            <input type="text" name="estado" value={endereco.estado} readOnly={bloquearEndereco}
+          <label className="labelcadastro">
+            <div>Estado</div>
+            <input className="campo" type="text" name="estado" value={endereco.estado} readOnly={bloquearEndereco}
             onChange={e => setEndereco(prev => ({ ...prev, estado: e.target.value }))} />
           </label>
 
@@ -191,7 +192,7 @@ export default function Cadastro() {
         <fieldset>
           <legend>Funcionário</legend>
           <p>É novo funcionário?</p>
-          <label>
+          <label >
             <input
               type="radio"
               name="funcionario"
@@ -212,9 +213,10 @@ export default function Cadastro() {
             Não
           </label>
 
-          <label>
+          <label className="labelcadastro">
             Senha do administrador
-            <input
+            <input 
+              className="campo"
               type="password"
               name="senhaAdmin"
               disabled={!isFuncionario}
@@ -225,21 +227,21 @@ export default function Cadastro() {
 
         <fieldset>
           <legend>Contato</legend>
-          <label>
+          <label className="labelcadastro">
             E-mail
-            <input type="email" name="email" required />
+            <input className="campo" type="email" name="email" required />
           </label>
-          <label>
+          <label className="labelcadastro">
             Senha
-            <input type="password" name="senha" required />
+            <input className="campo" type="password" name="senha" required />
           </label>
         </fieldset>
 
         <div style={{ display: "flex", gap: "1rem" }}>
-          <button type="submit" style={{ flex: 1 }}>
+          <button className="cadastrar" type="submit" style={{ flex: 1 }}>
             Cadastrar
           </button>
-          <button type="reset" style={{ flex: 1 }}>
+          <button className="limpar" type="reset" style={{ flex: 1 }}>
             Limpar
           </button>
         </div>

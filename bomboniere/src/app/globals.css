@@ -56,3 +56,98 @@ footer
   font-family: var(--fonteDestaque);
   color: var(--corPrata);
 }
+
+.titulo
+{
+  font-size: 2.2rem;
+  color: #C6A664;
+  text-align: center;
+  margin-bottom: 2rem;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  font-family: "Poiret One";
+  letter-spacing: 5px;
+  width: 100%;
+}
+
+.voltar
+{
+  text-align: left;
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+  text-transform: none;
+  color: var(--corPrata);
+  font-family: var(--fonteDestaque);
+  font-size: 1.2em;
+  letter-spacing: 2px;
+  font-weight: 900;
+  margin-top: 2em;
+}
+
+.voltar:hover
+{
+  transition: color .2s ease-in-out;
+  color:#7B1E3B;
+}
+
+fieldset
+{
+  background-color:#363636 ;
+  border:none;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color:var(--corPrata)
+}
+
+legend
+{
+  font-family: var(--fonteDestaque);
+  font-size: 1.2em;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: var(--corOuro);
+}
+
+.labelcadastro
+{
+  display: flex;
+  justify-content: space-between;
+  color: var(--corPrata);
+  align-items: center;
+}
+
+.campo
+{
+    width:250px;
+    height: 30px;
+    border-radius: 5px;
+    border: #294D61 solid 3px;
+    font-family: "Merriweather";
+    align-self: right;
+}
+
+.cadastrar, .limpar
+{
+  height: 45px;
+  margin-bottom: 1.2em;
+  font-family: var(--fonteDestaque);
+  font-size: 1.2em;
+  font-weight: 900;
+  letter-spacing: 2px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: var(--corCinza);
+}
+
+.cadastrar
+{
+  background-color: green;
+}
+
+.limpar
+{
+  background-color: red;
+}

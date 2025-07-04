@@ -10,9 +10,9 @@ export default function RootLayout({ children }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
       <body>
-        <header class="topo">
+        <header className="topo">
           <img 
-            class="imagem"
+            className="imagem"
             src="/Filmes/Logo/CineSenai 2.png"
             alt="CineSenai"
             style={{ maxWidth: '200px', height: 'auto' }}
@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
         <main>{children}
         </main>
         
-        <footer class="rodape">
+        <footer className="rodape">
           <div>© 2025 CineSENAI - Todos os direitos reservados</div>
         </footer>
       </body>
