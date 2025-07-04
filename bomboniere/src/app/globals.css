@@ -8,6 +8,7 @@
   --corCinza:#F5F5F5;
   --corPrata:#B0B0B0;
   --corVermelho:#7B1E3B;
+  --corPretoNetflix:#141414;
 
   --fonteTitulo: "Libre Baskerville";
   --fonteTexto: "Merriweather";
@@ -16,7 +17,7 @@
 
 body
 {
-  background-color: var(--corPreto);
+  background-color: var(--corPretoNetflix);
   padding: 0;
   margin: 0;
 }
@@ -48,4 +49,10 @@ footer
   font-weight: 900;
   letter-spacing: 2px;
   height: 2em;
+}
+
+.endereco
+{
+  font-family: var(--fonteDestaque);
+  color: var(--corPrata);
 }

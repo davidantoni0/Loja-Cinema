@@ -21,8 +21,8 @@ export default function Home() {
   const carrosselRef = useRef(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Configurações do carrossel
-  const itemsPerView = 4; // Número de filmes visíveis por vez (sempre 4 no desktop)
+  // Configurações do carrossel - alterado para 3 filmes
+  const itemsPerView = 3; // Número de filmes visíveis por vez (3 filmes)
 
   // Função para converter URLs do Google Drive para formato público
   const convertGoogleDriveUrl = useCallback((url) => {
@@ -362,7 +362,7 @@ export default function Home() {
                             <strong>Horário:</strong> {filme.horarioExibicao}
                           </p>
                           <p className={styles.filmeClassificacao}>
-                            <strong>Classificação:</strong> {filme.faixaEtaria === 0 ? 'Livre' : `${filme.faixaEtaria} anos`}
+                            <strong>Classificação:</strong> 
                           </p>
                           
                           {filme.classificacaoImg && (

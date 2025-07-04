@@ -19,10 +19,11 @@ export default function RootLayout({ children }) {
           />
         </header>
 
-        <main>{children}</main>
-
+        <main>{children}
+        </main>
+        
         <footer class="rodape">
-          © 2025 CineSENAI - Todos os direitos reservados
+          <div>© 2025 CineSENAI - Todos os direitos reservados</div>
         </footer>
       </body>
     </html>
