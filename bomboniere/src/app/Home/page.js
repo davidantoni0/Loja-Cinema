@@ -309,7 +309,7 @@ export default function Home() {
 
         {/* Seção de Filmes em Cartaz */}
         <section className={styles.filmesSection}>
-          <h2 className="style.titulo">Filmes em Cartaz</h2>
+          <h2 className="titulo">Filmes em Cartaz</h2>
           
           {loading && <p className={styles.loadingMessage}>Carregando filmes...</p>}
           {!loading && filmesEmCartaz.length === 0 && (
@@ -359,7 +359,7 @@ export default function Home() {
                         <div className={styles.filmeInfo}>
                           <h3 className={styles.filmeNome}>{filme.nome}</h3>
                           <p className={styles.filmeHorario}>
-                            <strong>Horário:</strong> {filme.horarioExibicao}
+                            <strong>Horário:&nbsp;</strong> {filme.horarioExibicao}
                           </p>
                           <p className={styles.filmeClassificacao}>
                             <strong>Classificação:</strong> 

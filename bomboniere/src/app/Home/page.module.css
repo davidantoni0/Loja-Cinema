@@ -1,458 +1,593 @@
-/* page.module.css */
+/* =================================================================
+   CINEMA WEBSITE - CARROSSEL DE FILMES
+   Arquivo: page.module.css
+   Descrição: Estilos para página principal com carrossel de filmes
+================================================================= */
+
+/* =================================================================
+   ESTRUTURA PRINCIPAL
+================================================================= */
+
+/* Container principal da página */
 .container {
-  min-height: 100vh;
-  color: #F5F5F5;
-  font-family: 'Arial', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  min-height: 100vh;                    /* Altura mínima da viewport */
+  color: #F5F5F5;                       /* Cor do texto principal (branco acinzentado) */
+  font-family: 'Arial', sans-serif;     /* Fonte padrão */
+  display: flex;                        /* Layout flexível */
+  flex-direction: column;               /* Direção vertical */
+  align-items: center;                  /* Centralizar horizontalmente */
 }
 
+/* Cabeçalho da página */
 .header {
-  background: #1C1C1C;
-  padding: 1.5rem 0;
-  text-align: center;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  background: #1C1C1C;                  /* Fundo escuro */
+  padding: 1.5rem 0;                    /* Espaçamento interno vertical */
+  text-align: center;                   /* Centralizar texto */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);  /* Sombra sutil */
+  width: 100%;                          /* Largura total */
+  display: flex;                        /* Layout flexível */
+  justify-content: center;              /* Centralizar horizontalmente */
+  align-items: center;                  /* Centralizar verticalmente */
 }
 
+/* Título principal do cabeçalho */
 .header h1 {
-  margin: 0;
-  font-size: 2.5rem;
-  color: #C6A664;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  letter-spacing: 2px;
-  text-align: center;
+  margin: 0;                            /* Remover margens padrão */
+  font-size: 2.5rem;                    /* Tamanho da fonte */
+  color: #C6A664;                       /* Cor dourada */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);  /* Sombra no texto */
+  letter-spacing: 2px;                  /* Espaçamento entre letras */
+  text-align: center;                   /* Centralizar texto */
 }
 
+/* Conteúdo principal da página */
 .main {
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 2rem;                        /* Espaçamento interno */
+  max-width: 1400px;                    /* Largura máxima */
+  margin: 0 auto;                       /* Centralizar horizontalmente */
+  width: 100%;                          /* Largura total */
+  display: flex;                        /* Layout flexível */
+  flex-direction: column;               /* Direção vertical */
+  align-items: center;                  /* Centralizar horizontalmente */
 }
 
-/* Login Section */
+/* =================================================================
+   SEÇÃO DE LOGIN
+================================================================= */
+
+/* Container da seção de login */
 .loginSection {
-  margin-bottom: 3rem;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin-bottom: 3rem;                  /* Espaçamento inferior */
+  width: 100%;                          /* Largura total */
+  display: flex;                        /* Layout flexível */
+  justify-content: center;              /* Centralizar horizontalmente */
+  align-items: center;                  /* Centralizar verticalmente */
 }
 
+/* Estilo do container de login */
 .loginContainer {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  padding: 1rem;
-  border: 1px solid rgba(198, 166, 100, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+  background: rgba(255, 255, 255, 0.1); /* Fundo semi-transparente */
+  backdrop-filter: blur(10px);          /* Efeito de desfoque */
+  border-radius: 15px;                  /* Bordas arredondadas */
+  padding: 1rem;                        /* Espaçamento interno */
+  border: 1px solid rgba(198, 166, 100, 0.3);  /* Borda dourada sutil */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);   /* Sombra difusa */
+  display: flex;                        /* Layout flexível */
+  flex-direction: column;               /* Direção vertical */
+  align-items: center;                  /* Centralizar horizontalmente */
+  justify-content: center;              /* Centralizar verticalmente */
+  text-align: center;                   /* Centralizar texto */
 }
 
-/* Filmes Section */
+/* =================================================================
+   SEÇÃO DE FILMES
+================================================================= */
+
+/* Container da seção de filmes */
 .filmesSection {
-  margin-top: 3rem;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin-top: 3rem;                     /* Espaçamento superior */
+  width: 100%;                          /* Largura total */
+  display: flex;                        /* Layout flexível */
+  flex-direction: column;               /* Direção vertical */
+  align-items: center;                  /* Centralizar horizontalmente */
 }
 
+/* Título da seção */
 .sectionTitle {
-  font-size: 2.2rem;
-  color: #C6A664;
-  text-align: center;
-  margin-bottom: 2rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  font-family: "Poiret One";
-  letter-spacing: 5px;
-  width: 100%;
+  font-size: 2.2rem;                    /* Tamanho da fonte */
+  color: #C6A664;                       /* Cor dourada */
+  text-align: center;                   /* Centralizar texto */
+  margin-bottom: 2rem;                  /* Espaçamento inferior */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);  /* Sombra no texto */
+  font-family: "Poiret One";            /* Fonte específica */
+  letter-spacing: 5px;                  /* Espaçamento entre letras */
+  width: 100%;                          /* Largura total */
 }
 
+/* Mensagens de estado (carregando/sem filmes) */
 .loadingMessage, .noFilmsMessage {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #B0B0B0;
-  margin: 2rem 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  text-align: center;                   /* Centralizar texto */
+  font-size: 1.2rem;                    /* Tamanho da fonte */
+  color: #B0B0B0;                       /* Cor cinza clara */
+  margin: 2rem 0;                       /* Espaçamento vertical */
+  width: 100%;                          /* Largura total */
+  display: flex;                        /* Layout flexível */
+  justify-content: center;              /* Centralizar horizontalmente */
+  align-items: center;                  /* Centralizar verticalmente */
 }
 
-/* Carrossel - Centralizado */
+/* =================================================================
+   CARROSSEL DE FILMES
+================================================================= */
+
+/* Container principal do carrossel */
 .carrosselContainer {
-  position: relative;
-  max-width: 90%;
-  margin: 0 auto;
-  padding: 0 60px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  position: relative;                   /* Posicionamento para botões absolutos */
+  max-width: 90%;                       /* Largura máxima */
+  margin: 0 auto;                       /* Centralizar horizontalmente */
+  padding: 0 60px;                      /* Espaçamento para os botões */
+  width: 100%;                          /* Largura total */
+  display: flex;                        /* Layout flexível */
+  flex-direction: column;               /* Direção vertical */
+  align-items: center;                  /* Centralizar horizontalmente */
+  justify-content: center;              /* Centralizar verticalmente */
 }
 
+/* Área visível do carrossel */
 .carrosselViewport {
-  overflow: hidden;
-  border-radius: 15px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  display: flex;
-  justify-content: center;
+  overflow: hidden;                     /* Ocultar conteúdo que transborda */
+  border-radius: 15px;                  /* Bordas arredondadas */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);  /* Sombra pronunciada */
+  position: relative;                   /* Posicionamento relativo */
+  z-index: 1;                          /* Camada de exibição */
+  width: 100%;                          /* Largura total */
+  display: flex;                        /* Layout flexível */
+  justify-content: center;              /* Centralizar horizontalmente */
 }
 
+/* Trilha do carrossel (container dos itens) */
 .carrosselTrack {
-  display: flex;
-  transition: transform 0.3s ease;
-  align-items: center;
+  display: flex;                        /* Layout flexível horizontal */
+  transition: transform 0.3s ease;     /* Transição suave para movimento */
+  align-items: stretch;                 /* Altura uniforme dos itens */
+  will-change: transform;               /* Otimização para animações */
 }
 
+/* Item individual do carrossel */
 .carrosselItem {
-  flex: 0 0 33.333%; /* 3 filmes = 33.333% cada */
-  padding: 0 15px;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
+  flex: 0 0 33.333%;                    /* 3 filmes visíveis = 33.333% cada */
+  padding: 0 15px;                      /* Espaçamento entre itens */
+  box-sizing: border-box;               /* Incluir padding na largura total */
+  display: flex;                        /* Layout flexível */
+  justify-content: center;              /* Centralizar horizontalmente */
+  align-items: stretch;                 /* Altura uniforme */
+  height: auto;                         /* Altura automática */
 }
 
+/* =================================================================
+   CARTÃO DE FILME
+================================================================= */
+
+/* Container principal do cartão de filme */
 .filmeCard {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  overflow: hidden;
-  border: 1px solid rgba(198, 166, 100, 0.3);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s ease;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  align-items: center;
-  text-align: center;
-  width: 100%;
-  max-width: 350px;
-  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.1); /* Fundo semi-transparente */
+  backdrop-filter: blur(10px);          /* Efeito de desfoque */
+  border-radius: 15px;                  /* Bordas arredondadas */
+  overflow: hidden;                     /* Ocultar conteúdo que transborda */
+  border: 1px solid rgba(198, 166, 100, 0.3);  /* Borda dourada sutil */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);   /* Sombra difusa */
+  transition: all 0.3s ease;           /* Transição suave para hover */
+  height: 100%;                         /* Altura total do container */
+  display: flex;                        /* Layout flexível */
+  flex-direction: column;               /* Direção vertical */
+  position: relative;                   /* Posicionamento para efeitos */
+  align-items: center;                  /* Centralizar horizontalmente */
+  text-align: center;                   /* Centralizar texto */
+  width: 100%;                          /* Largura total */
+  max-width: 600px;                     /* Largura máxima */
+  margin: 0 auto;                       /* Centralizar horizontalmente */
+  min-height: 650px;                    /* Altura mínima para consistência */
+  animation: fadeIn 0.5s ease forwards; /* Animação de entrada */
+  padding: 1em;
 }
 
+/* Efeito hover do cartão */
 .filmeCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 15px 40px rgba(198, 166, 100, 0.4);
-  border-color: #C6A664;
+  transform: translateY(-5px);          /* Elevar o cartão */
+  box-shadow: 0 15px 40px rgba(198, 166, 100, 0.4);  /* Sombra dourada */
+  border-color: #C6A664;                /* Borda dourada mais intensa */
 }
 
+/* Efeito de brilho no hover */
+.filmeCard::before {
+  content: '';                          /* Pseudo-elemento vazio */
+  position: absolute;                   /* Posicionamento absoluto */
+  top: 0;                              /* Topo */
+  left: 0;                             /* Esquerda */
+  right: 0;                            /* Direita */
+  bottom: 0;                           /* Base */
+  background: linear-gradient(45deg, transparent, rgba(198, 166, 100, 0.1), transparent);
+  opacity: 0;                          /* Invisível por padrão */
+  transition: opacity 0.3s ease;       /* Transição suave */
+  pointer-events: none;                /* Não interferir com cliques */
+  z-index: 0;                          /* Camada de fundo */
+}
+
+/* Ativar efeito de brilho no hover */
+.filmeCard:hover::before {
+  opacity: 1;                          /* Tornar visível */
+}
+
+/* =================================================================
+   CARTAZ DO FILME
+================================================================= */
+
+/* Container do cartaz */
 .cartazContainer {
-  position: relative;
-  width: 100%;
-  height: 400px;
-  overflow: hidden;
-  background: #1C1C1C;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;                   /* Posicionamento relativo */
+  width: 100%;                          /* Largura total */
+  height: 400px;                        /* Altura fixa (reduzida para mais espaço ao conteúdo) */
+  overflow: hidden;                     /* Ocultar conteúdo que transborda */
+  background: #1C1C1C;                  /* Fundo escuro */
+  flex-shrink: 0;                       /* Não encolher */
+  display: flex;                        /* Layout flexível */
+  align-items: center;                  /* Centralizar verticalmente */
+  justify-content: center;              /* Centralizar horizontalmente */
 }
 
+/* Imagem do cartaz */
 .cartaz {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  object-position: center;
-  transition: transform 0.3s ease;
-  display: block;
-  position: relative;
-  z-index: 1;
+  max-width: 100%;                      /* Largura máxima */
+  max-height: 100%;                     /* Altura máxima */
+  width: auto;                          /* Largura automática */
+  height: auto;                         /* Altura automática */
+  object-fit: contain;                  /* Manter proporções */
+  object-position: center;              /* Centralizar imagem */
+  transition: transform 0.3s ease;     /* Transição suave para zoom */
+  display: block;                       /* Elemento em bloco */
+  position: relative;                   /* Posicionamento relativo */
+  z-index: 1;                          /* Camada de exibição */
 }
 
+/* Efeito zoom no cartaz durante hover */
 .filmeCard:hover .cartaz {
-  transform: scale(1.05);
+  transform: scale(1.05);               /* Zoom de 5% */
 }
 
+/* =================================================================
+   INFORMAÇÕES DO FILME
+================================================================= */
+
+/* Container das informações do filme */
 .filmeInfo {
-  padding: 1.5rem;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  background: rgba(28, 28, 28, 0.9);
-  position: relative;
-  z-index: 2;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  width: 100%;
+  padding: 1.5rem;                      /* Espaçamento interno */
+  flex-grow: 1;                         /* Expandir para ocupar espaço restante */
+  display: flex;                        /* Layout flexível */
+  flex-direction: column;               /* Direção vertical */
+  background: rgba(28, 28, 28, 0.9);    /* Fundo escuro semi-transparente */
+  position: relative;                   /* Posicionamento relativo */
+  z-index: 2;                          /* Camada superior */
+  align-items: center;                  /* Centralizar horizontalmente */
+  justify-content: space-between;       /* Distribuir espaço uniformemente */
+  text-align: center;                   /* Centralizar texto */
+  width: 100%;                          /* Largura total */
+  min-height: 300px;                    /* Altura mínima para consistência */
 }
 
+/* Espaçamento harmonioso entre elementos */
+.filmeInfo > * {
+  margin-bottom: 0.5rem;                /* Espaçamento inferior */
+}
+
+/* Remover margem do último elemento */
+.filmeInfo > *:last-child {
+  margin-bottom: 0;                     /* Sem margem inferior */
+}
+
+/* Nome do filme */
 .filmeNome {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #C6A664;
-  margin: 0 0 1rem 0;
-  text-align: center;
-  line-height: 1.3;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  font-size: 1.3rem;                    /* Tamanho da fonte */
+  font-weight: bold;                    /* Negrito */
+  color: #C6A664;                       /* Cor dourada */
+  margin: 0 0 1rem 0;                   /* Espaçamento apenas inferior */
+  text-align: center;                   /* Centralizar texto */
+  line-height: 1.4;                     /* Altura da linha */
+  width: 100%;                          /* Largura total */
+  display: flex;                        /* Layout flexível */
+  justify-content: center;              /* Centralizar horizontalmente */
+  align-items: center;                  /* Centralizar verticalmente */
+  flex-shrink: 0;                       /* Não encolher */
 }
 
+/* Informações de horário e classificação */
 .filmeHorario, .filmeClassificacao {
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  color: #F5F5F5;
-  text-align: center;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  margin: 0.5rem 0;                     /* Espaçamento vertical */
+  font-size: 0.95rem;                   /* Tamanho da fonte */
+  color: #F5F5F5;                       /* Cor branca acinzentada */
+  text-align: center;                   /* Centralizar texto */
+  width: 100%;                          /* Largura total */
+  display: flex;                        /* Layout flexível */
+  justify-content: center;              /* Centralizar horizontalmente */
+  align-items: center;                  /* Centralizar verticalmente */
+  flex-shrink: 0;                       /* Não encolher */
+  font-weight: 500;
 }
 
+/* Texto em negrito para labels */
 .filmeHorario strong, .filmeClassificacao strong {
-  color: #B0B0B0;
+  color: #B0B0B0;                       /* Cor cinza clara */
 }
 
+/* =================================================================
+   CLASSIFICAÇÃO ETÁRIA
+================================================================= */
+
+/* Container da imagem de classificação */
 .classificacaoContainer {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 1rem 0;
-  width: 100%;
+  display: flex;                        /* Layout flexível */
+  justify-content: center;              /* Centralizar horizontalmente */
+  align-items: center;                  /* Centralizar verticalmente */
+  margin: 1rem 0;                       /* Espaçamento vertical */
+  width: 100%;                          /* Largura total */
+  flex-shrink: 0;                       /* Não encolher */
 }
 
+/* Imagem da classificação etária */
 .imagemClassificacao {
-  width: 45px;
-  height: 45px;
-  object-fit: contain;
-  border-radius: 8px;
-  background: #F5F5F5;
-  padding: 5px;
-  margin: 0 auto;
-  display: block;
+  width: 45px;                          /* Largura fixa */
+  height: 45px;                         /* Altura fixa */
+  object-fit: contain;                  /* Manter proporções */
+  border-radius: 8px;                   /* Bordas arredondadas */
+  background: #F5F5F5;                  /* Fundo claro */
+  padding: 2px;                         /* Espaçamento interno */
+  margin: 0 auto;                       /* Centralizar horizontalmente */
+  display: block;                       /* Elemento em bloco */
 }
 
+/* =================================================================
+   SINOPSE DO FILME
+================================================================= */
+
+/* Container da sinopse */
 .sinopse {
-  font-size: 0.8rem;
-  color: #B0B0B0;
-  line-height: 1.4;
-  margin-top: auto;
-  text-align: center;
-  max-height: 4.2em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
+  font-size: 0.85rem;                   /* Tamanho da fonte */
+  color: #B0B0B0;                       /* Cor cinza clara */
+  line-height: 1.5;                     /* Altura da linha para legibilidade */
+  margin-top: 1rem;                     /* Espaçamento superior */
+  text-align: justify;                  /* Justificar texto */
+  width: 100%;                          /* Largura total */
+  flex-grow: 1;                         /* Expandir para ocupar espaço restante */
+  /* PADDING LATERAL E VERTICAL PARA RESPIRAÇÃO DO TEXTO */
+  padding: 1rem 1.5rem;                 /* Espaçamento interno generoso */
+  border-top: 1px solid rgba(198, 166, 100, 0.2);  /* Borda superior dourada sutil */
+  background: rgba(0, 0, 0, 0.2);       /* Fundo escuro sutil */
+  border-radius: 8px;                   /* Bordas arredondadas */
+  display: flex;                        /* Layout flexível */
+  align-items: flex-start;              /* Alinhar ao topo */
+  justify-content: center;              /* Centralizar horizontalmente */
+  text-indent: 1rem;                    /* Indentação da primeira linha */
 }
 
-/* Botões de Navegação */
+/* =================================================================
+   BOTÕES DE NAVEGAÇÃO
+================================================================= */
+
+/* Estilo base dos botões de navegação */
 .carrosselButton {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: #C6A664;
-  color: #1C1C1C;
-  border: none;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  font-size: 1.5rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 10;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: absolute;                   /* Posicionamento absoluto */
+  top: 50%;                            /* Centralizar verticalmente */
+  transform: translateY(-50%);         /* Ajuste fino da centralização */
+  background: #C6A664;                 /* Fundo dourado */
+  color: #1C1C1C;                      /* Texto escuro */
+  border: none;                        /* Sem borda */
+  width: 50px;                         /* Largura fixa */
+  height: 50px;                        /* Altura fixa */
+  border-radius: 50%;                  /* Formato circular */
+  font-size: 1.5rem;                   /* Tamanho da fonte */
+  font-weight: bold;                   /* Negrito */
+  cursor: pointer;                     /* Cursor de ponteiro */
+  transition: all 0.3s ease;          /* Transição suave */
+  z-index: 10;                         /* Camada superior */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);  /* Sombra */
+  display: flex;                       /* Layout flexível */
+  align-items: center;                 /* Centralizar verticalmente */
+  justify-content: center;             /* Centralizar horizontalmente */
 }
 
+/* Efeito hover dos botões */
 .carrosselButton:hover {
-  background: #7B1E3B;
-  color: #F5F5F5;
-  transform: translateY(-50%) scale(1.1);
-  box-shadow: 0 6px 20px rgba(123, 30, 59, 0.4);
+  background: #7B1E3B;                 /* Fundo vermelho escuro */
+  color: #F5F5F5;                      /* Texto claro */
+  transform: translateY(-50%) scale(1.1);  /* Zoom com centralização */
+  box-shadow: 0 6px 20px rgba(123, 30, 59, 0.4);  /* Sombra vermelha */
 }
 
+/* Estado desabilitado dos botões */
 .carrosselButton:disabled {
-  background: #B0B0B0;
-  color: #1C1C1C;
-  cursor: not-allowed;
-  opacity: 0.5;
-  transform: translateY(-50%) scale(1);
+  background: #B0B0B0;                 /* Fundo cinza */
+  color: #1C1C1C;                      /* Texto escuro */
+  cursor: not-allowed;                 /* Cursor de não permitido */
+  opacity: 0.5;                        /* Opacidade reduzida */
+  transform: translateY(-50%) scale(1); /* Sem zoom */
 }
 
+/* Posicionamento do botão anterior */
 .prevButton {
-  left: 10px;
+  left: 10px;                          /* Distância da esquerda */
 }
 
+/* Posicionamento do botão próximo */
 .nextButton {
-  right: 10px;
+  right: 10px;                         /* Distância da direita */
 }
 
-/* Indicadores */
+/* =================================================================
+   INDICADORES DO CARROSSEL
+================================================================= */
+
+/* Container dos indicadores */
 .indicators {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 2rem;
-  gap: 0.5rem;
-  width: 100%;
+  display: flex;                       /* Layout flexível */
+  justify-content: center;             /* Centralizar horizontalmente */
+  align-items: center;                 /* Centralizar verticalmente */
+  margin-top: 2rem;                    /* Espaçamento superior */
+  gap: 0.5rem;                         /* Espaçamento entre indicadores */
+  width: 100%;                         /* Largura total */
 }
 
+/* Indicador individual */
 .indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid #B0B0B0;
-  background: transparent;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 12px;                         /* Largura fixa */
+  height: 12px;                        /* Altura fixa */
+  border-radius: 50%;                  /* Formato circular */
+  border: 2px solid #B0B0B0;           /* Borda cinza */
+  background: transparent;             /* Fundo transparente */
+  cursor: pointer;                     /* Cursor de ponteiro */
+  transition: all 0.3s ease;          /* Transição suave */
+  display: flex;                       /* Layout flexível */
+  align-items: center;                 /* Centralizar verticalmente */
+  justify-content: center;             /* Centralizar horizontalmente */
 }
 
+/* Efeito hover do indicador */
 .indicator:hover {
-  background: #C6A664;
-  border-color: #C6A664;
+  background: #C6A664;                 /* Fundo dourado */
+  border-color: #C6A664;               /* Borda dourada */
 }
 
+/* Indicador ativo */
 .indicator.active {
-  background: #7B1E3B;
-  border-color: #7B1E3B;
+  background: #7B1E3B;                 /* Fundo vermelho escuro */
+  border-color: #7B1E3B;               /* Borda vermelha escura */
 }
 
-/* Responsividade */
+/* =================================================================
+   RESPONSIVIDADE
+================================================================= */
+
+/* Telas até 1200px (laptops pequenos) */
 @media (max-width: 1200px) {
   .carrosselContainer {
-    max-width: 95%;
+    max-width: 95%;                    /* Largura máxima aumentada */
   }
   
   .cartazContainer {
-    height: 350px;
+    height: 320px;                     /* Altura do cartaz reduzida */
   }
   
   .filmeInfo {
-    padding: 1.2rem;
+    padding: 1.2rem;                   /* Espaçamento interno reduzido */
+    min-height: 280px;                 /* Altura mínima ajustada */
+  }
+  
+  .filmeCard {
+    min-height: 620px;                 /* Altura mínima do cartão ajustada */
   }
 }
 
+/* Telas até 768px (tablets) */
 @media (max-width: 768px) {
   .carrosselItem {
-    flex: 0 0 50%; /* 2 filmes em tablets */
+    flex: 0 0 50%;                     /* 2 filmes visíveis em tablets */
   }
   
   .carrosselContainer {
-    max-width: 100%;
-    padding: 0 50px;
+    max-width: 100%;                   /* Largura máxima total */
+    padding: 0 50px;                   /* Espaçamento para botões */
   }
   
   .cartazContainer {
-    height: 300px;
+    height: 280px;                     /* Altura do cartaz reduzida */
+  }
+  
+  .filmeInfo {
+    min-height: 250px;                 /* Altura mínima ajustada */
+  }
+  
+  .filmeCard {
+    min-height: 550px;                 /* Altura mínima do cartão ajustada */
   }
   
   .header h1 {
-    font-size: 2rem;
+    font-size: 2rem;                   /* Tamanho da fonte reduzido */
   }
   
   .sectionTitle {
-    font-size: 1.8rem;
+    font-size: 1.8rem;                 /* Tamanho da fonte reduzido */
   }
   
   .main {
-    padding: 1rem;
+    padding: 1rem;                     /* Espaçamento interno reduzido */
   }
   
   .carrosselButton {
-    width: 40px;
-    height: 40px;
-    font-size: 1.2rem;
+    width: 40px;                       /* Largura reduzida */
+    height: 40px;                      /* Altura reduzida */
+    font-size: 1.2rem;                 /* Tamanho da fonte reduzido */
   }
   
   .prevButton {
-    left: 5px;
+    left: 5px;                         /* Posicionamento ajustado */
   }
   
   .nextButton {
-    right: 5px;
+    right: 5px;                        /* Posicionamento ajustado */
   }
 }
 
+/* Telas até 480px (smartphones) */
 @media (max-width: 480px) {
   .carrosselItem {
-    flex: 0 0 100%; /* 1 filme em mobile */
+    flex: 0 0 100%;                    /* 1 filme visível em smartphones */
   }
   
   .carrosselContainer {
-    padding: 0 45px;
+    padding: 0 45px;                   /* Espaçamento para botões */
   }
   
   .cartazContainer {
-    height: 250px;
+    height: 250px;                     /* Altura do cartaz reduzida */
   }
   
   .filmeInfo {
-    padding: 1rem;
+    padding: 1rem;                     /* Espaçamento interno reduzido */
+    min-height: 220px;                 /* Altura mínima ajustada */
+  }
+  
+  .filmeCard {
+    min-height: 490px;                 /* Altura mínima do cartão ajustada */
   }
   
   .filmeNome {
-    font-size: 1.1rem;
+    font-size: 1.1rem;                 /* Tamanho da fonte reduzido */
+  }
+  
+  .sinopse {
+    font-size: 0.8rem;                 /* Tamanho da fonte reduzido */
+    padding: 0.8rem 1rem;              /* Padding ajustado para mobile */
   }
   
   .prevButton {
-    left: 0;
+    left: 0;                           /* Posicionamento na borda */
   }
   
   .nextButton {
-    right: 0;
+    right: 0;                          /* Posicionamento na borda */
   }
 }
 
-/* Animações */
+/* =================================================================
+   ANIMAÇÕES
+================================================================= */
+
+/* Animação de entrada dos cartões */
 @keyframes fadeIn {
   from {
-    opacity: 0;
-    transform: translateY(20px);
+    opacity: 0;                        /* Começar invisível */
+    transform: translateY(20px);       /* Começar abaixo */
   }
   to {
-    opacity: 1;
-    transform: translateY(0);
+    opacity: 1;                        /* Terminar visível */
+    transform: translateY(0);          /* Terminar na posição normal */
   }
-}
-
-.filmeCard {
-  animation: fadeIn 0.5s ease forwards;
-}
-
-/* Efeitos de hover adicionais */
-.filmeCard::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, transparent, rgba(198, 166, 100, 0.1), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  z-index: 0;
 }
