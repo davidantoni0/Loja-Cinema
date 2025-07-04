@@ -23,40 +23,19 @@ export default function EscolhaAssento() {
   const [faixas, setFaixas] = useState([]);
   const [cartaz, setCartaz] = useState("");
   const [pendentesCount, setPendentesCount] = useState(0);
-  const [dataSelecionada, setDataSelecionada] = useState(() => new Date().toISOString().substring(0, 10));
+  const [dataSelecionada, setDataSelecionada] = useState(
+    () => new Date().toISOString().substring(0, 10)
+  );
   const [loading, setLoading] = useState(false);
+  const [loadingFilme, setLoadingFilme] = useState(true);
 
   const { usuario, loadingUsuario } = useUsuario();
   const [infoCompra, setInfoCompra] = useState(null);
   const [precoBase] = useState(25.0);
 
   useEffect(() => {
-    const filmeStorage = localStorage.getItem("filmeSelecionado");
-    if (filmeStorage) {
-      const dados = JSON.parse(filmeStorage);
-      setFilme({
-        ...dados,
-        assentos: gerarAssentos(40),
-      });
-      buscarCartaz(dados.nome);
-    }
-
-    async function buscarFaixas() {
-      try {
-        const res = await fetch("/FaixaEtaria/faixaetaria.json");
-        const data = await res.json();
-        setFaixas(data);
-      } catch (err) {
-        console.error("Erro ao carregar faixas etárias:", err);
-      }
-    }
-
+    buscarFilmeCompleto();
     buscarFaixas();
-
-    const info = localStorage.getItem("infoCompra");
-    if (info) {
-      setInfoCompra(JSON.parse(info));
-    }
   }, []);
 
   useEffect(() => {
@@ -70,6 +49,109 @@ export default function EscolhaAssento() {
       buscarAssentosOcupados();
     }
   }, [filme, dataSelecionada]);
+
+  // Função para buscar os dados completos do filme no Firestore, combinando dados do sessionStorage
+  async function buscarFilmeCompleto() {
+    if (typeof window !== "undefined") {
+      const filmeStorage = sessionStorage.getItem("filmeSelecionado");
+      if (filmeStorage) {
+        const dadosStorage = JSON.parse(filmeStorage);
+
+        try {
+          if (dadosStorage.codigo1002) {
+            const filmesRef = collection(db, "filmes");
+            const q = query(filmesRef, where("codigo1002", "==", dadosStorage.codigo1002));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+              const filmeDoc = querySnapshot.docs[0];
+              const dadosFirestore = filmeDoc.data();
+
+              const filmeFinal = {
+                ...dadosStorage,
+                ...dadosFirestore,
+                assentos: gerarAssentos(40),
+              };
+
+              setFilme(filmeFinal);
+
+              if (dadosFirestore.cartaz) {
+                const urlCartaz = processarUrlGoogleDrive(dadosFirestore.cartaz);
+                setCartaz(urlCartaz);
+              }
+            } else {
+              // Não encontrou no Firestore, usa dados do storage
+              setFilme({
+                ...dadosStorage,
+                assentos: gerarAssentos(40),
+              });
+
+              if (dadosStorage.cartaz) {
+                setCartaz(processarUrlGoogleDrive(dadosStorage.cartaz));
+              }
+            }
+          } else {
+            // Sem código, usa dados do storage
+            setFilme({
+              ...dadosStorage,
+              assentos: gerarAssentos(40),
+            });
+
+            if (dadosStorage.cartaz) {
+              setCartaz(processarUrlGoogleDrive(dadosStorage.cartaz));
+            }
+          }
+        } catch (error) {
+          console.error("Erro ao buscar filme no Firestore:", error);
+          setFilme({
+            ...dadosStorage,
+            assentos: gerarAssentos(40),
+          });
+
+          if (dadosStorage.cartaz) {
+            setCartaz(processarUrlGoogleDrive(dadosStorage.cartaz));
+          }
+        }
+      }
+
+      const info = sessionStorage.getItem("infoCompra");
+      if (info) {
+        setInfoCompra(JSON.parse(info));
+      }
+    }
+
+    setLoadingFilme(false);
+  }
+
+  async function buscarFaixas() {
+    try {
+      const res = await fetch("/FaixaEtaria/faixaetaria.json");
+      const data = await res.json();
+      setFaixas(data);
+    } catch (err) {
+      console.error("Erro ao carregar faixas etárias:", err);
+    }
+  }
+
+  // Função para processar URLs do Google Drive
+  function processarUrlGoogleDrive(url) {
+    if (!url) return "";
+
+    if (url.includes("uc?export=view")) {
+      return url;
+    }
+
+    const match = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+    if (match) {
+      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+    }
+
+    if (url.match(/^[a-zA-Z0-9-_]+$/)) {
+      return `https://drive.google.com/uc?export=view&id=${url}`;
+    }
+
+    return url;
+  }
 
   function calcularDesconto() {
     if (!usuario) return 0;
@@ -97,29 +179,23 @@ export default function EscolhaAssento() {
       return;
     }
 
-    const q = query(
-      collection(db, "ingressos"),
-      where("usuarioId", "==", usuario.uid),
-      where("pago", "==", false)
-    );
-    const snapshot = await getDocs(q);
-    setPendentesCount(snapshot.size);
+    try {
+      const q = query(
+        collection(db, "ingressos"),
+        where("usuarioId", "==", usuario.uid),
+        where("pago", "==", false)
+      );
+      const snapshot = await getDocs(q);
+      setPendentesCount(snapshot.size);
+    } catch (error) {
+      console.error("Erro ao contar pendentes:", error);
+      setPendentesCount(0);
+    }
   }
 
   function buscarImagemFaixa(faixa) {
     const item = faixas.find((f) => f.faixa === faixa);
     return item ? item.imagem : "";
-  }
-
-  async function buscarCartaz(nome) {
-    try {
-      const res = await fetch("/Filmes/cartazes.json");
-      const data = await res.json();
-      const item = data.find((c) => c.filme === nome);
-      setCartaz(item ? item.cartaz.replace("bomboniere/public", "") : "");
-    } catch (error) {
-      console.error("Erro ao buscar cartaz:", error);
-    }
   }
 
   function gerarAssentos(qtd) {
@@ -131,38 +207,42 @@ export default function EscolhaAssento() {
   }
 
   async function buscarAssentosOcupados() {
-    const dataInicio = new Date(dataSelecionada + "T00:00:00");
-    const dataFim = new Date(dataSelecionada + "T23:59:59");
+    try {
+      const dataInicio = new Date(dataSelecionada + "T00:00:00");
+      const dataFim = new Date(dataSelecionada + "T23:59:59");
 
-    const q = query(
-      collection(db, "ingressos"),
-      where("filme", "==", filme.nome),
-      where("pago", "==", true),
-      where("dataCompra", ">=", dataInicio),
-      where("dataCompra", "<=", dataFim)
-    );
+      const q = query(
+        collection(db, "ingressos"),
+        where("filme", "==", filme.nome),
+        where("pago", "==", true),
+        where("dataCompra", ">=", dataInicio),
+        where("dataCompra", "<=", dataFim)
+      );
 
-    const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(q);
 
-    const assentosOcupados = [];
-    querySnapshot.forEach((docu) => {
-      const data = docu.data();
-      if (data.assentos && Array.isArray(data.assentos)) {
-        assentosOcupados.push(...data.assentos);
-      }
-    });
+      const assentosOcupados = [];
+      querySnapshot.forEach((docu) => {
+        const data = docu.data();
+        if (data.assentos && Array.isArray(data.assentos)) {
+          assentosOcupados.push(...data.assentos);
+        }
+      });
 
-    setFilme((antigo) => {
-      if (!antigo) return antigo;
+      setFilme((antigo) => {
+        if (!antigo) return antigo;
 
-      const novosAssentos = antigo.assentos.map((a) => ({
-        ...a,
-        disponivel: !assentosOcupados.includes(a.numero),
-        selecionado: a.selecionado && !assentosOcupados.includes(a.numero),
-      }));
+        const novosAssentos = antigo.assentos.map((a) => ({
+          ...a,
+          disponivel: !assentosOcupados.includes(a.numero),
+          selecionado: a.selecionado && !assentosOcupados.includes(a.numero),
+        }));
 
-      return { ...antigo, assentos: novosAssentos };
-    });
+        return { ...antigo, assentos: novosAssentos };
+      });
+    } catch (error) {
+      console.error("Erro ao buscar assentos ocupados:", error);
+    }
   }
 
   function toggleAssento(numero) {
@@ -212,6 +292,8 @@ export default function EscolhaAssento() {
       usuarioEstudante: usuario.estudante || false,
       usuarioDeficiente: usuario.deficiente || false,
       usuarioFuncionario: usuario.funcionario || false,
+      horarioExibicao: filme.horarioExibicao || filme.horario,
+      codigoFilme: filme.codigo1002 || null,
     };
 
     try {
@@ -222,7 +304,7 @@ export default function EscolhaAssento() {
         timestamp: new Date().toISOString(),
         assentosSelecionados: assentosSelecionados,
       };
-      localStorage.setItem("ultimaCompra", JSON.stringify(detalheCompra));
+      sessionStorage.setItem("ultimaCompra", JSON.stringify(detalheCompra));
 
       alert(
         `Ingresso reservado com sucesso!\nTotal: R$ ${precoInfo.precoTotal.toFixed(
@@ -236,15 +318,36 @@ export default function EscolhaAssento() {
       contarPendentes();
     } catch (error) {
       console.error("Erro ao salvar ingresso:", error);
-      alert("Erro ao salvar ingresso.");
+      alert("Erro ao salvar ingresso. Tente novamente.");
     } finally {
       setLoading(false);
     }
   }
 
-  if (loadingUsuario) return <p>Carregando dados do usuário...</p>;
+  // Função para lidar com erro de carregamento de imagem
+  function handleImageError(e) {
+    console.error("Erro ao carregar imagem:", e.target.src);
+    e.target.style.display = "none";
+  }
 
-  if (!filme) return <p>Carregando filme...</p>;
+  if (loadingUsuario || loadingFilme) {
+    return (
+      <div className={styles.container}>
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
+  if (!filme) {
+    return (
+      <div className={styles.container}>
+        <p>Filme não encontrado. Selecione um filme primeiro.</p>
+        <Link href="/MenuPrincipal">
+          <button className={styles.button}>Voltar ao Menu</button>
+        </Link>
+      </div>
+    );
+  }
 
   const faixaImg = buscarImagemFaixa(filme.faixaEtaria);
   const assentosSelecionados = filme.assentos.filter((a) => a.selecionado);
@@ -254,7 +357,17 @@ export default function EscolhaAssento() {
     <div className={styles.container}>
       <h1>{filme.nome}</h1>
 
-      {cartaz && <img src={cartaz} alt="Cartaz" className={styles.cartaz} />}
+      {cartaz && (
+        <div className={styles.cartazContainer}>
+          <img
+            src={cartaz}
+            alt={`Cartaz do filme ${filme.nome}`}
+            className={styles.cartaz}
+            onError={handleImageError}
+            loading="lazy"
+          />
+        </div>
+      )}
 
       <p>
         <strong>Sinopse:</strong> {filme.sinopse}
@@ -266,7 +379,7 @@ export default function EscolhaAssento() {
         <strong>Gênero:</strong> {filme.genero}
       </p>
       <p>
-        <strong>Horário:</strong> {filme.horario}
+        <strong>Horário:</strong> {filme.horarioExibicao || filme.horario}
       </p>
       <p>
         <strong>Distribuidora:</strong> {filme.distribuidora}
@@ -276,7 +389,12 @@ export default function EscolhaAssento() {
       </p>
 
       {faixaImg && (
-        <img src={faixaImg} alt={filme.faixaEtaria} className={styles.faixaEtaria} />
+        <img
+          src={faixaImg}
+          alt={`Classificação ${filme.faixaEtaria}`}
+          className={styles.faixaEtaria}
+          onError={handleImageError}
+        />
       )}
 
       <label htmlFor="dataSessao" style={{ marginTop: 20, display: "block" }}>
@@ -304,7 +422,8 @@ export default function EscolhaAssento() {
           </p>
         ) : (
           <p>
-            <strong>Preço por ingresso:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}
+            <strong>Preço por ingresso:</strong> R${" "}
+            {precoInfo.precoUnitario.toFixed(2)}
           </p>
         )}
       </div>
@@ -333,7 +452,11 @@ export default function EscolhaAssento() {
             {precoInfo.desconto > 0 ? (
               <>
                 <span
-                  style={{ textDecoration: "line-through", color: "#888", marginRight: 8 }}
+                  style={{
+                    textDecoration: "line-through",
+                    color: "#888",
+                    marginRight: 8,
+                  }}
                 >
                   Preço unitário: R$ {precoInfo.precoOriginal.toFixed(2)}
                 </span>
