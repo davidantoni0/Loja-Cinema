@@ -1,0 +1,215 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=Poiret+One&display=swap');
+
+
+
+
+.topo
+{
+  display: flex;
+  justify-content: center;
+  background-color:#1C1C1C;
+}
+
+.imagem
+{
+  width: 200px;
+}
+
+
+.endereco
+{
+  font-family:"Poiret One";
+  color: var(--corPrata);
+}
+
+.titulo {
+  font-family: "Libre Baskerville", serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #C6A664;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  letter-spacing: 1px;
+  position: relative;
+}
+.voltar
+{
+  text-align: left;
+  margin: 0;
+  padding: 0;
+  text-decoration: none;
+  text-transform: none;
+  color: var(--corPrata);
+  font-family:"Poiret One";
+  font-size: 1.2em;
+  letter-spacing: 2px;
+  font-weight: 900;
+  margin-top: 2em;
+}
+
+.voltar:hover
+{
+  transition: color .2s ease-in-out;
+  color:#7B1E3B;
+}
+
+.fieldset
+{
+  background-color:#363636 ;
+  border:none;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color:var(--corPrata)
+}
+
+.legenda
+{
+  font-family:"Poiret One";
+  font-size: 1.2em;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color:#C6A664;
+}
+
+.labelcadastro
+{
+  display: flex;
+  justify-content: space-between;
+  color: var(--corPrata);
+  align-items: center;
+}
+
+.campo {
+  width: 250px;
+  height: 44px;
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  border-radius: 8px;
+  padding: 0 1rem;
+  font-family: "Merriweather", serif;
+  font-size: 0.9rem;
+  color: #F5F5F5;
+  background: rgba(20, 20, 20, 0.8);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.campo:focus {
+  outline: none;
+  border-color: #C6A664;
+  box-shadow: 0 0 0 2px rgba(198, 166, 100, 0.2);
+  transform: translateY(-1px);
+}
+
+.campo::placeholder {
+  color: #B0B0B0;
+  font-weight: 400;
+}
+
+.form {
+  background: rgba(28, 28, 28, 0.95);
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.3),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(198, 166, 100, 0.2);
+}
+
+.limpar {/*Azul*/
+  width: 100%;
+  height: 44px;
+  background: linear-gradient(135deg, #294D61, #3a5f75);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-family: "Poiret One", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.limpar::before {/*Azul*/
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.limpar:hover::before{/*Azul*/
+  left: 100%;
+}
+
+.limpar:hover{/*Azul*/
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(41, 77, 97, 0.4);
+}
+
+.limpar:active {/*Azul*/
+  transform: translateY(0);
+}
+
+.limpar:disabled {/*Azul*/
+  background: #B0B0B0;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.cadastrar {/*Dourado*/
+  width: 100%;
+  height: 44px;
+  background: transparent;
+  border: 1px solid #C6A664;
+  border-radius: 8px;
+  color: #C6A664;
+  font-family: "Poiret One", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.cadastrar::before {/*Dourado*/
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: #C6A664;
+  transition: left 0.3s ease;
+  z-index: -1;
+}
+
+.cadastrar:hover::before {/*Dourado*/
+  left: 0;
+}
+
+.cadastrar:hover {/*Dourado*/
+  color: #1C1C1C;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(198, 166, 100, 0.3);
+}

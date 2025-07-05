@@ -6,6 +6,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebaseConfig";
 import axios from "axios";
+import styles from "./page.module.css";
 
 export default function Cadastro() {
   const router = useRouter();
@@ -19,19 +20,15 @@ export default function Cadastro() {
     return `${ano}-${mes}-${dia}`;
   }, []);
 
-  const [endereco, setEndereco] = useState(
-    {
-      cep: "",
-      rua: "",
-      bairro: "",
-      cidade: "",
-      estado: ""
+  const [endereco, setEndereco] = useState({
+    cep: "",
+    rua: "",
+    bairro: "",
+    cidade: "",
+    estado: ""
   });
 
   const [bloquearEndereco, setBloquearEndereco] = useState(false);
-
-  
-
   const [isFuncionario, setIsFuncionario] = useState(false);
 
   async function handleSubmit(event) {
@@ -89,22 +86,19 @@ export default function Cadastro() {
   }
 
   async function handleBuscarEndereco(event) {
-    console.log(event);
-    
     const cep = event.target.value.replace(/\D/g, "");
-    if (cep.length !== 8){
+    if (cep.length !== 8) {
       setBloquearEndereco(false);
       return;
     }
-      
-    
+
     try {
       const response = await axios.get(`https://viacep.com.br/ws/${cep}/json/`);
       const data = response.data;
-      
+
       if (!data.erro) {
         setEndereco({
-          cep: data.cep,  
+          cep: data.cep,
           rua: data.logradouro,
           bairro: data.bairro,
           cidade: data.localidade,
@@ -120,54 +114,77 @@ export default function Cadastro() {
   }
 
   return (
-    <section style={{ maxWidth: "500px", margin: "auto"}}>
-      <Link className="voltar" href="/Home">Voltar</Link>
+    <section style={{ maxWidth: "500px", margin: "auto" }}>
+      <Link className={styles.voltar} href="/Home">Voltar</Link>
 
-      <h1 className="titulo">Cadastro</h1>
-      <form className="form" onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-        <fieldset>
-          <legend>Dados Pessoais</legend>
-          <label className="labelcadastro">
+      <h1 className={styles.titulo}>Cadastro</h1>
+      <form className={styles.form} onSubmit={handleSubmit}>
+        <fieldset className={styles.fieldset}>
+          <legend className={styles.legenda}>Dados Pessoais</legend>
+          <label className={styles.labelcadastro}>
             <div>Nome completo</div>
-            <input className="campo" type="text" name="nome" required />
+            <input className={styles.campo} type="text" name="nome" required />
           </label>
-          <label className="labelcadastro">
+          <label className={styles.labelcadastro}>
             <div>Data de nascimento</div>
-            <input className="campo" type="date" name="nascimento" max={dataAtual} required />
+            <input className={styles.campo} type="date" name="nascimento" max={dataAtual} required />
           </label>
-          <label className="labelcadastro">
+          <label className={styles.labelcadastro}>
             <div>C.P.F.</div>
-            <input className="campo" type="text" name="cpf" pattern="\d{11}" title="11 números" required />
+            <input className={styles.campo} type="text" name="cpf" pattern="\d{11}" title="11 números" required />
           </label>
-          <label className="labelcadastro">
+          <label className={styles.labelcadastro}>
             <div>C.E.P.</div>
-              <input className="campo" type="text" name="cep" pattern="\d{8}" required onBlur={handleBuscarEndereco} />
+            <input className={styles.campo} type="text" name="cep" pattern="\d{8}" required onBlur={handleBuscarEndereco} />
           </label>
-          <label className="labelcadastro">
+          <label className={styles.labelcadastro}>
             <div>Logradouro</div>
-            <input className="campo" type="text" name="rua" value={endereco.rua} readOnly={bloquearEndereco}
-            onChange={e => setEndereco(prev => ({ ...prev, rua: e.target.value }))}/>
+            <input
+              className={styles.campo}
+              type="text"
+              name="rua"
+              value={endereco.rua}
+              readOnly={bloquearEndereco}
+              onChange={e => setEndereco(prev => ({ ...prev, rua: e.target.value }))}
+            />
           </label>
-          <label className="labelcadastro">
+          <label className={styles.labelcadastro}>
             <div>Bairro</div>
-            <input className="campo" type="text" name="bairro" value={endereco.bairro} readOnly={bloquearEndereco}
-            onChange={e => setEndereco(prev => ({ ...prev, bairro: e.target.value }))} />
+            <input
+              className={styles.campo}
+              type="text"
+              name="bairro"
+              value={endereco.bairro}
+              readOnly={bloquearEndereco}
+              onChange={e => setEndereco(prev => ({ ...prev, bairro: e.target.value }))}
+            />
           </label>
-          <label className="labelcadastro">
+          <label className={styles.labelcadastro}>
             <div>Cidade</div>
-            <input className="campo" type="text" name="cidade" value={endereco.cidade} readOnly={bloquearEndereco}
-            onChange={e => setEndereco(prev => ({ ...prev, cidade: e.target.value }))} />
+            <input
+              className={styles.campo}
+              type="text"
+              name="cidade"
+              value={endereco.cidade}
+              readOnly={bloquearEndereco}
+              onChange={e => setEndereco(prev => ({ ...prev, cidade: e.target.value }))}
+            />
           </label>
-          <label className="labelcadastro">
+          <label className={styles.labelcadastro}>
             <div>Estado</div>
-            <input className="campo" type="text" name="estado" value={endereco.estado} readOnly={bloquearEndereco}
-            onChange={e => setEndereco(prev => ({ ...prev, estado: e.target.value }))} />
+            <input
+              className={styles.campo}
+              type="text"
+              name="estado"
+              value={endereco.estado}
+              readOnly={bloquearEndereco}
+              onChange={e => setEndereco(prev => ({ ...prev, estado: e.target.value }))}
+            />
           </label>
-
         </fieldset>
 
-        <fieldset>
-          <legend>Dados Sociais</legend>
+        <fieldset className={styles.fieldset}>
+          <legend className={styles.legenda}>Dados Sociais</legend>
           <p>É estudante?</p>
           <label>
             <input type="radio" name="estudante" value="true" required />
@@ -189,10 +206,10 @@ export default function Cadastro() {
           </label>
         </fieldset>
 
-        <fieldset>
-          <legend>Funcionário</legend>
+        <fieldset className={styles.fieldset}>
+          <legend className={styles.legenda}>Funcionário</legend>
           <p>É novo funcionário?</p>
-          <label >
+          <label>
             <input
               type="radio"
               name="funcionario"
@@ -213,10 +230,10 @@ export default function Cadastro() {
             Não
           </label>
 
-          <label className="labelcadastro">
+          <label className={styles.labelcadastro}>
             Senha do administrador
-            <input 
-              className="campo"
+            <input
+              className={styles.campo}
               type="password"
               name="senhaAdmin"
               disabled={!isFuncionario}
@@ -225,23 +242,23 @@ export default function Cadastro() {
           </label>
         </fieldset>
 
-        <fieldset>
-          <legend>Contato</legend>
-          <label className="labelcadastro">
+        <fieldset className={styles.fieldset}>
+          <legend className={styles.legenda}>Contato</legend>
+          <label className={styles.labelcadastro}>
             E-mail
-            <input className="campo" type="email" name="email" required />
+            <input className={styles.campo} type="email" name="email" required />
           </label>
-          <label className="labelcadastro">
+          <label className={styles.labelcadastro}>
             Senha
-            <input className="campo" type="password" name="senha" required />
+            <input className={styles.campo} type="password" name="senha" required />
           </label>
         </fieldset>
 
         <div style={{ display: "flex", gap: "1rem" }}>
-          <button className="cadastrar" type="submit" style={{ flex: 1 }}>
+          <button className={styles.cadastrar} type="submit" style={{ flex: 1 }}>
             Cadastrar
           </button>
-          <button className="limpar" type="reset" style={{ flex: 1 }}>
+          <button className={styles.limpar} type="reset" style={{ flex: 1 }}>
             Limpar
           </button>
         </div>
