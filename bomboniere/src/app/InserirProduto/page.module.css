@@ -1,0 +1,518 @@
+/* ===============================
+   ARQUIVO: lanchonete.module.css
+   VERSÃO CSS MODULES - LANCHONETE
+   =============================== */
+
+/* Container principal */
+.lanchoneteContainer {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  color: #F5F5F5;
+  font-family: "Merriweather", serif;
+}
+
+/* Link de voltar */
+.voltarLink {
+  display: inline-block;
+  margin-bottom: 30px;
+  text-decoration: none;
+  color: #C6A664;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.voltarLink::before {
+  content: '← ';
+  margin-right: 5px;
+}
+
+.voltarLink:hover {
+  color: #294D61;
+  transform: translateX(-5px);
+}
+
+/* Títulos */
+.tituloPrincipal {
+  font-family: "Libre Baskerville", serif;
+  color: #C6A664;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-align: center;
+  letter-spacing: 1px;
+  position: relative;
+}
+
+.tituloPrincipal::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #294D61, #C6A664);
+}
+
+.tituloSecao {
+  font-family: "Libre Baskerville", serif;
+  color: #C6A664;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 40px 0 20px 0;
+  position: relative;
+  padding-left: 20px;
+}
+
+.tituloSecao::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 30px;
+  background: linear-gradient(135deg, #294D61, #C6A664);
+  border-radius: 2px;
+}
+
+/* Formulário de novo produto */
+.formularioNovoProduto {
+  background: rgba(28, 28, 28, 0.95);
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  padding: 30px;
+  margin-bottom: 40px;
+  border-radius: 12px;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.3),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.formularioNovoProduto::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #294D61, #C6A664);
+  border-radius: 12px 12px 0 0;
+}
+
+.codigoGerado {
+  background: rgba(198, 166, 100, 0.1);
+  color: #C6A664;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  margin-bottom: 20px;
+  font-family: "Courier New", monospace;
+}
+
+.codigoGerado strong {
+  color: #C6A664;
+}
+
+/* Campos do formulário */
+.campoFormulario {
+  margin-bottom: 20px;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.campoFormulario label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #C6A664;
+  font-size: 1rem;
+}
+
+.campoFormulario input,
+.campoFormulario select {
+  width: 100%;
+  max-width: 500px;
+  padding: 12px 16px;
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #F5F5F5;
+  background: rgba(20, 20, 20, 0.8);
+  transition: all 0.3s ease;
+  font-family: "Merriweather", serif;
+}
+
+.campoFormulario input:focus,
+.campoFormulario select:focus {
+  outline: none;
+  border-color: #C6A664;
+  box-shadow: 0 0 0 2px rgba(198, 166, 100, 0.2);
+  transform: translateY(-1px);
+}
+
+.campoFormulario input::placeholder {
+  color: #B0B0B0;
+  font-weight: 400;
+}
+
+/* Preview da imagem */
+.previewImagem {
+  margin-top: 15px;
+  padding: 15px;
+  background: rgba(20, 20, 20, 0.6);
+  border-radius: 8px;
+  border: 1px solid rgba(198, 166, 100, 0.2);
+}
+
+.imagemProduto {
+  width: 200px;
+  max-width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.imagemProduto:hover {
+  transform: scale(1.05);
+}
+
+.urlImagem {
+  font-size: 12px;
+  color: #B0B0B0;
+  margin-top: 5px;
+  word-break: break-all;
+  font-family: "Courier New", monospace;
+}
+
+/* Campo de pesquisa */
+.campoPesquisa {
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.campoPesquisa label {
+  font-weight: 600;
+  color: #C6A664;
+  font-size: 1.1rem;
+}
+
+.campoPesquisa input {
+  padding: 12px 16px;
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  font-size: 1rem;
+  color: #F5F5F5;
+  background: rgba(20, 20, 20, 0.8);
+  transition: all 0.3s ease;
+  font-family: "Merriweather", serif;
+}
+
+.campoPesquisa input:focus {
+  outline: none;
+  border-color: #C6A664;
+  box-shadow: 0 0 0 2px rgba(198, 166, 100, 0.2);
+  transform: translateY(-1px);
+}
+
+.campoPesquisa input::placeholder {
+  color: #B0B0B0;
+}
+
+/* Lista de produtos */
+.produtoItem {
+  background: rgba(28, 28, 28, 0.95);
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  padding: 25px;
+  margin: 20px 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.produtoItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  border-color: #C6A664;
+}
+
+.produtoItem h3 {
+  color: #C6A664;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-family: "Libre Baskerville", serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.produtoItem p {
+  margin: 10px 0;
+  line-height: 1.6;
+  color: #F5F5F5;
+}
+
+.produtoItem strong {
+  color: #C6A664;
+  font-weight: 600;
+}
+
+/* Formulário de edição */
+.formularioEdicao {
+  background: rgba(20, 20, 20, 0.9);
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid rgba(198, 166, 100, 0.2);
+}
+
+/* Status do produto */
+.statusEmEstoque {
+  color: #4ecdc4;
+  font-weight: 600;
+  background: rgba(78, 205, 196, 0.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #4ecdc4;
+  display: inline-block;
+}
+
+.statusEmEstoque::before {
+  content: '🟢 ';
+  margin-right: 5px;
+}
+
+.statusForaEstoque {
+  color: #ff6b6b;
+  font-weight: 600;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  border-left: 3px solid #ff6b6b;
+  display: inline-block;
+}
+
+.statusForaEstoque::before {
+  content: '🔴 ';
+  margin-right: 5px;
+}
+
+/* Código do produto */
+.codigoProduto {
+  font-family: "Courier New", monospace;
+  background: rgba(198, 166, 100, 0.1);
+  color: #C6A664;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  display: inline-block;
+}
+
+/* Preço do produto */
+.precoProduto {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #4ecdc4;
+  background: rgba(78, 205, 196, 0.1);
+  padding: 6px 12px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* Botões */
+.btn {
+  padding: 12px 24px;
+  margin: 8px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-family: "Poiret One", sans-serif;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #294D61, #3a5f75);
+  color: white;
+}
+
+.btnPrimary:hover {
+  box-shadow: 0 6px 20px rgba(41, 77, 97, 0.4);
+}
+
+.btnSuccess {
+  background: linear-gradient(135deg, #28a745, #34ce57);
+  color: white;
+}
+
+.btnSuccess:hover {
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.btnDanger {
+  background: linear-gradient(135deg, #dc3545, #e74c3c);
+  color: white;
+}
+
+.btnDanger:hover {
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+.btnWarning {
+  background: linear-gradient(135deg, #ffc107, #ffcd39);
+  color: #212529;
+}
+
+.btnWarning:hover {
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+}
+
+.btnSecondary {
+  background: linear-gradient(135deg, #6c757d, #868e96);
+  color: white;
+}
+
+.btnSecondary:hover {
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
+}
+
+/* Separador */
+.separador {
+  border: none;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #C6A664, transparent);
+  margin: 30px 0;
+}
+
+/* Animações */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilo para inputs numéricos */
+.campoFormulario input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.campoFormulario input[type="number"]::-webkit-outer-spin-button,
+.campoFormulario input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .lanchoneteContainer {
+    padding: 20px;
+  }
+  
+  .tituloPrincipal {
+    font-size: 2rem;
+  }
+  
+  .tituloSecao {
+    font-size: 1.5rem;
+  }
+  
+  .campoFormulario input,
+  .campoFormulario select {
+    max-width: 100%;
+  }
+  
+  .campoPesquisa input {
+    max-width: 100%;
+  }
+  
+  .imagemProduto {
+    width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lanchoneteContainer {
+    padding: 15px;
+  }
+  
+  .tituloPrincipal {
+    font-size: 1.8rem;
+  }
+  
+  .btn {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+  }
+  
+  .formularioNovoProduto {
+    padding: 20px;
+  }
+  
+  .imagemProduto {
+    width: 120px;
+  }
+}
+
+/* Estilo para quando não há produtos */
+.nenhumProduto {
+  text-align: center;
+  color: #B0B0B0;
+  font-size: 1.2rem;
+  padding: 40px;
+  background: rgba(28, 28, 28, 0.5);
+  border-radius: 8px;
+  border: 1px dashed rgba(198, 166, 100, 0.3);
+}
+
+/* Highlight para pesquisa */
+.highlight {
+  background: rgba(198, 166, 100, 0.3);
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+

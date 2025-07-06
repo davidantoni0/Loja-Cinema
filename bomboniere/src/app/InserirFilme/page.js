@@ -10,6 +10,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import Link from "next/link";
+import styles from "./page.module.css";
 
 export default function Filmes() {
   const [filmes, setFilmes] = useState([]);
@@ -46,7 +47,7 @@ export default function Filmes() {
   }
 
   // Componente para imagem com fallback no Google Drive
-  function ImagemComFallback({ src, alt, style = { width: "200px", marginTop: "10px" } }) {
+  function ImagemComFallback({ src, alt, className = "" }) {
     const [urlAtual, setUrlAtual] = useState(src);
     const [tentativa, setTentativa] = useState(0);
 
@@ -66,113 +67,65 @@ export default function Filmes() {
       }
     }
 
-    function handleLoad() {
-      // imagem carregou com sucesso
-    }
-
     useEffect(() => {
       setUrlAtual(src);
       setTentativa(0);
     }, [src]);
 
-    function faixaEtariaParaNumero(faixa) {
-  const mapa = {
-    "Livre": 0,
-    "10 anos": 10,
-    "12 anos": 12,
-    "14 anos": 14,
-    "16 anos": 16,
-    "18 anos": 18,
-  };
-  return mapa[faixa] ?? faixa;
-}
-
-
     return (
       <img
         src={urlAtual}
         alt={alt}
-        style={style}
+        className={className}
         onError={handleError}
-        onLoad={handleLoad}
       />
     );
   }
 
-  // Menu de filmes em cartaz
-function MenuFilmesEmCartaz() {
-  const filmesEmCartaz = filmes.filter(filme => filme.emCartaz);
-
-  if (filmesEmCartaz.length === 0) {
-    return (
-      <div style={{ 
-        backgroundColor: "#f5f5f5", 
-        padding: "20px", 
-        borderRadius: "8px", 
-        marginBottom: "30px",
-        textAlign: "center",
-        color: "#000"  // <- tudo herdará preto
-      }}>
-        <h3 style={{ color: "#000" }}>🎬 Filmes em Cartaz</h3>
-        <p style={{ color: "#000" }}>Nenhum filme em cartaz no momento</p>
-      </div>
-    );
+  function faixaEtariaParaNumero(faixa) {
+    const mapa = {
+      "Livre": 0,
+      "10 anos": 10,
+      "12 anos": 12,
+      "14 anos": 14,
+      "16 anos": 16,
+      "18 anos": 18,
+    };
+    return mapa[faixa] ?? faixa;
   }
 
+  // Menu de filmes em cartaz
+  function MenuFilmesEmCartaz() {
+    const filmesEmCartaz = filmes.filter(filme => filme.emCartaz);
+
+    if (filmesEmCartaz.length === 0) {
+      return (
+        <div className={styles.menuCartazVazio}>
+          <h3 className={styles.menuCartazTitulo}>🎬 Filmes em Cartaz</h3>
+          <p>Nenhum filme em cartaz no momento</p>
+        </div>
+      );
+    }
+
     return (
-      <div style={{ 
-        backgroundColor: "#f5f5f5", 
-        padding: "20px", 
-        borderRadius: "8px", 
-        marginBottom: "30px" ,
-        color:"black"
-      }}>
-        <h3 style={{ textAlign: "center", marginBottom: "20px" }}>🎬 Filmes em Cartaz ({filmesEmCartaz.length}/5)</h3>
-        <div style={{ 
-          display: "flex", 
-          flexWrap: "wrap", 
-          gap: "15px", 
-          justifyContent: "center" 
-        }}>
-          {filmesEmCartaz.map((filme) => (
-            <div key={filme.id} style={{
-              backgroundColor: "white",
-              border: "1px solid #ddd",
-              borderRadius: "8px",
-              padding: "10px",
-              textAlign: "center",
-              minWidth: "150px",
-              maxWidth: "180px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
-            }}>
+      <div className={styles.menuCartaz}>
+        <h3 className={styles.menuCartazTitulo}>🎬 Filmes em Cartaz ({filmesEmCartaz.length}/5)</h3>
+        <div className={styles.filmesGrid}>
+          {filmesEmCartaz.map((filme, index) => (
+            <div key={filme.id} className={styles.filmeCard} style={{ animationDelay: `${(index + 1) * 0.1}s` }}>
               {filme.cartaz && (
                 <ImagemComFallback
                   src={filme.cartaz}
                   alt={filme.nome}
-                  style={{ 
-                    width: "120px", 
-                    height: "160px", 
-                    objectFit: "cover",
-                    borderRadius: "4px",
-                    marginBottom: "8px"
-                  }}
+                  className={styles.filmeCardImagem}
                 />
               )}
-              <h4 style={{ 
-                fontSize: "14px", 
-                margin: "8px 0 4px 0",
-                lineHeight: "1.2"
-              }}>
+              <div className={styles.filmeCardNome}>
                 {filme.nome}
-              </h4>
-              <p style={{ 
-                fontSize: "12px", 
-                color: "#666", 
-                margin: "0",
-                fontWeight: "bold"
-              }}>
+              </div>
+              <div className={styles.filmeCardHorario}>
                 ⏰ {filme.horarioExibicao || "Horário não definido"}
-              </p>
+              </div>
             </div>
           ))}
         </div>
@@ -305,9 +258,9 @@ function MenuFilmesEmCartaz() {
     }
 
     const novo = {
-  ...novoFilme,
-  faixaEtaria: faixaEtariaParaNumero(novoFilme.faixaEtaria),
-};
+      ...novoFilme,
+      faixaEtaria: faixaEtariaParaNumero(novoFilme.faixaEtaria),
+    };
     await addDoc(collection(db, "filmes"), novo);
     buscarFilmes();
   }
@@ -317,276 +270,323 @@ function MenuFilmesEmCartaz() {
   );
 
   return (
-    <div style={{ padding: "20px" }}>
-      <Link href="/Administrativo">Voltar</Link>
-      <h1>Cadastro de Novo Filme</h1>
+    <div className={styles.filmesContainer}>
+      <div className={styles.header}>
+        <h1 className={styles.tituloPrincipal}>Gestão de Filmes</h1>
+        <Link href="/Administrativo" className={styles.voltarLink}>
+          Voltar
+        </Link>
+      </div>
+
+      {/* Formulário de Novo Filme */}
       {novoFilme && (
-        <div
-          style={{
-            border: "1px solid #aaa",
-            padding: "15px",
-            marginBottom: "30px",
-            borderRadius: "8px",
-          }}
-        >
-          <p>
+        <div className={styles.formularioNovoFilme}>
+          <h2 className={styles.tituloSecao}>Cadastro de Novo Filme</h2>
+          <div className={styles.codigoFilme}>
             <strong>Código gerado:</strong> {novoFilme.codigo}
-          </p>
+          </div>
 
-          <label>Nome: </label>
-          <input
-            value={novoFilme.nome}
-            onChange={(e) => alterarNovo("nome", e.target.value)}
-          />
-          <br />
+          <div className={styles.campoFormulario}>
+            <label>Nome</label>
+            <input
+              value={novoFilme.nome}
+              onChange={(e) => alterarNovo("nome", e.target.value)}
+              placeholder="Digite o nome do filme"
+            />
+          </div>
 
-          <label>Sinopse: </label>
-          <textarea
-            value={novoFilme.sinopse}
-            onChange={(e) => alterarNovo("sinopse", e.target.value)}
-          />
-          <br />
+          <div className={styles.campoFormulario}>
+            <label>Duração</label>
+            <input
+              value={novoFilme.duracao}
+              onChange={(e) => alterarNovo("duracao", e.target.value)}
+              placeholder="Ex: 120 min"
+            />
+          </div>
 
-          <label>Duração: </label>
-          <input
-            value={novoFilme.duracao}
-            onChange={(e) => alterarNovo("duracao", e.target.value)}
-          />
-          <br />
+          <div className={styles.campoFormulario}>
+            <label>Gênero</label>
+            <input
+              value={novoFilme.genero}
+              onChange={(e) => alterarNovo("genero", e.target.value)}
+              placeholder="Ex: Ação, Drama, Comédia"
+            />
+          </div>
 
-          <label>Gênero: </label>
-          <input
-            value={novoFilme.genero}
-            onChange={(e) => alterarNovo("genero", e.target.value)}
-          />
-          <br />
+          <div className={styles.campoFormulario}>
+            <label>Horário de Exibição</label>
+            <input
+              type="time"
+              value={novoFilme.horarioExibicao}
+              onChange={(e) => alterarNovo("horarioExibicao", e.target.value)}
+            />
+          </div>
 
-          <label>Horário de Exibição: </label>
-          <input
-            type="time"
-            value={novoFilme.horarioExibicao}
-            onChange={(e) => alterarNovo("horarioExibicao", e.target.value)}
-          />
-          <br />
+          <div className={styles.campoFormulario}>
+            <label>Faixa Etária</label>
+            <select
+              value={novoFilme.faixaEtaria}
+              onChange={(e) => alterarNovo("faixaEtaria", e.target.value)}
+            >
+              <option value="">Selecione...</option>
+              {faixas.map((f) => (
+                <option key={f.faixa} value={f.faixa}>
+                  {f.faixa}
+                </option>
+              ))}
+            </select>
+            {novoFilme.faixaEtaria && (
+              <img
+                src={faixas.find((f) => f.faixa === novoFilme.faixaEtaria)?.imagem}
+                alt={novoFilme.faixaEtaria}
+                className={styles.imagemFaixaEtaria}
+              />
+            )}
+          </div>
 
-          <label>Faixa Etária:</label>
-          <select
-            value={novoFilme.faixaEtaria}
-            onChange={(e) => alterarNovo("faixaEtaria", e.target.value)}
-          >
-            <option value="">Selecione...</option>
-            {faixas.map((f) => (
-              <option key={f.faixa} value={f.faixa}>
-                {f.faixa}
-              </option>
-            ))}
-          </select>
-          {novoFilme.faixaEtaria && (
-            <img
-              src={faixas.find((f) => f.faixa === novoFilme.faixaEtaria)?.imagem}
-              alt={novoFilme.faixaEtaria}
-              style={{ width: "40px", marginLeft: 8 }}
+          <div className={styles.campoFormulario}>
+            <label>Elenco</label>
+            <input
+              value={novoFilme.elenco}
+              onChange={(e) => alterarNovo("elenco", e.target.value)}
+              placeholder="Principais atores"
+            />
+          </div>
+
+          <div className={styles.campoFormulario}>
+            <label>Distribuidora</label>
+            <input
+              value={novoFilme.distribuidora}
+              onChange={(e) => alterarNovo("distribuidora", e.target.value)}
+              placeholder="Nome da distribuidora"
+            />
+          </div>
+
+          <div className={styles.campoFormulario}>
+            <label>Cartaz (Google Drive ou link direto)</label>
+            <input
+              value={novoFilme.cartaz}
+              onChange={(e) => alterarNovo("cartaz", e.target.value)}
+              placeholder="Cole o link do cartaz aqui"
+            />
+          </div>
+
+          <div className={styles.campoFormulario}>
+            <label>Sinopse</label>
+            <textarea
+              value={novoFilme.sinopse}
+              onChange={(e) => alterarNovo("sinopse", e.target.value)}
+              placeholder="Descreva a história do filme"
+            />
+          </div>
+
+          {novoFilme.cartaz && (
+            <ImagemComFallback 
+              src={novoFilme.cartaz} 
+              alt="Cartaz selecionado" 
+              className={styles.imagemCartaz}
             />
           )}
-          <br />
 
-          <label>Elenco: </label>
-          <input
-            value={novoFilme.elenco}
-            onChange={(e) => alterarNovo("elenco", e.target.value)}
-          />
-          <br />
-
-          <label>Distribuidora: </label>
-          <input
-            value={novoFilme.distribuidora}
-            onChange={(e) => alterarNovo("distribuidora", e.target.value)}
-          />
-          <br />
-
-          <label>Cartaz / Filme (Google Drive ou link direto):</label>
-          <input
-            value={novoFilme.cartaz}
-            onChange={(e) => alterarNovo("cartaz", e.target.value)}
-          />
-          <br />
-          {novoFilme.cartaz && (
-            <ImagemComFallback src={novoFilme.cartaz} alt="Cartaz selecionado" />
-          )}
-          <br />
-          <button onClick={adicionarFilme}>Adicionar Filme</button>
+          <button className={`${styles.btn} ${styles.btnPrimary}`} onClick={adicionarFilme}>
+            Adicionar Filme
+          </button>
         </div>
       )}
 
       {/* Menu de Filmes em Cartaz */}
       <MenuFilmesEmCartaz />
 
-      <h2>Filmes Cadastrados</h2>
-      <label>Pesquisar por nome: </label>
-      <input
-        value={pesquisa}
-        onChange={(e) => setPesquisa(e.target.value)}
-        placeholder="Digite o nome do filme..."
-      />
-      <hr />
+      {/* Seção de Pesquisa */}
+      <div className={styles.campoPesquisa}>
+        <h2 className={styles.tituloSecao}>Filmes Cadastrados</h2>
+        <label>Pesquisar filmes:</label>
+        <input
+          value={pesquisa}
+          onChange={(e) => setPesquisa(e.target.value)}
+          placeholder="Pesquisar por nome do filme..."
+        />
+      </div>
 
-      {filmesFiltrados.map((filme) => (
-        <div
-          key={filme.id}
-          style={{
-            border: "1px solid #ccc",
-            padding: "10px",
-            margin: "10px 0",
-            borderRadius: "8px",
-          }}
-        >
-          {editandoId === filme.id ? (
-            <div>
-              <p>
-                <strong>Código:</strong> {form.codigo}
-              </p>
+      {/* Lista de Filmes */}
+      {filmesFiltrados.length === 0 ? (
+        <div className={styles.menuCartazVazio}>
+          <p>Nenhum filme encontrado</p>
+        </div>
+      ) : (
+        filmesFiltrados.map((filme) => (
+          <div key={filme.id} className={styles.filmeItem}>
+            {editandoId === filme.id ? (
+              <div className={styles.formularioEdicao}>
+                <div className={styles.codigoFilme}>
+                  <strong>Código:</strong> {form.codigo}
+                </div>
 
-              <label>Nome: </label>
-              <input
-                value={form.nome}
-                onChange={(e) => alterarForm("nome", e.target.value)}
-              />
-              <br />
+                <div className={styles.campoFormulario}>
+                  <label>Nome</label>
+                  <input
+                    value={form.nome}
+                    onChange={(e) => alterarForm("nome", e.target.value)}
+                  />
+                </div>
 
-              <label>Sinopse: </label>
-              <textarea
-                value={form.sinopse}
-                onChange={(e) => alterarForm("sinopse", e.target.value)}
-              />
-              <br />
+                <div className={styles.campoFormulario}>
+                  <label>Duração</label>
+                  <input
+                    value={form.duracao}
+                    onChange={(e) => alterarForm("duracao", e.target.value)}
+                  />
+                </div>
 
-              <label>Duração: </label>
-              <input
-                value={form.duracao}
-                onChange={(e) => alterarForm("duracao", e.target.value)}
-              />
-              <br />
+                <div className={styles.campoFormulario}>
+                  <label>Gênero</label>
+                  <input
+                    value={form.genero}
+                    onChange={(e) => alterarForm("genero", e.target.value)}
+                  />
+                </div>
 
-              <label>Gênero: </label>
-              <input
-                value={form.genero}
-                onChange={(e) => alterarForm("genero", e.target.value)}
-              />
-              <br />
+                <div className={styles.campoFormulario}>
+                  <label>Horário de Exibição</label>
+                  <input
+                    type="time"
+                    value={form.horarioExibicao}
+                    onChange={(e) => alterarForm("horarioExibicao", e.target.value)}
+                  />
+                </div>
 
-              <label>Horário de Exibição: </label>
-              <input
-                type="time"
-                value={form.horarioExibicao}
-                onChange={(e) => alterarForm("horarioExibicao", e.target.value)}
-              />
-              <br />
+                <div className={styles.campoFormulario}>
+                  <label>Faixa Etária</label>
+                  <select
+                    value={form.faixaEtaria}
+                    onChange={(e) => alterarForm("faixaEtaria", e.target.value)}
+                  >
+                    <option value="">Selecione...</option>
+                    {faixas.map((f) => (
+                      <option key={f.faixa} value={f.faixa}>
+                        {f.faixa}
+                      </option>
+                    ))}
+                  </select>
+                  {form.faixaEtaria && (
+                    <img
+                      src={faixas.find((f) => f.faixa === form.faixaEtaria)?.imagem}
+                      alt={form.faixaEtaria}
+                      className={styles.imagemFaixaEtaria}
+                    />
+                  )}
+                </div>
 
-              <label>Faixa Etária:</label>
-              <select
-                value={form.faixaEtaria}
-                onChange={(e) => alterarForm("faixaEtaria", e.target.value)}
-              >
-                <option value="">Selecione...</option>
-                {faixas.map((f) => (
-                  <option key={f.faixa} value={f.faixa}>
-                    {f.faixa}
-                  </option>
-                ))}
-              </select>
-              {form.faixaEtaria && (
-                <img
-                  src={faixas.find((f) => f.faixa === form.faixaEtaria)?.imagem}
-                  alt={form.faixaEtaria}
-                  style={{ width: "40px", marginLeft: 8 }}
-                />
-              )}
-              <br />
+                <div className={styles.campoFormulario}>
+                  <label>Elenco</label>
+                  <input
+                    value={form.elenco}
+                    onChange={(e) => alterarForm("elenco", e.target.value)}
+                  />
+                </div>
 
-              <label>Elenco: </label>
-              <input
-                value={form.elenco}
-                onChange={(e) => alterarForm("elenco", e.target.value)}
-              />
-              <br />
+                <div className={styles.campoFormulario}>
+                  <label>Distribuidora</label>
+                  <input
+                    value={form.distribuidora}
+                    onChange={(e) => alterarForm("distribuidora", e.target.value)}
+                  />
+                </div>
 
-              <label>Distribuidora: </label>
-              <input
-                value={form.distribuidora}
-                onChange={(e) => alterarForm("distribuidora", e.target.value)}
-              />
-              <br />
+                <div className={styles.campoFormulario}>
+                  <label>Cartaz</label>
+                  <input
+                    value={form.cartaz}
+                    onChange={(e) => alterarForm("cartaz", e.target.value)}
+                  />
+                </div>
 
-              <label>Cartaz / Filme (Google Drive ou link direto):</label>
-              <input
-                value={form.cartaz}
-                onChange={(e) => alterarForm("cartaz", e.target.value)}
-              />
-              <br />
-              {form.cartaz && (
-                <ImagemComFallback src={form.cartaz} alt="Cartaz selecionado" />
-              )}
-              <br />
-              <button onClick={salvarEdicao}>Salvar</button>{" "}
-              <button onClick={cancelarEdicao}>Cancelar</button>
-            </div>
-          ) : (
-            <div>
-              <h3>{filme.nome}</h3>
-              <p>
-                <strong>Código:</strong> {filme.codigo}
-              </p>
-              {filme.cartaz && (
-                <ImagemComFallback
-                  src={filme.cartaz}
-                  alt={filme.nome}
-                  style={{ width: "200px" }}
-                />
-              )}
-              <p>
-                <strong>Sinopse:</strong> {filme.sinopse}
-              </p>
-              <p>
-                <strong>Duração:</strong> {filme.duracao}
-              </p>
-              <p>
-                <strong>Gênero:</strong> {filme.genero}
-              </p>
-              <p>
-                <strong>Horário:</strong> {filme.horarioExibicao}
-              </p>
-              <p>
-                <strong>Faixa Etária:</strong>{" "}
-                {filme.faixaEtaria && (
-                  <img
-                    src={faixas.find((f) => f.faixa === filme.faixaEtaria)?.imagem}
-                    alt={filme.faixaEtaria}
-                    style={{ width: "40px", marginLeft: 8 }}
+                <div className={styles.campoFormulario}>
+                  <label>Sinopse</label>
+                  <textarea
+                    value={form.sinopse}
+                    onChange={(e) => alterarForm("sinopse", e.target.value)}
+                  />
+                </div>
+
+                {form.cartaz && (
+                  <ImagemComFallback 
+                    src={form.cartaz} 
+                    alt="Cartaz selecionado" 
+                    className={styles.imagemCartaz}
                   />
                 )}
-              </p>
-              <p>
-                <strong>Elenco:</strong> {filme.elenco}
-              </p>
-              <p>
-                <strong>Distribuidora:</strong> {filme.distribuidora}
-              </p>
-              <p>
-                <strong>Status:</strong>{" "}
-                {filme.emCartaz ? "🎬 Em cartaz" : "❌ Fora de cartaz"}
-              </p>
 
-              <button onClick={() => iniciarEdicao(filme)}>Editar</button>{" "}
-              <button onClick={() => excluirFilme(filme.id)}>Excluir</button>{" "}
-              <button
-                onClick={() => alternarEmCartaz(filme.id, filme.emCartaz)}
-              >
-                {filme.emCartaz ? "Marcar Fora de Cartaz" : "Marcar Em Cartaz"}
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
+                <div>
+                  <button className={`${styles.btn} ${styles.btnSuccess}`} onClick={salvarEdicao}>
+                    Salvar
+                  </button>
+                  <button className={`${styles.btn} ${styles.btnSecondary}`} onClick={cancelarEdicao}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <h3>{filme.nome}</h3>
+                
+                <div style={{ display: 'flex', gap: '20px', marginBottom: '20px' }}>
+                  <div>
+                    {filme.cartaz && (
+                      <ImagemComFallback
+                        src={filme.cartaz}
+                        alt={filme.nome}
+                        className={styles.imagemCartaz}
+                      />
+                    )}
+                  </div>
+                  
+                  <div style={{ flex: 1 }}>
+                    <p><strong>Código:</strong> <span className={styles.codigoFilme}>{filme.codigo}</span></p>
+                    <p><strong>Duração:</strong> {filme.duracao}</p>
+                    <p><strong>Gênero:</strong> {filme.genero}</p>
+                    <p><strong>Horário:</strong> {filme.horarioExibicao}</p>
+                    <p>
+                      <strong>Faixa Etária:</strong>
+                      {filme.faixaEtaria && faixas.find((f) => f.faixa === filme.faixaEtaria) && (
+                        <img
+                          src={faixas.find((f) => f.faixa === filme.faixaEtaria)?.imagem}
+                          alt={filme.faixaEtaria}
+                          className={styles.imagemFaixaEtaria}
+                        />
+                      )}
+                    </p>
+                    <p><strong>Elenco:</strong> {filme.elenco}</p>
+                    <p><strong>Distribuidora:</strong> {filme.distribuidora}</p>
+                    <p>
+                      <strong>Status:</strong> 
+                      <span className={filme.emCartaz ? styles.statusEmCartaz : styles.statusForaCartaz}>
+                        {filme.emCartaz ? "🎬 Em cartaz" : "❌ Fora de cartaz"}
+                      </span>
+                    </p>
+                    <p><strong>Sinopse:</strong> {filme.sinopse}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <button className={`${styles.btn} ${styles.btnWarning}`} onClick={() => iniciarEdicao(filme)}>
+                    Editar
+                  </button>
+                  <button className={`${styles.btn} ${styles.btnDanger}`} onClick={() => excluirFilme(filme.id)}>
+                    Excluir
+                  </button>
+                  <button
+                    className={`${styles.btn} ${styles.btnSecondary}`}
+                    onClick={() => alternarEmCartaz(filme.id, filme.emCartaz)}
+                  >
+                    {filme.emCartaz ? "Marcar Fora de Cartaz" : "Marcar Em Cartaz"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        ))
+      )}
     </div>
   );
 }

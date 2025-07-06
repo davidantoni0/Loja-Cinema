@@ -10,6 +10,7 @@ import {
   deleteDoc,
 } from "firebase/firestore";
 import Link from "next/link";
+import styles from "./page.module.css"; // Importe o CSS Module
 
 export default function Lanchonete() {
   const [produtos, setProdutos] = useState([]);
@@ -70,7 +71,7 @@ export default function Lanchonete() {
   }
 
   // Componente para imagem com fallback
-  function ImagemComFallback({ src, alt, driveId, style = { width: "200px", marginTop: "10px" } }) {
+  function ImagemComFallback({ src, alt, driveId, className = styles.imagemProduto }) {
     const [urlAtual, setUrlAtual] = useState(src);
     const [tentativa, setTentativa] = useState(0);
     
@@ -101,7 +102,7 @@ export default function Lanchonete() {
       <img
         src={urlAtual}
         alt={alt}
-        style={style}
+        className={className}
         onError={handleError}
         onLoad={handleLoad}
       />
@@ -182,156 +183,217 @@ export default function Lanchonete() {
   );
 
   return (
-    <div style={{ padding: "20px" }}>
-      <Link href="/Administrativo">Voltar</Link>
-      <h1>Cadastro de Novo Produto</h1>
+    <div className={styles.lanchoneteContainer}>
+      <Link href="/Administrativo" className={styles.voltarLink}>
+        Voltar
+      </Link>
+      
+      <h1 className={styles.tituloPrincipal}>Cadastro de Novo Produto</h1>
 
       {novoProduto && (
-        <div style={{ border: "1px solid #aaa", padding: "15px", marginBottom: "30px", borderRadius: "8px" }}>
-          <p><strong>Código gerado:</strong> {novoProduto.codigo}</p>
+        <div className={styles.formularioNovoProduto}>
+          <p className={styles.codigoGerado}>
+            <strong>Código gerado:</strong> {novoProduto.codigo}
+          </p>
 
-          <label>Nome: </label>
-          <input
-            value={novoProduto.nome || ""}
-            onChange={(e) => alterarNovo("nome", e.target.value)}
-          />
-          <br />
+          <div className={styles.campoFormulario}>
+            <label>Nome: </label>
+            <input
+              value={novoProduto.nome || ""}
+              onChange={(e) => alterarNovo("nome", e.target.value)}
+              placeholder="Digite o nome do produto..."
+            />
+          </div>
 
-          <label>Preço (R$): </label>
-          <input
-            type="number"
-            value={novoProduto.preco || ""}
-            onChange={(e) => alterarNovo("preco", e.target.value)}
-          />
-          <br />
+          <div className={styles.campoFormulario}>
+            <label>Preço (R$): </label>
+            <input
+              type="number"
+              value={novoProduto.preco || ""}
+              onChange={(e) => alterarNovo("preco", e.target.value)}
+              placeholder="0.00"
+            />
+          </div>
 
-          <label>Tamanho:</label>
-          <select
-            value={novoProduto.tamanho || "único"}
-            onChange={(e) => alterarNovo("tamanho", e.target.value)}
-          >
-            <option value="único">Único</option>
-            <option value="pequeno">Pequeno</option>
-            <option value="médio">Médio</option>
-            <option value="grande">Grande</option>
-          </select>
-          <br />
+          <div className={styles.campoFormulario}>
+            <label>Tamanho:</label>
+            <select
+              value={novoProduto.tamanho || "único"}
+              onChange={(e) => alterarNovo("tamanho", e.target.value)}
+            >
+              <option value="único">Único</option>
+              <option value="pequeno">Pequeno</option>
+              <option value="médio">Médio</option>
+              <option value="grande">Grande</option>
+            </select>
+          </div>
 
-          <label>Imagem (Google Drive ou link direto):</label>
-          <input
-            value={novoProduto.imagem || ""}
-            onChange={(e) =>
-              alterarNovo("imagem", formatarLinkImagem(e.target.value))
-            }
-          />
-          <br />
+          <div className={styles.campoFormulario}>
+            <label>Imagem (Google Drive ou link direto):</label>
+            <input
+              value={novoProduto.imagem || ""}
+              onChange={(e) =>
+                alterarNovo("imagem", formatarLinkImagem(e.target.value))
+              }
+              placeholder="Cole o link da imagem aqui..."
+            />
+          </div>
+
           {novoProduto.imagem && (
-            <div>
+            <div className={styles.previewImagem}>
               <ImagemComFallback 
                 src={novoProduto.imagem} 
                 alt="Imagem do produto"
                 driveId={extrairDriveId(novoProduto.imagem)}
               />
-              <p style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
-                URL da imagem: {novoProduto.imagem}
-              </p>
             </div>
           )}
-          <br /><br />
-          <button onClick={adicionarProduto}>Adicionar Produto</button>
+
+          <button 
+            className={`${styles.btn} ${styles.btnSuccess}`} 
+            onClick={adicionarProduto}
+          >
+            Adicionar Produto
+          </button>
         </div>
       )}
 
-      <h2>Produtos Cadastrados</h2>
-      <label>Pesquisar por nome: </label>
-      <input
-        value={pesquisa}
-        onChange={(e) => setPesquisa(e.target.value)}
-        placeholder="Digite o nome do produto..."
-      />
-      <hr />
+      <h2 className={styles.tituloSecao}>Produtos Cadastrados</h2>
+      
+      <div className={styles.campoPesquisa}>
+        <label>Pesquisar por nome: </label>
+        <input
+          value={pesquisa}
+          onChange={(e) => setPesquisa(e.target.value)}
+          placeholder="Digite o nome do produto..."
+        />
+      </div>
+
+      <hr className={styles.separador} />
+
+      {produtosFiltrados.length === 0 && (
+        <div className={styles.nenhumProduto}>
+          <p>Nenhum produto encontrado.</p>
+        </div>
+      )}
 
       {produtosFiltrados.map((produto) => (
-        <div key={produto.id} style={{ border: "1px solid #ccc", padding: "10px", margin: "10px 0", borderRadius: "8px" }}>
+        <div key={produto.id} className={styles.produtoItem}>
           {editandoId === produto.id ? (
-            <div>
-              <p><strong>Código:</strong> {form.codigo}</p>
+            <div className={styles.formularioEdicao}>
+              <p className={styles.codigoGerado}>
+                <strong>Código:</strong> {form.codigo}
+              </p>
 
-              <label>Nome: </label>
-              <input
-                value={form.nome || ""}
-                onChange={(e) => alterarForm("nome", e.target.value)}
-              />
-              <br />
+              <div className={styles.campoFormulario}>
+                <label>Nome: </label>
+                <input
+                  value={form.nome || ""}
+                  onChange={(e) => alterarForm("nome", e.target.value)}
+                />
+              </div>
 
-              <label>Preço (R$): </label>
-              <input
-                type="number"
-                value={form.preco || ""}
-                onChange={(e) => alterarForm("preco", e.target.value)}
-              />
-              <br />
+              <div className={styles.campoFormulario}>
+                <label>Preço (R$): </label>
+                <input
+                  type="number"
+                  value={form.preco || ""}
+                  onChange={(e) => alterarForm("preco", e.target.value)}
+                />
+              </div>
 
-              <label>Tamanho:</label>
-              <select
-                value={form.tamanho || "único"}
-                onChange={(e) => alterarForm("tamanho", e.target.value)}
-              >
-                <option value="único">Único</option>
-                <option value="pequeno">Pequeno</option>
-                <option value="médio">Médio</option>
-                <option value="grande">Grande</option>
-              </select>
-              <br />
+              <div className={styles.campoFormulario}>
+                <label>Tamanho:</label>
+                <select
+                  value={form.tamanho || "único"}
+                  onChange={(e) => alterarForm("tamanho", e.target.value)}
+                >
+                  <option value="único">Único</option>
+                  <option value="pequeno">Pequeno</option>
+                  <option value="médio">Médio</option>
+                  <option value="grande">Grande</option>
+                </select>
+              </div>
 
-              <label>Imagem (Google Drive ou link direto):</label>
-              <input
-                value={form.imagem || ""}
-                onChange={(e) =>
-                  alterarForm("imagem", formatarLinkImagem(e.target.value))
-                }
-              />
-              <br />
+              <div className={styles.campoFormulario}>
+                <label>Imagem (Google Drive ou link direto):</label>
+                <input
+                  value={form.imagem || ""}
+                  onChange={(e) =>
+                    alterarForm("imagem", formatarLinkImagem(e.target.value))
+                  }
+                />
+              </div>
+
               {form.imagem && (
-                <div>
+                <div className={styles.previewImagem}>
                   <ImagemComFallback 
                     src={form.imagem} 
                     alt="Imagem do produto"
                     driveId={extrairDriveId(form.imagem)}
                   />
-                  <p style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
-                    URL da imagem: {form.imagem}
-                  </p>
                 </div>
               )}
-              <br /><br />
-              <button onClick={salvarEdicao}>Salvar</button>{" "}
-              <button onClick={cancelarEdicao}>Cancelar</button>
+
+              <button 
+                className={`${styles.btn} ${styles.btnSuccess}`} 
+                onClick={salvarEdicao}
+              >
+                Salvar
+              </button>
+              <button 
+                className={`${styles.btn} ${styles.btnSecondary}`} 
+                onClick={cancelarEdicao}
+              >
+                Cancelar
+              </button>
             </div>
           ) : (
             <div>
               <h3>{produto.nome}</h3>
+              
               {produto.imagem && (
-                <div>
+                <div className={styles.previewImagem}>
                   <ImagemComFallback 
                     src={produto.imagem} 
                     alt={produto.nome}
                     driveId={extrairDriveId(produto.imagem)}
-                    style={{ width: "200px" }}
                   />
-                  <p style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
-                    URL da imagem: {produto.imagem}
-                  </p>
                 </div>
               )}
-              <p><strong>Código:</strong> {produto.codigo}</p>
-              <p><strong>Preço:</strong> R$ {produto.preco}</p>
+              
+              <p>
+                <strong>Código:</strong> 
+                <span className={styles.codigoProduto}>{produto.codigo}</span>
+              </p>
+              <p>
+                <strong>Preço:</strong> 
+                <span className={styles.precoProduto}>R$ {produto.preco}</span>
+              </p>
               <p><strong>Tamanho:</strong> {produto.tamanho}</p>
-              <p><strong>Status:</strong> {produto.emEstoque ? "🟢 Em estoque" : "🔴 Fora de estoque"}</p>
+              <p>
+                <strong>Status:</strong> 
+                <span className={produto.emEstoque ? styles.statusEmEstoque : styles.statusForaEstoque}>
+                  {produto.emEstoque ? "Em estoque" : "Fora de estoque"}
+                </span>
+              </p>
 
-              <button onClick={() => iniciarEdicao(produto)}>Editar</button>{" "}
-              <button onClick={() => excluirProduto(produto.id)}>Excluir</button>{" "}
-              <button onClick={() => alternarEstoque(produto.id, produto.emEstoque)}>
+              <button 
+                className={`${styles.btn} ${styles.btnWarning}`} 
+                onClick={() => iniciarEdicao(produto)}
+              >
+                Editar
+              </button>
+              <button 
+                className={`${styles.btn} ${styles.btnDanger}`} 
+                onClick={() => excluirProduto(produto.id)}
+              >
+                Excluir
+              </button>
+              <button 
+                className={`${styles.btn} ${styles.btnPrimary}`} 
+                onClick={() => alternarEstoque(produto.id, produto.emEstoque)}
+              >
                 {produto.emEstoque ? "Marcar Fora de Estoque" : "Marcar Em Estoque"}
               </button>
             </div>

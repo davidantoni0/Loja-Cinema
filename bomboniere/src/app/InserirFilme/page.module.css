@@ -1,334 +1,594 @@
 /* ===============================
-   ARQUIVO: filmes.css
+   ARQUIVO: page.module.css
+   VERSÃO CSS MODULES
    =============================== */
 
 /* Container principal */
-.filmes-container {
-  padding: 20px;
-  font-family: Arial, sans-serif;
+.filmesContainer {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
 }
 
 /* Link de voltar */
-.voltar-link {
+.voltarLink {
   display: inline-block;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   text-decoration: none;
-  color: #007bff;
-  font-weight: bold;
+  color: #C6A664;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.voltar-link:hover {
-  text-decoration: underline;
+.voltarLink::before {
+  content: '← ';
+  margin-right: 5px;
+}
+
+.voltarLink:hover {
+  color: #294D61;
+  transform: translateX(-5px);
 }
 
 /* Títulos */
-.titulo-principal {
-  color: #333;
-  margin-bottom: 20px;
+.tituloPrincipal {
+  font-family: "Libre Baskerville", serif;
+  color: #C6A664;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-align: center;
+  letter-spacing: 1px;
+  position: relative;
 }
 
-.titulo-secao {
-  color: #444;
-  margin: 30px 0 15px 0;
+.tituloPrincipal::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, #294D61, #C6A664);
+}
+
+.tituloSecao {
+  font-family: "Libre Baskerville", serif;
+  color: #C6A664;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 40px 0 20px 0;
+  position: relative;
+  padding-left: 20px;
+}
+
+.tituloSecao::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 30px;
+  background: linear-gradient(135deg, #294D61, #C6A664);
+  border-radius: 2px;
 }
 
 /* Formulário de novo filme */
-.formulario-novo-filme {
-  border: 1px solid #aaa;
-  padding: 15px;
-  margin-bottom: 30px;
-  border-radius: 8px;
-  background-color: #fafafa;
+.formularioNovoFilme {
+  background: rgba(28, 28, 28, 0.95);
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  padding: 30px;
+  margin-bottom: 40px;
+  border-radius: 12px;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.3),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  position: relative;
 }
 
-.campo-formulario {
-  margin-bottom: 15px;
+.formularioNovoFilme::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #294D61, #C6A664);
+  border-radius: 12px 12px 0 0;
 }
 
-.campo-formulario label {
-  display: inline-block;
-  margin-bottom: 5px;
-  font-weight: bold;
-  color: #555;
+.campoFormulario {
+  margin-bottom: 20px;
+  animation: fadeInUp 0.6s ease-out;
 }
 
-.campo-formulario input,
-.campo-formulario textarea,
-.campo-formulario select {
+.campoFormulario label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #C6A664;
+  font-size: 1rem;
+}
+
+.campoFormulario input,
+.campoFormulario textarea,
+.campoFormulario select {
   width: 100%;
-  max-width: 400px;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
+  max-width: 500px;
+  padding: 12px 16px;
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  border-radius: 8px;
+  font-size: 1rem;
+  color: #F5F5F5;
+  background: rgba(20, 20, 20, 0.8);
+  transition: all 0.3s ease;
+  font-family: "Merriweather", serif;
 }
 
-.campo-formulario textarea {
-  height: 80px;
+.campoFormulario input:focus,
+.campoFormulario textarea:focus,
+.campoFormulario select:focus {
+  outline: none;
+  border-color: #C6A664;
+  box-shadow: 0 0 0 2px rgba(198, 166, 100, 0.2);
+  transform: translateY(-1px);
+}
+
+.campoFormulario input::placeholder,
+.campoFormulario textarea::placeholder {
+  color: #B0B0B0;
+  font-weight: 400;
+}
+
+.campoFormulario textarea {
+  height: 100px;
   resize: vertical;
 }
 
 /* Menu de filmes em cartaz */
-.menu-cartaz {
-  background-color: #f5f5f5;
+.menuCartaz {
+  background: rgba(28, 28, 28, 0.95);
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 40px;
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.3),
+    0 5px 15px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  position: relative;
+}
+
+.menuCartaz::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #294D61, #C6A664);
+  border-radius: 12px 12px 0 0;
+}
+
+.menuCartazTitulo {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #C6A664;
+  font-family: "Libre Baskerville", serif;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.menuCartazVazio {
+  background: rgba(28, 28, 28, 0.95);
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  padding: 30px;
+  border-radius: 12px;
+  margin-bottom: 40px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.menuCartazVazio p {
+  color: #B0B0B0;
+  margin: 15px 0 0 0;
+  font-size: 1.1rem;
+}
+
+.filmesGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  justify-items: center;
+}
+
+.filmeCard {
+  background: rgba(20, 20, 20, 0.9);
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  border-radius: 12px;
   padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-}
-
-.menu-cartaz-titulo {
   text-align: center;
-  margin-bottom: 20px;
-  color: #333;
+  width: 100%;
+  max-width: 220px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
-.menu-cartaz-vazio {
-  background-color: #f5f5f5;
-  padding: 20px;
-  border-radius: 8px;
-  margin-bottom: 30px;
-  text-align: center;
+.filmeCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(198, 166, 100, 0.1), transparent);
+  transition: left 0.5s ease;
 }
 
-.menu-cartaz-vazio p {
-  color: #666;
-  margin: 10px 0 0 0;
+.filmeCard:hover::before {
+  left: 100%;
 }
 
-.filmes-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 15px;
-  justify-content: center;
+.filmeCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  border-color: #C6A664;
 }
 
-.filme-card {
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  text-align: center;
-  min-width: 150px;
-  max-width: 180px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease;
-}
-
-.filme-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.filme-card-imagem {
-  width: 120px;
-  height: 160px;
+.filmeCardImagem {
+  width: 140px;
+  height: 200px;
   object-fit: cover;
-  border-radius: 4px;
-  margin-bottom: 8px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  transition: transform 0.3s ease;
 }
 
-.filme-card-nome {
-  font-size: 14px;
-  margin: 8px 0 4px 0;
-  line-height: 1.2;
-  color: #333;
+.filmeCard:hover .filmeCardImagem {
+  transform: scale(1.05);
 }
 
-.filme-card-horario {
-  font-size: 12px;
-  color: #666;
+.filmeCardNome {
+  font-size: 1rem;
+  margin: 15px 0 8px 0;
+  line-height: 1.3;
+  color: #C6A664;
+  font-weight: 600;
+}
+
+.filmeCardHorario {
+  font-size: 0.9rem;
+  color: #B0B0B0;
   margin: 0;
-  font-weight: bold;
+  font-weight: 500;
 }
 
 /* Campo de pesquisa */
-.campo-pesquisa {
-  margin-bottom: 20px;
+.campoPesquisa {
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.campo-pesquisa label {
-  font-weight: bold;
-  margin-right: 10px;
+.campoPesquisa label {
+  font-weight: 600;
+  color: #C6A664;
+  font-size: 1.1rem;
 }
 
-.campo-pesquisa input {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 300px;
-  max-width: 100%;
+.campoPesquisa input {
+  padding: 12px 16px;
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  border-radius: 8px;
+  width: 100%;
+  max-width: 400px;
+  font-size: 1rem;
+  color: #F5F5F5;
+  background: rgba(20, 20, 20, 0.8);
+  transition: all 0.3s ease;
+  font-family: "Merriweather", serif;
+}
+
+.campoPesquisa input:focus {
+  outline: none;
+  border-color: #C6A664;
+  box-shadow: 0 0 0 2px rgba(198, 166, 100, 0.2);
+  transform: translateY(-1px);
+}
+
+.campoPesquisa input::placeholder {
+  color: #B0B0B0;
 }
 
 /* Lista de filmes */
-.filme-item {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin: 10px 0;
-  border-radius: 8px;
-  background-color: #fff;
+.filmeItem {
+  background: rgba(28, 28, 28, 0.95);
+  border: 1px solid rgba(198, 166, 100, 0.3);
+  padding: 25px;
+  margin: 20px 0;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 }
 
-.filme-item h3 {
-  color: #333;
+.filmeItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  border-color: #C6A664;
+}
+
+.filmeItem h3 {
+  color: #C6A664;
   margin-top: 0;
+  margin-bottom: 15px;
+  font-family: "Libre Baskerville", serif;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 
-.filme-item p {
-  margin: 8px 0;
-  line-height: 1.4;
+.filmeItem p {
+  margin: 10px 0;
+  line-height: 1.6;
+  color: #F5F5F5;
 }
 
-.filme-item strong {
-  color: #555;
+.filmeItem strong {
+  color: #C6A664;
+  font-weight: 600;
 }
 
 /* Formulário de edição */
-.formulario-edicao {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 5px;
+.formularioEdicao {
+  background: rgba(20, 20, 20, 0.9);
+  padding: 25px;
+  border-radius: 8px;
+  border: 1px solid rgba(198, 166, 100, 0.2);
 }
 
 /* Botões */
 .btn {
-  padding: 8px 16px;
-  margin: 5px;
+  padding: 12px 24px;
+  margin: 8px;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.2s ease;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-family: "Poiret One", sans-serif;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-primary {
-  background-color: #007bff;
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btnPrimary {
+  background: linear-gradient(135deg, #294D61, #3a5f75);
   color: white;
 }
 
-.btn-primary:hover {
-  background-color: #0056b3;
+.btnPrimary:hover {
+  box-shadow: 0 6px 20px rgba(41, 77, 97, 0.4);
 }
 
-.btn-success {
-  background-color: #28a745;
+.btnSuccess {
+  background: linear-gradient(135deg, #28a745, #34ce57);
   color: white;
 }
 
-.btn-success:hover {
-  background-color: #1e7e34;
+.btnSuccess:hover {
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
 }
 
-.btn-danger {
-  background-color: #dc3545;
+.btnDanger {
+  background: linear-gradient(135deg, #dc3545, #e74c3c);
   color: white;
 }
 
-.btn-danger:hover {
-  background-color: #c82333;
+.btnDanger:hover {
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
 }
 
-.btn-warning {
-  background-color: #ffc107;
+.btnWarning {
+  background: linear-gradient(135deg, #ffc107, #ffcd39);
   color: #212529;
 }
 
-.btn-warning:hover {
-  background-color: #e0a800;
+.btnWarning:hover {
+  box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
 }
 
-.btn-secondary {
-  background-color: #6c757d;
+.btnSecondary {
+  background: linear-gradient(135deg, #6c757d, #868e96);
   color: white;
 }
 
-.btn-secondary:hover {
-  background-color: #545b62;
+.btnSecondary:hover {
+  box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
 }
 
 /* Imagens */
-.imagem-cartaz {
-  width: 200px;
-  margin-top: 10px;
+.imagemCartaz {
+  width: 250px;
+  max-width: 100%;
+  margin-top: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.imagemCartaz:hover {
+  transform: scale(1.05);
+}
+
+.imagemFaixaEtaria {
+  width: 45px;
+  margin-left: 10px;
+  vertical-align: middle;
   border-radius: 4px;
 }
 
-.imagem-faixa-etaria {
-  width: 40px;
-  margin-left: 8px;
-  vertical-align: middle;
-}
-
 /* Status do filme */
-.status-em-cartaz {
-  color: #28a745;
-  font-weight: bold;
+.statusEmCartaz {
+  color: #4ecdc4;
+  font-weight: 600;
+  background: rgba(78, 205, 196, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid #4ecdc4;
 }
 
-.status-fora-cartaz {
-  color: #dc3545;
-  font-weight: bold;
+.statusForaCartaz {
+  color: #ff6b6b;
+  font-weight: 600;
+  background: rgba(255, 107, 107, 0.1);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border-left: 3px solid #ff6b6b;
 }
 
 /* Código do filme */
-.codigo-filme {
-  font-family: monospace;
-  background-color: #f8f9fa;
-  padding: 2px 6px;
-  border-radius: 3px;
+.codigoFilme {
+  font-family: "Courier New", monospace;
+  background: rgba(198, 166, 100, 0.1);
+  color: #C6A664;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: 1px solid rgba(198, 166, 100, 0.3);
 }
 
 /* Separador */
 .separador {
   border: none;
-  border-top: 1px solid #ddd;
-  margin: 20px 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #C6A664, transparent);
+  margin: 30px 0;
+}
+
+/* Animações */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filmeItem {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.filmeCard {
+  animation: fadeInUp 0.6s ease-out;
+  animation-fill-mode: both;
 }
 
 /* Responsividade */
 @media (max-width: 768px) {
-  .filmes-container {
-    padding: 10px;
+  .filmesContainer {
+    padding: 20px;
   }
   
-  .filmes-grid {
-    justify-content: center;
+  .tituloPrincipal {
+    font-size: 2rem;
   }
   
-  .filme-card {
-    min-width: 130px;
-    max-width: 150px;
+  .tituloSecao {
+    font-size: 1.5rem;
   }
   
-  .filme-card-imagem {
-    width: 100px;
-    height: 130px;
+  .filmesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
   }
   
-  .campo-formulario input,
-  .campo-formulario textarea,
-  .campo-formulario select {
+  .filmeCard {
+    max-width: 200px;
+  }
+  
+  .filmeCardImagem {
+    width: 120px;
+    height: 160px;
+  }
+  
+  .campoFormulario input,
+  .campoFormulario textarea,
+  .campoFormulario select {
     max-width: 100%;
   }
   
-  .campo-pesquisa input {
-    width: 100%;
+  .campoPesquisa input {
+    max-width: 100%;
   }
 }
 
 @media (max-width: 480px) {
+  .filmesContainer {
+    padding: 15px;
+  }
+  
+  .tituloPrincipal {
+    font-size: 1.8rem;
+  }
+  
   .btn {
     display: block;
     width: 100%;
-    margin: 5px 0;
+    margin: 8px 0;
   }
   
-  .filme-card {
-    min-width: 120px;
-    max-width: 140px;
+  .filmesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   }
   
-  .filme-card-imagem {
-    width: 90px;
-    height: 120px;
+  .filmeCard {
+    max-width: 180px;
+  }
+  
+  .filmeCardImagem {
+    width: 100px;
+    height: 140px;
+  }
+  
+  .formularioNovoFilme,
+  .menuCartaz {
+    padding: 20px;
   }
 }
