@@ -146,7 +146,7 @@ export default function MenuPrincipal() {
 
       {usuario.funcionario && (
         <button onClick={handleLimparBanco} className={styles.limparBanco}>
-          Limpar Banco de Dados (CUIDADO!)
+          Limpar Banco de Dados
         </button>
       )}
     </div>

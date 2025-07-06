@@ -21,6 +21,47 @@ export default function Filmes() {
   const [cartazes, setCartazes] = useState([]);
   const [faixas, setFaixas] = useState([]);
 
+  // Função para converter código numérico para tipo de faixa etária
+  function numeroParaFaixaEtaria(codigo) {
+    const mapa = {
+      0: "Livre",
+      10: "10 anos",
+      12: "12 anos",
+      14: "14 anos",
+      16: "16 anos",
+      18: "18 anos",
+    };
+    return mapa[codigo] || codigo;
+  }
+
+  // Função para converter tipo de faixa etária para código numérico
+  function faixaEtariaParaNumero(faixa) {
+    const mapa = {
+      "Livre": 0,
+      "10 anos": 10,
+      "12 anos": 12,
+      "14 anos": 14,
+      "16 anos": 16,
+      "18 anos": 18,
+    };
+    return mapa[faixa] ?? faixa;
+  }
+
+  // Função para buscar a imagem da faixa etária baseada no código numérico
+  function obterImagemFaixaEtaria(codigoNumerico) {
+    const tipoFaixa = numeroParaFaixaEtaria(codigoNumerico);
+    
+    // Buscar primeiro por tipo string
+    let faixaEncontrada = faixas.find((f) => f.Tipo === tipoFaixa);
+    
+    // Se não encontrar por string, buscar por número
+    if (!faixaEncontrada) {
+      faixaEncontrada = faixas.find((f) => f.Tipo === codigoNumerico);
+    }
+    
+    return faixaEncontrada ? formatarLinkDrive(faixaEncontrada.url) : null;
+  }
+
   // Função para extrair ID do Google Drive
   function extrairDriveId(url) {
     if (!url) return null;
@@ -82,16 +123,23 @@ export default function Filmes() {
     );
   }
 
-  function faixaEtariaParaNumero(faixa) {
-    const mapa = {
-      "Livre": 0,
-      "10 anos": 10,
-      "12 anos": 12,
-      "14 anos": 14,
-      "16 anos": 16,
-      "18 anos": 18,
-    };
-    return mapa[faixa] ?? faixa;
+  // Componente para exibir faixa etária com imagem
+  function FaixaEtariaComImagem({ codigoNumerico, className = "" }) {
+    const imagemUrl = obterImagemFaixaEtaria(codigoNumerico);
+    const tipoFaixa = numeroParaFaixaEtaria(codigoNumerico);
+    
+    return (
+      <span className={className}>
+        {tipoFaixa}
+        {imagemUrl && (
+          <ImagemComFallback
+            src={imagemUrl}
+            alt={`Classificação ${tipoFaixa}`}
+            className={styles.imagemFaixaEtaria}
+          />
+        )}
+      </span>
+    );
   }
 
   // Menu de filmes em cartaz
@@ -125,6 +173,9 @@ export default function Filmes() {
               </div>
               <div className={styles.filmeCardHorario}>
                 ⏰ {filme.horarioExibicao || "Horário não definido"}
+              </div>
+              <div className={styles.filmeCardFaixa}>
+                <FaixaEtariaComImagem codigoNumerico={filme.faixaEtaria} />
               </div>
             </div>
           ))}
@@ -174,7 +225,7 @@ export default function Filmes() {
       nome: "",
       sinopse: "",
       duracao: "",
-      faixaEtaria: "",
+      faixaEtaria: 0, // Padrão para "Livre"
       elenco: "",
       distribuidora: "",
       cartaz: "",
@@ -219,12 +270,18 @@ export default function Filmes() {
     if (campo === "cartaz") {
       valor = formatarLinkDrive(valor);
     }
+    if (campo === "faixaEtaria") {
+      valor = faixaEtariaParaNumero(valor);
+    }
     setForm((prev) => ({ ...prev, [campo]: valor }));
   }
 
   function alterarNovo(campo, valor) {
     if (campo === "cartaz") {
       valor = formatarLinkDrive(valor);
+    }
+    if (campo === "faixaEtaria") {
+      valor = faixaEtariaParaNumero(valor);
     }
     setNovoFilme((prev) => ({ ...prev, [campo]: valor }));
   }
@@ -259,7 +316,7 @@ export default function Filmes() {
 
     const novo = {
       ...novoFilme,
-      faixaEtaria: faixaEtariaParaNumero(novoFilme.faixaEtaria),
+      faixaEtaria: Number(novoFilme.faixaEtaria), // Garantir que seja número
     };
     await addDoc(collection(db, "filmes"), novo);
     buscarFilmes();
@@ -325,22 +382,19 @@ export default function Filmes() {
           <div className={styles.campoFormulario}>
             <label>Faixa Etária</label>
             <select
-              value={novoFilme.faixaEtaria}
+              value={numeroParaFaixaEtaria(novoFilme.faixaEtaria)}
               onChange={(e) => alterarNovo("faixaEtaria", e.target.value)}
             >
               <option value="">Selecione...</option>
-              {faixas.map((f) => (
-                <option key={f.faixa} value={f.faixa}>
-                  {f.faixa}
-                </option>
-              ))}
+              <option value="Livre">Livre</option>
+              <option value="10 anos">10 anos</option>
+              <option value="12 anos">12 anos</option>
+              <option value="14 anos">14 anos</option>
+              <option value="16 anos">16 anos</option>
+              <option value="18 anos">18 anos</option>
             </select>
-            {novoFilme.faixaEtaria && (
-              <img
-                src={faixas.find((f) => f.faixa === novoFilme.faixaEtaria)?.imagem}
-                alt={novoFilme.faixaEtaria}
-                className={styles.imagemFaixaEtaria}
-              />
+            {novoFilme.faixaEtaria !== "" && (
+              <FaixaEtariaComImagem codigoNumerico={novoFilme.faixaEtaria} />
             )}
           </div>
 
@@ -458,22 +512,19 @@ export default function Filmes() {
                 <div className={styles.campoFormulario}>
                   <label>Faixa Etária</label>
                   <select
-                    value={form.faixaEtaria}
+                    value={numeroParaFaixaEtaria(form.faixaEtaria)}
                     onChange={(e) => alterarForm("faixaEtaria", e.target.value)}
                   >
                     <option value="">Selecione...</option>
-                    {faixas.map((f) => (
-                      <option key={f.faixa} value={f.faixa}>
-                        {f.faixa}
-                      </option>
-                    ))}
+                    <option value="Livre">Livre</option>
+                    <option value="10 anos">10 anos</option>
+                    <option value="12 anos">12 anos</option>
+                    <option value="14 anos">14 anos</option>
+                    <option value="16 anos">16 anos</option>
+                    <option value="18 anos">18 anos</option>
                   </select>
-                  {form.faixaEtaria && (
-                    <img
-                      src={faixas.find((f) => f.faixa === form.faixaEtaria)?.imagem}
-                      alt={form.faixaEtaria}
-                      className={styles.imagemFaixaEtaria}
-                    />
+                  {form.faixaEtaria !== "" && (
+                    <FaixaEtariaComImagem codigoNumerico={form.faixaEtaria} />
                   )}
                 </div>
 
@@ -548,13 +599,7 @@ export default function Filmes() {
                     <p><strong>Horário:</strong> {filme.horarioExibicao}</p>
                     <p>
                       <strong>Faixa Etária:</strong>
-                      {filme.faixaEtaria && faixas.find((f) => f.faixa === filme.faixaEtaria) && (
-                        <img
-                          src={faixas.find((f) => f.faixa === filme.faixaEtaria)?.imagem}
-                          alt={filme.faixaEtaria}
-                          className={styles.imagemFaixaEtaria}
-                        />
-                      )}
+                      <FaixaEtariaComImagem codigoNumerico={filme.faixaEtaria} />
                     </p>
                     <p><strong>Elenco:</strong> {filme.elenco}</p>
                     <p><strong>Distribuidora:</strong> {filme.distribuidora}</p>

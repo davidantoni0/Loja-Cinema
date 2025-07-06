@@ -1,9 +1,10 @@
-// Importa os módulos que você vai usar
-import { initializeApp } from "firebase/app";
+// bomboniere/src/firebase/firebaseConfig.js
+
+import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-// Configuração gerada no console do Firebase
+// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDscqWqHk_Atx7lHsAwvSQUKkmThXOEB6s",
   authDomain: "cine-senai.firebaseapp.com",
@@ -13,10 +14,10 @@ const firebaseConfig = {
   appId: "1:507213086330:web:00b2d42ce40bb519e545c3"
 };
 
-// Inicializa o app
-const app = initializeApp(firebaseConfig);
+// Verifica se o app já foi inicializado
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Exporta os serviços que for usar
+// Exporta os serviços
 const auth = getAuth(app);
 const db = getFirestore(app);
 

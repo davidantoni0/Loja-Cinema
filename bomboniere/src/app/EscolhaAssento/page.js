@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import styles from "./page.module.css";
 import Assentos from "../../Components/Filmes-assentos/Assentos";
 import Link from "next/link";
@@ -16,12 +16,148 @@ import {
 } from "firebase/firestore";
 import useUsuario from "../../hooks/useUsuario";
 
+// Função melhorada para extrair ID do Google Drive
+function extrairDriveId(url) {
+  if (!url) return null;
+
+  // Padrões mais abrangentes para URLs do Google Drive
+  const padroes = [
+    /\/d\/([a-zA-Z0-9_-]+)/,              // /d/ID
+    /\/file\/d\/([a-zA-Z0-9_-]+)/,        // /file/d/ID
+    /[?&]id=([a-zA-Z0-9_-]+)/,           // ?id=ID ou &id=ID
+    /\/open\?id=([a-zA-Z0-9_-]+)/,       // /open?id=ID
+    /\/uc\?id=([a-zA-Z0-9_-]+)/,         // /uc?id=ID
+    /\/uc\?export=view&id=([a-zA-Z0-9_-]+)/, // /uc?export=view&id=ID
+  ];
+
+  for (const padrao of padroes) {
+    const match = url.match(padrao);
+    if (match) {
+      return match[1];
+    }
+  }
+
+  // Se parecer um ID direto (28+ caracteres alfanuméricos)
+  if (/^[a-zA-Z0-9_-]{28,}$/.test(url)) {
+    return url;
+  }
+
+  return null;
+}
+
+// Componente robusto para imagem com fallback do Google Drive
+function ImagemComFallback({ src, alt, className = "" }) {
+  const [urlAtual, setUrlAtual] = useState('');
+  const [tentativaAtual, setTentativaAtual] = useState(0);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(false);
+  
+  // Gera todas as URLs possíveis para tentar
+  const urlsPossiveis = useMemo(() => {
+    if (!src) return [];
+    
+    const driveId = extrairDriveId(src);
+    const urls = [src]; // URL original primeiro
+    
+    if (driveId) {
+      urls.push(
+        `https://drive.google.com/uc?export=view&id=${driveId}`,
+        `https://drive.google.com/uc?id=${driveId}`,
+        `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000-h1000`,
+        `https://lh3.googleusercontent.com/d/${driveId}=w1000-h1000`,
+        `https://lh3.googleusercontent.com/d/${driveId}`,
+        `https://drive.google.com/file/d/${driveId}/preview`,
+        `https://docs.google.com/uc?export=view&id=${driveId}`
+      );
+    }
+    
+    return [...new Set(urls)]; // Remove duplicatas
+  }, [src]);
+  
+  const handleError = useCallback(() => {
+    console.log(`Erro ao carregar URL ${tentativaAtual + 1}/${urlsPossiveis.length}: ${urlAtual}`);
+    
+    if (tentativaAtual < urlsPossiveis.length - 1) {
+      const proximaTentativa = tentativaAtual + 1;
+      setTentativaAtual(proximaTentativa);
+      setUrlAtual(urlsPossiveis[proximaTentativa]);
+      setCarregando(true);
+    } else {
+      setErro(true);
+      setCarregando(false);
+    }
+  }, [tentativaAtual, urlsPossiveis, urlAtual]);
+
+  const handleLoad = useCallback(() => {
+    console.log(`Imagem carregada com sucesso: ${urlAtual}`);
+    setCarregando(false);
+    setErro(false);
+  }, [urlAtual]);
+
+  // Reset quando a URL source muda
+  useEffect(() => {
+    if (urlsPossiveis.length > 0) {
+      setTentativaAtual(0);
+      setUrlAtual(urlsPossiveis[0]);
+      setCarregando(true);
+      setErro(false);
+    }
+  }, [src, urlsPossiveis]);
+
+  if (!src) {
+    return null;
+  }
+
+  if (erro) {
+    return (
+      <div className={styles.cartazPlaceholder || className}>
+        <p>❌ Imagem não disponível</p>
+        <small>Tentativas esgotadas: {urlsPossiveis.length}</small>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      {carregando && (
+        <div style={{ 
+          position: 'absolute', 
+          top: '50%', 
+          left: '50%', 
+          transform: 'translate(-50%, -50%)',
+          background: 'rgba(0,0,0,0.7)',
+          color: 'white',
+          padding: '10px',
+          borderRadius: '5px',
+          zIndex: 1
+        }}>
+          <p>🔄 Carregando... ({tentativaAtual + 1}/{urlsPossiveis.length})</p>
+        </div>
+      )}
+      
+      <img
+        src={urlAtual}
+        alt={alt}
+        className={className}
+        onError={handleError}
+        onLoad={handleLoad}
+        loading="lazy"
+        style={{ 
+          opacity: carregando ? 0.3 : 1,
+          transition: 'opacity 0.3s ease',
+          maxWidth: '100%',
+          height: 'auto'
+        }}
+      />
+    </div>
+  );
+}
+
 export default function EscolhaAssento() {
   const router = useRouter();
 
   const [filme, setFilme] = useState(null);
   const [faixas, setFaixas] = useState([]);
-  const [cartaz, setCartaz] = useState("");
   const [pendentesCount, setPendentesCount] = useState(0);
   const [dataSelecionada, setDataSelecionada] = useState(
     () => new Date().toISOString().substring(0, 10)
@@ -74,21 +210,12 @@ export default function EscolhaAssento() {
               };
 
               setFilme(filmeFinal);
-
-              if (dadosFirestore.cartaz) {
-                const urlCartaz = processarUrlGoogleDrive(dadosFirestore.cartaz);
-                setCartaz(urlCartaz);
-              }
             } else {
               // Não encontrou no Firestore, usa dados do storage
               setFilme({
                 ...dadosStorage,
                 assentos: gerarAssentos(40),
               });
-
-              if (dadosStorage.cartaz) {
-                setCartaz(processarUrlGoogleDrive(dadosStorage.cartaz));
-              }
             }
           } else {
             // Sem código, usa dados do storage
@@ -96,10 +223,6 @@ export default function EscolhaAssento() {
               ...dadosStorage,
               assentos: gerarAssentos(40),
             });
-
-            if (dadosStorage.cartaz) {
-              setCartaz(processarUrlGoogleDrive(dadosStorage.cartaz));
-            }
           }
         } catch (error) {
           console.error("Erro ao buscar filme no Firestore:", error);
@@ -107,10 +230,6 @@ export default function EscolhaAssento() {
             ...dadosStorage,
             assentos: gerarAssentos(40),
           });
-
-          if (dadosStorage.cartaz) {
-            setCartaz(processarUrlGoogleDrive(dadosStorage.cartaz));
-          }
         }
       }
 
@@ -131,26 +250,6 @@ export default function EscolhaAssento() {
     } catch (err) {
       console.error("Erro ao carregar faixas etárias:", err);
     }
-  }
-
-  // Função para processar URLs do Google Drive
-  function processarUrlGoogleDrive(url) {
-    if (!url) return "";
-
-    if (url.includes("uc?export=view")) {
-      return url;
-    }
-
-    const match = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
-    if (match) {
-      return `https://drive.google.com/uc?export=view&id=${match[1]}`;
-    }
-
-    if (url.match(/^[a-zA-Z0-9-_]+$/)) {
-      return `https://drive.google.com/uc?export=view&id=${url}`;
-    }
-
-    return url;
   }
 
   function calcularDesconto() {
@@ -324,12 +423,6 @@ export default function EscolhaAssento() {
     }
   }
 
-  // Função para lidar com erro de carregamento de imagem
-  function handleImageError(e) {
-    console.error("Erro ao carregar imagem:", e.target.src);
-    e.target.style.display = "none";
-  }
-
   if (loadingUsuario || loadingFilme) {
     return (
       <div className={styles.container}>
@@ -357,14 +450,12 @@ export default function EscolhaAssento() {
     <div className={styles.container}>
       <h1>{filme.nome}</h1>
 
-      {cartaz && (
+      {filme.cartaz && (
         <div className={styles.cartazContainer}>
-          <img
-            src={cartaz}
+          <ImagemComFallback
+            src={filme.cartaz}
             alt={`Cartaz do filme ${filme.nome}`}
             className={styles.cartaz}
-            onError={handleImageError}
-            loading="lazy"
           />
         </div>
       )}
@@ -393,7 +484,6 @@ export default function EscolhaAssento() {
           src={faixaImg}
           alt={`Classificação ${filme.faixaEtaria}`}
           className={styles.faixaEtaria}
-          onError={handleImageError}
         />
       )}
 

@@ -12,6 +12,9 @@ import {
 } from "firebase/firestore";
 import { db } from '../../firebase/firebaseConfig';
 
+
+
+
 export default function Home() {
   const [filmesEmCartaz, setFilmesEmCartaz] = useState([]);
   const [loading, setLoading] = useState(true);

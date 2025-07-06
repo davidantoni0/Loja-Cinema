@@ -385,3 +385,144 @@
   transform: translateX(-3px);
 }
 
+/* CSS para o botão de excluir filme */
+
+.acoes {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.btnRemover {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #8B0000, #A52A2A);
+  border: none;
+  border-radius: 50%;
+  color: white;
+  font-family: "Poiret One", sans-serif;
+  font-size: 1.2rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+}
+
+.btnRemover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.btnRemover:hover::before {
+  left: 100%;
+}
+
+.btnRemover:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(139, 0, 0, 0.5);
+  background: linear-gradient(135deg, #A52A2A, #DC143C);
+}
+
+.btnRemover:active {
+  transform: translateY(0) scale(0.95);
+  box-shadow: 0 2px 10px rgba(139, 0, 0, 0.4);
+}
+
+.btnRemover:focus {
+  outline: none;
+  box-shadow: 
+    0 8px 25px rgba(139, 0, 0, 0.5),
+    0 0 0 3px rgba(139, 0, 0, 0.3);
+}
+
+/* Versão alternativa com ícone de lixeira */
+.btnRemover.trash-icon::before {
+  content: '🗑️';
+  font-size: 1rem;
+  position: static;
+  background: none;
+  transition: none;
+}
+
+.btnRemover.trash-icon:hover::before {
+  left: auto;
+}
+
+/* Animação de pulso quando hover */
+.btnRemover::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btnRemover:hover::after {
+  width: 100%;
+  height: 100%;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .btnRemover {
+    width: 35px;
+    height: 35px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .btnRemover {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+}
+
+/* Estado de confirmação (opcional) */
+.btnRemover.confirming {
+  background: linear-gradient(135deg, #FF6B35, #FF8C42);
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Tooltip para o botão */
+.btnRemover[title]:hover::before {
+  content: attr(title);
+  position: absolute;
+  bottom: 120%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0;
+  animation: fadeInTooltip 0.3s ease forwards;
+}

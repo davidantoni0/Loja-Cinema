@@ -1,69 +1,134 @@
 .container {
   padding: 20px;
-  font-family: "Merriweather", serif;
+  font-family: "Inter", sans-serif; /* Alterado para Inter */
   background: linear-gradient(135deg, #1C1C1C 0%, #141414 100%);
   color: #F5F5F5;
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Centraliza o conteúdo horizontalmente */
 }
 
 .linkVoltar {
   display: inline-block;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem; /* Aumentado o espaçamento */
   color: #C6A664;
   text-decoration: none;
   font-weight: 600;
   border: 1px solid #C6A664;
-  padding: 0.3rem 0.8rem;
+  padding: 0.5rem 1.2rem; /* Aumentado o padding */
   border-radius: 8px;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease;
+  align-self: flex-start; /* Alinha o botão "Voltar" à esquerda */
 }
 
 .linkVoltar:hover {
   background-color: #C6A664;
   color: #1C1C1C;
   text-decoration: none;
+  transform: translateY(-2px); /* Efeito sutil ao passar o mouse */
 }
 
 .titulo {
   font-family: "Libre Baskerville", serif;
-  font-size: 2.2rem;
+  font-size: 2.8rem; /* Aumentado o tamanho da fonte */
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem; /* Aumentado o espaçamento */
   color: #C6A664;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para destaque */
 }
 
 .subtitulo {
   font-family: "Libre Baskerville", serif;
-  font-size: 1.5rem;
-  margin-top: 1.5rem;
-  margin-bottom: 0.7rem;
+  font-size: 1.8rem; /* Aumentado o tamanho da fonte */
+  margin-top: 2.5rem; /* Aumentado o espaçamento */
+  margin-bottom: 1rem;
   color: #C6A664;
+  text-align: center;
+  border-bottom: 2px solid #C6A664; /* Linha de separação */
+  padding-bottom: 0.5rem;
+  width: 80%; /* Largura para o subtítulo */
+  max-width: 600px; /* Limite de largura */
 }
 
 .paragrafo {
-  font-size: 1rem;
-  line-height: 1.4;
-  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #B0B0B0;
 }
 
 .categoriaBloco {
-  margin-bottom: 12px;
+  background-color: #282828; /* Fundo mais escuro para o bloco */
+  border-radius: 12px; /* Cantos mais arredondados */
+  padding: 20px;
+  margin-bottom: 30px; /* Mais espaçamento entre os blocos */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); /* Sombra mais pronunciada */
+  width: 95%; /* Ocupa mais largura */
+  max-width: 800px; /* Largura máxima para legibilidade */
+  border: 1px solid #3a3a3a; /* Borda sutil */
 }
 
 .categoriaTitulo {
   display: block;
-  margin-bottom: 6px;
+  font-size: 1.4rem; /* Maior e mais visível */
   font-weight: 700;
-  color: #C6A664;
+  color: #E0C28C; /* Cor mais clara para o título da categoria */
+  margin-bottom: 15px;
+  text-align: center;
+  border-bottom: 1px dashed #444; /* Linha tracejada para separar */
+  padding-bottom: 10px;
 }
 
-.listaProdutos {
-  list-style: none;
-  padding-left: 0;
+.tabelaResumo {
+  width: 100%;
+  border-collapse: collapse; /* Remove espaçamento entre as bordas das células */
+  margin-top: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra sutil na tabela */
+  border-radius: 8px; /* Cantos arredondados na tabela */
+  overflow: hidden; /* Garante que os cantos arredondados sejam aplicados */
 }
 
-.itemProduto {
-  margin-bottom: 0.4rem;
+.tabelaResumo th,
+.tabelaResumo td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #333; /* Borda mais escura */
+}
+
+.tabelaResumo th {
+  background-color: #3a5f75; /* Fundo do cabeçalho */
+  color: #FFFFFF;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.95rem;
+}
+
+.tabelaResumo tbody tr:nth-child(even) {
+  background-color: #2f2f2f; /* Linhas pares com fundo ligeiramente diferente */
+}
+
+.tabelaResumo tbody tr:hover {
+  background-color: #383838; /* Efeito ao passar o mouse na linha */
+}
+
+.itemProduto td {
+  color: #D0D0D0;
+}
+
+.totalLinha {
+  font-weight: 700;
+  background-color: #4a4a4a; /* Fundo para a linha de total */
+  color: #F5F5F5;
+  border-top: 2px solid #C6A664; /* Borda superior destacada para o total */
+}
+
+.totalLinha td:first-child {
+  text-align: right; /* Alinha "Total" à direita */
+  padding-right: 15px;
 }
 
 .botaoExportar {
@@ -71,21 +136,61 @@
   border: none;
   border-radius: 8px;
   color: white;
-  font-family: "Poiret One", sans-serif;
-  font-size: 1rem;
+  font-family: "Inter", sans-serif; /* Alterado para Inter */
+  font-size: 1.1rem; /* Aumentado o tamanho da fonte */
   font-weight: 600;
   letter-spacing: 1px;
   cursor: pointer;
-  padding: 0.5rem 1.2rem;
+  padding: 0.8rem 1.8rem; /* Aumentado o padding */
   transition: box-shadow 0.3s ease, transform 0.3s ease;
-  margin-top: 20px;
+  margin-top: 30px; /* Mais espaçamento superior */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Sombra inicial */
 }
 
 .botaoExportar:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(41, 77, 97, 0.4);
+  transform: translateY(-3px); /* Efeito mais pronunciado */
+  box-shadow: 0 8px 25px rgba(41, 77, 97, 0.6); /* Sombra maior ao passar o mouse */
 }
 
 .botaoExportar:active {
   transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsividade Básica para telas menores */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+
+  .titulo {
+    font-size: 2rem;
+  }
+
+  .subtitulo {
+    font-size: 1.4rem;
+    width: 95%;
+  }
+
+  .categoriaBloco {
+    padding: 15px;
+    width: 100%;
+  }
+
+  .tabelaResumo {
+    font-size: 0.9rem;
+    display: block; /* Permite scroll horizontal */
+    overflow-x: auto; /* Adiciona scroll horizontal se a tabela for muito larga */
+    white-space: nowrap; /* Impede que o texto quebre em várias linhas */
+  }
+
+  .tabelaResumo th,
+  .tabelaResumo td {
+    padding: 10px;
+  }
+
+  .botaoExportar {
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
+  }
 }
