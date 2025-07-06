@@ -5,6 +5,7 @@ import { db } from "../../firebase/firebaseConfig";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import * as XLSX from "xlsx";
 import Link from "next/link";
+import styles from "./page.module.css";
 
 export default function FinanceiroLanchonete() {
   const [pedidos, setPedidos] = useState([]);
@@ -130,11 +131,11 @@ export default function FinanceiroLanchonete() {
 
   function renderResumoPorCategoria(resumoTipo) {
     return Object.entries(resumoTipo).map(([categoria, produtos]) => (
-      <div key={categoria} style={{ marginBottom: 12 }}>
-        <strong>{categoria}</strong>
-        <ul>
+      <div key={categoria} className={styles.categoriaBloco}>
+        <strong className={styles.categoriaTitulo}>{categoria}</strong>
+        <ul className={styles.listaProdutos}>
           {Object.entries(produtos).map(([produto, qtd]) => (
-            <li key={produto}>
+            <li key={produto} className={styles.itemProduto}>
               {produto}: {qtd}
             </li>
           ))}
@@ -144,32 +145,32 @@ export default function FinanceiroLanchonete() {
   }
 
   return (
-    <div style={{ padding: 20 }}>
-      <Link href="/Administrativo">Voltar</Link>
-      <h1>Relatório de Vendas - Lanchonete</h1>
+    <div className={styles.container}>
+      <Link href="/Administrativo" className={styles.linkVoltar}>Voltar</Link>
+      <h1 className={styles.titulo}>Relatório de Vendas - Lanchonete</h1>
 
-      <h2>Resumo por Dia</h2>
+      <h2 className={styles.subtitulo}>Resumo por Dia</h2>
       {Object.keys(resumo.porDia).length > 0 ? (
         renderResumoPorCategoria(resumo.porDia)
       ) : (
-        <p>Nenhuma venda encontrada.</p>
+        <p className={styles.paragrafo}>Nenhuma venda encontrada.</p>
       )}
 
-      <h2>Resumo por Mês</h2>
+      <h2 className={styles.subtitulo}>Resumo por Mês</h2>
       {Object.keys(resumo.porMes).length > 0 ? (
         renderResumoPorCategoria(resumo.porMes)
       ) : (
-        <p>Nenhuma venda encontrada.</p>
+        <p className={styles.paragrafo}>Nenhuma venda encontrada.</p>
       )}
 
-      <h2>Resumo por Ano</h2>
+      <h2 className={styles.subtitulo}>Resumo por Ano</h2>
       {Object.keys(resumo.porAno).length > 0 ? (
         renderResumoPorCategoria(resumo.porAno)
       ) : (
-        <p>Nenhuma venda encontrada.</p>
+        <p className={styles.paragrafo}>Nenhuma venda encontrada.</p>
       )}
 
-      <button onClick={exportarExcel} style={{ marginTop: 20 }}>
+      <button onClick={exportarExcel} className={styles.botaoExportar}>
         Exportar para Excel
       </button>
     </div>

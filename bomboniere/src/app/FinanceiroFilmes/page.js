@@ -5,6 +5,7 @@ import { db } from "../../firebase/firebaseConfig";
 import { collection, getDocs } from "firebase/firestore";
 import * as XLSX from "xlsx";
 import Link from "next/link";
+import styles from "./page.module.css";
 
 export default function FinanceiroFilmes() {
   const [ingressos, setIngressos] = useState([]);
@@ -222,71 +223,73 @@ export default function FinanceiroFilmes() {
   }
 
   return (
-    <div style={{ padding: 20 }}>
-      <Link href="/Administrativo">Voltar</Link>
-      <h1>Relatórios de Ingressos</h1>
+    <div className={styles.container}>
+      <Link href="/Administrativo" className={styles.linkVoltar}>Voltar</Link>
+      <h1 className={styles.titulo}>Relatórios de Ingressos</h1>
 
-      <label>Escolha uma data:</label>
+      <label htmlFor="dataEscolhida" className={styles.label}>Escolha uma data:</label>
       <input
+        id="dataEscolhida"
         type="date"
         value={dataEscolhida}
         onChange={(e) => setDataEscolhida(e.target.value)}
+        className={styles.inputData}
       />
 
-      <h2>Por Data</h2>
+      <h2 className={styles.subtitulo}>Por Data</h2>
       {dataEscolhida && resumo.porData && resumo.porData[dataEscolhida] ? (
-        <p>
+        <p className={styles.paragrafo}>
           Inteira: {resumo.porData[dataEscolhida].inteira} | Meia: {resumo.porData[dataEscolhida].meia} | Total:{" "}
           {resumo.porData[dataEscolhida].inteira + resumo.porData[dataEscolhida].meia} | Montante: R$ {resumo.porData[dataEscolhida].montante.toFixed(2)}
         </p>
       ) : (
-        <p>Nenhuma venda na data selecionada.</p>
+        <p className={styles.paragrafo}>Nenhuma venda na data selecionada.</p>
       )}
 
-      <h2>Por Filme</h2>
-      <ul>
+      <h2 className={styles.subtitulo}>Por Filme</h2>
+      <ul className={styles.lista}>
         {Object.entries(resumo.porFilme || {}).map(([filme, val]) => (
-          <li key={filme}>
+          <li key={filme} className={styles.itemLista}>
             {filme} – Inteira: {val.inteira} | Meia: {val.meia} | Total: {val.inteira + val.meia} – R$ {val.montante.toFixed(2)}
           </li>
         ))}
       </ul>
 
-      <h2>Por Semana</h2>
-      <ul>
+      <h2 className={styles.subtitulo}>Por Semana</h2>
+      <ul className={styles.lista}>
         {Object.entries(resumo.porSemana || {}).map(([semana, val]) => (
-          <li key={semana}>
+          <li key={semana} className={styles.itemLista}>
             {semana} – Inteira: {val.inteira} | Meia: {val.meia} | Total: {val.inteira + val.meia} – R$ {val.montante.toFixed(2)}
           </li>
         ))}
       </ul>
 
-      <h2>Por Mês</h2>
-      <ul>
+      <h2 className={styles.subtitulo}>Por Mês</h2>
+      <ul className={styles.lista}>
         {Object.entries(resumo.porMes || {}).map(([mes, val]) => (
-          <li key={mes}>
+          <li key={mes} className={styles.itemLista}>
             {mes} – Inteira: {val.inteira} | Meia: {val.meia} | Total: {val.inteira + val.meia} – R$ {val.montante.toFixed(2)}
           </li>
         ))}
       </ul>
 
-      <h2>Por Horário</h2>
-      <ul>
+      <h2 className={styles.subtitulo}>Por Horário</h2>
+      <ul className={styles.lista}>
         {Object.entries(resumo.porHorario || {}).map(([hora, val]) => (
-          <li key={hora}>
+          <li key={hora} className={styles.itemLista}>
             {hora} – Inteira: {val.inteira} | Meia: {val.meia} | Total: {val.inteira + val.meia} – R$ {val.montante.toFixed(2)}
           </li>
         ))}
       </ul>
 
-      <h2>Média por Usuário</h2>
-      <ul>
+      <h2 className={styles.subtitulo}>Média por Usuário</h2>
+      <ul className={styles.lista}>
         {Object.entries(resumo.porUsuario || {}).map(([user, val]) => (
-          <li key={user}>{user} – Total de ingressos: {val.qtd}</li>
+          <li key={user} className={styles.itemLista}>{user} – Total de ingressos: {val.qtd}</li>
         ))}
       </ul>
 
-      <button onClick={exportarExcel}>Exportar para Excel</button>
+      <button onClick={exportarExcel} className={styles.botaoExportar}>Exportar para Excel</button>
     </div>
   );
 }

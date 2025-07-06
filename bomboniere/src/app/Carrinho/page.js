@@ -635,13 +635,14 @@ export default function Carrinho() {
   const [lanchoneteCarrinho, setLanchoneteCarrinho] = useState([]);
   const [loading, setLoading] = useState(true);
   const [cartazes, setCartazes] = useState([]);
-  const [ingressosSelecionados, setIngressosSelecionados] = useState(new Set());
+  const [produtos, setProdutos] = useState([]); // Novo estado para produtos
   const [dadosUsuario, setDadosUsuario] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
     carregarDadosUsuario();
     carregarCartazes();
+    carregarProdutos(); // Carregar produtos do Firestore
   }, []);
 
   useEffect(() => {
@@ -650,6 +651,16 @@ export default function Carrinho() {
       carregarLanchoneteCarrinho();
     }
   }, [dadosUsuario]);
+
+  function convertGoogleDriveUrl(url) {
+    if (!url) return null;
+    if (url.includes("uc?export=view") || url.includes("uc?id=")) return url;
+    const fileIdMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (fileIdMatch) return `https://drive.google.com/uc?export=view&id=${fileIdMatch[1]}`;
+    const idMatch = url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if (idMatch) return `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
+    return url;
+  }
 
   function carregarDadosUsuario() {
     try {
@@ -681,13 +692,48 @@ export default function Carrinho() {
         const data = docu.data();
         return {
           filme: data.nome || data.titulo || "",
-          cartaz: data.cartaz || "/placeholder.png",
+          cartaz: convertGoogleDriveUrl(data.cartaz || "/placeholder.png"),
         };
       });
       setCartazes(cartazesData);
     } catch (error) {
       console.error("Erro ao carregar cartazes:", error);
     }
+  }
+
+  // Nova função para carregar produtos do Firestore
+  async function carregarProdutos() {
+    try {
+      const snapshot = await getDocs(collection(db, "produtos"));
+      const produtosData = snapshot.docs.map((docu) => {
+        const data = docu.data();
+        return {
+          id: docu.id,
+          nome: data.nome || "",
+          imagem: convertGoogleDriveUrl(data.imagem || "/placeholder.png"),
+          preco: data.preco || "0",
+          tamanho: data.tamanho || "",
+          codigo: data.codigo || "",
+          emEstoque: data.emEstoque || false,
+        };
+      });
+      setProdutos(produtosData);
+    } catch (error) {
+      console.error("Erro ao carregar produtos:", error);
+    }
+  }
+
+  // Função para buscar imagem do produto
+  function getImagemProduto(nomeProduto, tamanhoProduto) {
+    const produto = produtos.find(p => {
+      const nomeMatch = p.nome.toLowerCase().includes(nomeProduto.toLowerCase()) || 
+                       nomeProduto.toLowerCase().includes(p.nome.toLowerCase());
+      const tamanhoMatch = !tamanhoProduto || !p.tamanho || 
+                          p.tamanho.toLowerCase() === tamanhoProduto.toLowerCase();
+      return nomeMatch && tamanhoMatch;
+    });
+    
+    return produto ? produto.imagem : "/placeholder.png";
   }
 
   async function buscarPendencias() {
@@ -875,7 +921,28 @@ export default function Carrinho() {
 
       {pendencias.map((item) => (
         <div key={item.id} className={styles.pendenciaItem}>
-          <img src={getImagem(item.filme)} className={styles.imagem} />
+          <img
+            src={getImagem(item.filme)}
+            className={styles.imagem}
+            alt={`Cartaz do filme ${item.filme}`}
+            onError={(e) => {
+              const originalUrl = e.target.src;
+              const match = originalUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+              if (match && !e.target.dataset.tentativa) {
+                const fileId = match[1];
+                const formatosAlternativos = [
+                  `https://lh3.googleusercontent.com/d/${fileId}`,
+                  `https://drive.google.com/uc?export=download&id=${fileId}`,
+                  `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h600`
+                ];
+                e.target.dataset.tentativa = '1';
+                e.target.src = formatosAlternativos[0];
+              } else {
+                e.target.src = "/placeholder.png";
+                e.target.alt = "Cartaz não disponível";
+              }
+            }}
+          />
           <div className={styles.descricao}>
             <p>
               <strong>Filme:</strong> {item.filme} <br />
@@ -889,6 +956,28 @@ export default function Carrinho() {
 
       {lanchoneteCarrinho.map((item, idx) => (
         <div key={item.id || idx} className={styles.pendenciaItem}>
+          <img
+            src={getImagemProduto(item.item || item.nome || "", item.tamanho || "")}
+            className={styles.imagem}
+            alt={`Imagem do produto ${item.item || item.nome}`}
+            onError={(e) => {
+              const originalUrl = e.target.src;
+              const match = originalUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+              if (match && !e.target.dataset.tentativa) {
+                const fileId = match[1];
+                const formatosAlternativos = [
+                  `https://lh3.googleusercontent.com/d/${fileId}`,
+                  `https://drive.google.com/uc?export=download&id=${fileId}`,
+                  `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h600`
+                ];
+                e.target.dataset.tentativa = '1';
+                e.target.src = formatosAlternativos[0];
+              } else {
+                e.target.src = "/placeholder.png";
+                e.target.alt = "Imagem do produto não disponível";
+              }
+            }}
+          />
           <div className={styles.descricao}>
             <p>
               <strong>Produto:</strong> {item.item || item.nome} <br />

@@ -32,22 +32,6 @@
   color: #C6A664;
 }
 
-.label {
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-  display: inline-block;
-}
-
-.inputData {
-  width: 180px;
-  padding: 0.4rem 0.6rem;
-  margin-bottom: 1.5rem;
-  border-radius: 6px;
-  border: 1px solid #555;
-  background-color: #222;
-  color: #eee;
-}
-
 .subtitulo {
   font-family: "Libre Baskerville", serif;
   font-size: 1.5rem;
@@ -62,13 +46,23 @@
   margin-bottom: 1rem;
 }
 
-.lista {
-  list-style: none;
-  padding-left: 0;
-  margin-bottom: 1rem;
+.categoriaBloco {
+  margin-bottom: 12px;
 }
 
-.itemLista {
+.categoriaTitulo {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 700;
+  color: #C6A664;
+}
+
+.listaProdutos {
+  list-style: none;
+  padding-left: 0;
+}
+
+.itemProduto {
   margin-bottom: 0.4rem;
 }
 
@@ -84,6 +78,7 @@
   cursor: pointer;
   padding: 0.5rem 1.2rem;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
+  margin-top: 20px;
 }
 
 .botaoExportar:hover {

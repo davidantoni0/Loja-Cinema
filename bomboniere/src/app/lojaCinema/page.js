@@ -34,6 +34,7 @@ export default function MenuLoja() {
 
           items.push({
             id: doc.id,
+            codigo: data.codigo || 0, // Adiciona o campo código
             nomeOriginal: data.nome,
             nomeExibido,
             tamanho: data.tamanho,
@@ -43,6 +44,9 @@ export default function MenuLoja() {
 
           initialQuantities[nomeExibido] = 0;
         });
+
+        // Ordena os itens pelo código
+        items.sort((a, b) => a.codigo - b.codigo);
 
         setMenuItems(items);
         setQuantities(initialQuantities);
@@ -80,6 +84,7 @@ export default function MenuLoja() {
             precoUnitario: item.preco,
             quantidade: qtd,
             precoTotal: item.preco * qtd,
+            codigo: item.codigo, // Inclui o código no pedido
           };
         }
         return null;

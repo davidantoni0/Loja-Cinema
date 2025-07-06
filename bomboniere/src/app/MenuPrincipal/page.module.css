@@ -54,7 +54,7 @@
   border-radius: 12px 12px 0 0;
 }
 
-.header h2 {
+.headerTitle {
   font-family: "Libre Baskerville", serif;
   font-size: 1.8rem;
   font-weight: 700;
@@ -64,7 +64,7 @@
   position: relative;
 }
 
-.header h2::after {
+.headerTitle::after {
   content: '';
   position: absolute;
   bottom: -6px;
@@ -310,7 +310,7 @@
     padding: 1.5rem;
   }
   
-  .header h2 {
+  .headerTitle {
     font-size: 1.5rem;
   }
   
@@ -336,7 +336,7 @@
     padding: 1rem;
   }
   
-  .header h2 {
+  .headerTitle {
     font-size: 1.3rem;
   }
   
@@ -394,12 +394,12 @@
   border: 1px solid rgba(198, 166, 100, 0.2);
 }
 
-.unauthenticated a {
+.unauthenticatedLink {
   color: #C6A664;
   text-decoration: underline;
   transition: color 0.3s ease;
 }
 
-.unauthenticated a:hover {
+.unauthenticatedLink:hover {
   color: #294D61;
 }

@@ -1,43 +1,36 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import { auth, db } from "../../firebase/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
-import { onAuthStateChanged, signOut, deleteUser } from "firebase/auth";
+import { auth } from "../../firebase/firebaseConfig";
+import { signOut } from "firebase/auth";
+import styles from "./page.module.css"; // importa como objeto
 
 function handleLogout() {
-    signOut(auth)
-      .then(() => {
-        localStorage.clear();
-        window.location.href = "/Login";
-      })
-      .catch((error) => {
-        alert("Erro ao sair: " + error.message);
-      });
-  }
+  signOut(auth)
+    .then(() => {
+      localStorage.clear();
+      window.location.href = "/Login";
+    })
+    .catch((error) => {
+      alert("Erro ao sair: " + error.message);
+    });
+}
 
 export default function Administrativo() {
   return (
-    <div>
-      
-        <header>
-            <h1>Administrativo</h1>
-            <Link href="/MenuPrincipal">Voltar</Link>
-            <button onClick={handleLogout}>Sair</button>
-        </header>
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <h1>Administrativo</h1>
+        <Link href="/MenuPrincipal" className={styles.linkVoltar}>Voltar</Link>
+        <button onClick={handleLogout} className={styles.btnSair}>Sair</button>
+      </header>
 
-        <main>
-            <Link href="/FinanceiroFilmes">Financeiro dos Filmes</Link>
-            <br/>
-            <Link href="/FinanceiroBomboniere">Financeiro da Bomboniere</Link>
-            <br/>
-            <Link href="/InserirFilme">Inserir Filme</Link>
-            <br/>
-            <Link href="/InserirProduto">Inserir Produto</Link>
-        </main>
-
-
+      <main className={styles.mainLinks}>
+        <Link href="/FinanceiroFilmes">Financeiro dos Filmes</Link>
+        <Link href="/FinanceiroBomboniere">Financeiro da Bomboniere</Link>
+        <Link href="/InserirFilme">Inserir Filme</Link>
+        <Link href="/InserirProduto">Inserir Produto</Link>
+      </main>
     </div>
   );
 }
