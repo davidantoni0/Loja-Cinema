@@ -154,9 +154,8 @@ export default function MenuLoja() {
         <button className={styles.button} onClick={handleFinalizarPedido}>
           Finalizar Pedido
         </button>
-        <button className={styles.button}>
-          <Link href="../MenuPrincipal">Menu Principal</Link>
-        </button>
+        <Link className={styles.button} href="../MenuPrincipal">Menu Principal</Link>
+        
       </footer>
     </div>
   );
