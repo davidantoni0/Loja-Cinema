@@ -5,7 +5,7 @@ import styles from "./page.module.css";
 import Assentos from "../../Components/Filmes-assentos/Assentos";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { db } from "../../firebase/firebaseConfig";
+import { db } from "../../firebase/firebaseConfig"; // Certifique-se que 'db' é exportado de firebaseConfig
 import {
   collection,
   addDoc,
@@ -22,11 +22,11 @@ function extrairDriveId(url) {
 
   // Padrões mais abrangentes para URLs do Google Drive
   const padroes = [
-    /\/d\/([a-zA-Z0-9_-]+)/,              // /d/ID
-    /\/file\/d\/([a-zA-Z0-9_-]+)/,        // /file/d/ID
-    /[?&]id=([a-zA-Z0-9_-]+)/,           // ?id=ID ou &id=ID
-    /\/open\?id=([a-zA-Z0-9_-]+)/,       // /open?id=ID
-    /\/uc\?id=([a-zA-Z0-9_-]+)/,         // /uc?id=ID
+    /\/d\/([a-zA-Z0-9_-]+)/,       // /d/ID
+    /\/file\/d\/([a-zA-Z0-9_-]+)/,    // /file/d/ID
+    /[?&]id=([a-zA-Z0-9_-]+)/,      // ?id=ID ou &id=ID
+    /\/open\?id=([a-zA-Z0-9_-]+)/,    // /open?id=ID
+    /\/uc\?id=([a-zA-Z0-9_-]+)/,     // /uc?id=ID
     /\/uc\?export=view&id=([a-zA-Z0-9_-]+)/, // /uc?export=view&id=ID
   ];
 
@@ -51,32 +51,33 @@ function ImagemComFallback({ src, alt, className = "" }) {
   const [tentativaAtual, setTentativaAtual] = useState(0);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(false);
-  
+
   // Gera todas as URLs possíveis para tentar
   const urlsPossiveis = useMemo(() => {
     if (!src) return [];
-    
+
     const driveId = extrairDriveId(src);
     const urls = [src]; // URL original primeiro
-    
+
     if (driveId) {
       urls.push(
         `https://drive.google.com/uc?export=view&id=${driveId}`,
         `https://drive.google.com/uc?id=${driveId}`,
         `https://drive.google.com/thumbnail?id=${driveId}&sz=w1000-h1000`,
-        `https://lh3.googleusercontent.com/d/${driveId}=w1000-h1000`,
-        `https://lh3.googleusercontent.com/d/${driveId}`,
+        // Note: As URLs de googleusercontent.com com 0{driveId} geralmente são para fotos de perfil e podem não funcionar para outros arquivos do Drive
+        // `https://lh3.googleusercontent.com/d/$${driveId}=w1000-h1000`,
+        // `https://lh3.googleusercontent.com/d/$${driveId}`,
         `https://drive.google.com/file/d/${driveId}/preview`,
         `https://docs.google.com/uc?export=view&id=${driveId}`
       );
     }
-    
+
     return [...new Set(urls)]; // Remove duplicatas
   }, [src]);
-  
+
   const handleError = useCallback(() => {
     console.log(`Erro ao carregar URL ${tentativaAtual + 1}/${urlsPossiveis.length}: ${urlAtual}`);
-    
+
     if (tentativaAtual < urlsPossiveis.length - 1) {
       const proximaTentativa = tentativaAtual + 1;
       setTentativaAtual(proximaTentativa);
@@ -120,10 +121,10 @@ function ImagemComFallback({ src, alt, className = "" }) {
   return (
     <div style={{ position: 'relative' }}>
       {carregando && (
-        <div style={{ 
-          position: 'absolute', 
-          top: '50%', 
-          left: '50%', 
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
           transform: 'translate(-50%, -50%)',
           background: 'rgba(0,0,0,0.7)',
           color: 'white',
@@ -134,7 +135,7 @@ function ImagemComFallback({ src, alt, className = "" }) {
           <p>🔄 Carregando... ({tentativaAtual + 1}/{urlsPossiveis.length})</p>
         </div>
       )}
-      
+
       <img
         src={urlAtual}
         alt={alt}
@@ -142,7 +143,7 @@ function ImagemComFallback({ src, alt, className = "" }) {
         onError={handleError}
         onLoad={handleLoad}
         loading="lazy"
-        style={{ 
+        style={{
           opacity: carregando ? 0.3 : 1,
           transition: 'opacity 0.3s ease',
           maxWidth: '100%',
@@ -252,12 +253,57 @@ export default function EscolhaAssento() {
     }
   }
 
+  // Função para calcular idade (manter, pode ser útil para outras lógicas ou fallback)
+  function calcularIdade(dataNascimentoString) {
+    if (!dataNascimentoString || typeof dataNascimentoString !== 'string') {
+        return 0;
+    }
+    const [ano, mes, dia] = dataNascimentoString.split('-').map(Number);
+    const dataNascimento = new Date(ano, mes - 1, dia); // Mês é base 0
+
+    if (isNaN(dataNascimento.getTime())) {
+        console.error("Data de nascimento inválida:", dataNascimentoString);
+        return 0;
+    }
+
+    const hoje = new Date();
+
+    let idade = hoje.getFullYear() - dataNascimento.getFullYear();
+    const diferenciaMes = hoje.getMonth() - dataNascimento.getMonth();
+
+    if (diferenciaMes < 0 || (diferenciaMes === 0 && hoje.getDate() < dataNascimento.getDate())) {
+      idade--;
+    }
+
+    return idade;
+  }
+
+  // Função simplificada para calcular desconto usando apenas o campo 'desconto' do usuário
   function calcularDesconto() {
-    if (!usuario) return 0;
-    let desconto = 0;
-    if (usuario.estudante) desconto += 50;
-    if (usuario.deficiente) desconto += 50;
-    return Math.min(desconto, 50);
+    if (!usuario) {
+      console.log("calcularDesconto: Usuário não disponível, retornando 0%");
+      return 0;
+    }
+
+    console.group("Diagnóstico de Desconto para:", usuario.nome);
+    console.log("  CPF:", usuario.cpf);
+    console.log("  Email:", usuario.email);
+    console.log("  Campo 'desconto':", usuario.desconto);
+
+    // Verifica diretamente o campo desconto
+    const temDesconto = usuario.desconto === true;
+    const descontoFinal = temDesconto ? 50 : 0;
+
+    if (temDesconto) {
+      console.log("  Usuário tem direito a desconto: 50%");
+    } else {
+      console.log("  Usuário não tem direito a desconto");
+    }
+
+    console.log(`  Desconto final aplicado: ${descontoFinal}%`);
+    console.groupEnd();
+
+    return descontoFinal;
   }
 
   function calcularPreco(quantidade) {
@@ -305,28 +351,34 @@ export default function EscolhaAssento() {
     }));
   }
 
+  // FUNÇÃO CORRIGIDA: Agora busca por dataSessao ao invés de dataCompra
   async function buscarAssentosOcupados() {
     try {
-      const dataInicio = new Date(dataSelecionada + "T00:00:00");
-      const dataFim = new Date(dataSelecionada + "T23:59:59");
+      console.log("Buscando assentos ocupados para:", {
+        filme: filme.nome,
+        dataSelecionada: dataSelecionada
+      });
 
       const q = query(
         collection(db, "ingressos"),
         where("filme", "==", filme.nome),
-        where("pago", "==", true),
-        where("dataCompra", ">=", dataInicio),
-        where("dataCompra", "<=", dataFim)
+        where("dataSessao", "==", dataSelecionada), // CORRIGIDO: usar dataSessao
+        where("pago", "==", true)
       );
 
       const querySnapshot = await getDocs(q);
+      console.log("Documentos encontrados:", querySnapshot.size);
 
       const assentosOcupados = [];
       querySnapshot.forEach((docu) => {
         const data = docu.data();
+        console.log("Documento encontrado:", data);
         if (data.assentos && Array.isArray(data.assentos)) {
           assentosOcupados.push(...data.assentos);
         }
       });
+
+      console.log("Assentos ocupados encontrados:", assentosOcupados);
 
       setFilme((antigo) => {
         if (!antigo) return antigo;
@@ -366,13 +418,15 @@ export default function EscolhaAssento() {
 
     if (!usuario?.uid || !usuario?.email) {
       alert("Você precisa fazer login para comprar ingressos.");
-      router.push("/Login");
+      router.push("/Home");
       return;
     }
 
     setLoading(true);
 
     const precoInfo = calcularPreco(assentosSelecionados.length);
+    // Calcular idade aqui para gravar no ingresso, se necessário
+    const idade = calcularIdade(usuario.data_nascimento);
 
     const dadosIngresso = {
       filme: filme.nome,
@@ -384,12 +438,16 @@ export default function EscolhaAssento() {
       usuarioId: usuario.uid,
       usuarioEmail: usuario.email,
       usuarioNome: usuario.nome,
+      usuarioIdade: idade,
       precoUnitario: precoInfo.precoUnitario,
       precoTotal: precoInfo.precoTotal,
       desconto: precoInfo.desconto,
       valorEconomizado: precoInfo.economizado,
+      usuarioTemDesconto: usuario.desconto || false, // Campo direto do usuário
       usuarioEstudante: usuario.estudante || false,
-      usuarioDeficiente: usuario.deficiente || false,
+      usuarioDeficiente: usuario.deficiencia || false,
+      usuarioMaiorDe65Anos: usuario.maiorDe65Anos || false,
+      usuarioMenorDeIdade: usuario.menorDeIdade || false,
       usuarioFuncionario: usuario.funcionario || false,
       horarioExibicao: filme.horarioExibicao || filme.horario,
       codigoFilme: filme.codigo1002 || null,
@@ -405,12 +463,14 @@ export default function EscolhaAssento() {
       };
       sessionStorage.setItem("ultimaCompra", JSON.stringify(detalheCompra));
 
+      // Mensagem de confirmação
+      let mensagemDesconto = "";
+      if (precoInfo.desconto > 0) {
+        mensagemDesconto = `\nDesconto aplicado: ${precoInfo.desconto}%\nEconomizado: R$ ${precoInfo.economizado.toFixed(2)}`;
+      }
+
       alert(
-        `Ingresso reservado com sucesso!\nTotal: R$ ${precoInfo.precoTotal.toFixed(
-          2
-        )}\nDesconto aplicado: ${precoInfo.desconto}%\nEconomizado: R$ ${precoInfo.economizado.toFixed(
-          2
-        )}`
+        `Ingresso reservado com sucesso!\nTotal: R$ ${precoInfo.precoTotal.toFixed(2)}${mensagemDesconto}`
       );
 
       setFilme({ ...filme, assentos: gerarAssentos(40) });
@@ -421,6 +481,14 @@ export default function EscolhaAssento() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Função para obter informações de desconto para exibição
+  function obterInfoDesconto() {
+    if (!usuario) return null;
+    
+    // Verifica apenas o campo desconto
+    return usuario.desconto === true ? ["Usuário com desconto"] : null;
   }
 
   if (loadingUsuario || loadingFilme) {
@@ -445,6 +513,7 @@ export default function EscolhaAssento() {
   const faixaImg = buscarImagemFaixa(filme.faixaEtaria);
   const assentosSelecionados = filme.assentos.filter((a) => a.selecionado);
   const precoInfo = calcularPreco(assentosSelecionados.length);
+  const infoDesconto = obterInfoDesconto();
 
   return (
     <div className={styles.container}>
@@ -499,21 +568,37 @@ export default function EscolhaAssento() {
         style={{ marginBottom: 20 }}
       />
 
-      {/* Informações de preço */}
+      {/* Informações de desconto */}
       <div className={styles.precoInfo}>
+        {infoDesconto && (
+          <div className={styles.infoDesconto} style={{
+            backgroundColor: '#e8f5e8',
+            padding: '10px',
+            marginBottom: '10px',
+            borderRadius: '5px',
+            border: '1px solid #4caf50'
+          }}>
+            <p style={{ margin: 0, color: '#2e7d32' }}>
+              <strong>🎉 Você tem direito a desconto!</strong>
+            </p>
+            <p style={{ margin: '5px 0 0 0', color: '#2e7d32' }}>
+              Desconto de 50% aplicado
+            </p>
+          </div>
+        )}
+
         {precoInfo.desconto > 0 ? (
           <p className={styles.desconto}>
-            <span style={{ textDecoration: "line-through", marginRight: 8 }}>
+            <span style={{ textDecoration: "line-through", marginRight: 8, color: '#888' }}>
               R$ {precoInfo.precoOriginal.toFixed(2)}
             </span>
-            <span>
+            <span style={{ color: '#4caf50', fontWeight: 'bold' }}>
               R$ {precoInfo.precoUnitario.toFixed(2)} ({precoInfo.desconto}% OFF)
             </span>
           </p>
         ) : (
           <p>
-            <strong>Preço por ingresso:</strong> R${" "}
-            {precoInfo.precoUnitario.toFixed(2)}
+            <strong>Preço por ingresso:</strong> R$ {precoInfo.precoUnitario.toFixed(2)}
           </p>
         )}
       </div>
@@ -550,7 +635,7 @@ export default function EscolhaAssento() {
                 >
                   Preço unitário: R$ {precoInfo.precoOriginal.toFixed(2)}
                 </span>
-                <span>
+                <span style={{ color: '#4caf50', fontWeight: 'bold' }}>
                   Preço unitário com desconto: R$ {precoInfo.precoUnitario.toFixed(2)} (
                   {precoInfo.desconto}% OFF)
                 </span>
@@ -563,7 +648,7 @@ export default function EscolhaAssento() {
             <strong>Total:</strong> R$ {precoInfo.precoTotal.toFixed(2)}
           </p>
           {precoInfo.economizado > 0 && (
-            <p className={styles.economia}>
+            <p className={styles.economia} style={{ color: '#4caf50', fontWeight: 'bold' }}>
               <strong>Você economizou:</strong> R$ {precoInfo.economizado.toFixed(2)}
             </p>
           )}

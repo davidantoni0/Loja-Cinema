@@ -1,3 +1,5 @@
+// app/MenuPrincipal/page.js
+
 "use client";
 
 import React from "react";
@@ -61,16 +63,8 @@ export default function MenuPrincipal() {
 
     try {
       const collectionsToDelete = [
-        "usuarios",
-        "funcionarios",
-        "filmes",
-        "sessoes",
-        "ingressos",
-        "produtos",
-        "vendas",
-        "reservas",
-        "salas",
-        "horarios",
+        "usuarios", "funcionarios", "filmes", "sessoes", "ingressos",
+        "produtos", "vendas", "reservas", "salas", "horarios",
       ];
 
       let totalDeleted = 0;
@@ -114,7 +108,15 @@ export default function MenuPrincipal() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h2>Olá, {usuario.nome}</h2>
+        <div>
+          <h2>Olá, {usuario.nome}</h2>
+          {/* MENSAGEM DE DESCONTO */}
+          {usuario.desconto && (
+            <p className={styles.descontoInfo}>
+              ✨ Você tem direito a desconto!
+            </p>
+          )}
+        </div>
         <button onClick={handleLogout} className={styles.sair}>
           Sair
         </button>
@@ -125,7 +127,7 @@ export default function MenuPrincipal() {
           Compre seu ingresso!
         </Link>
         <br />
-        <Link href="/lojaCinema" className={styles.link}>
+        <Link href="/Bomboniere" className={styles.link}>
           Conheça nossa Bomboniere!
         </Link>
         <br />

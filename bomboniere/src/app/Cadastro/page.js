@@ -75,7 +75,7 @@ export default function Cadastro() {
       localStorage.setItem("usuarioFuncionario", funcionario ? "true" : "false");
 
       alert(funcionario ? "Usuário cadastrado como Funcionário!" : "Usuário cadastrado com sucesso!");
-      router.push("/MenuPrincipal");
+      router.push("/Home");
     } catch (erro) {
       if (erro.code === "auth/email-already-in-use") {
         alert("Este e-mail já está cadastrado.");
