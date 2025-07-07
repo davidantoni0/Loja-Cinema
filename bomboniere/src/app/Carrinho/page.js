@@ -239,6 +239,59 @@ export default function Carrinho() {
     }
   }
 
+  async function removerItemLanchonete(idx) {
+  const item = lanchoneteCarrinho[idx];
+
+  if (!confirm("Tem certeza que deseja remover este item da lanchonete?")) return;
+
+  if (item.origem === "firestore" && item.pedidoId) {
+    try {
+      const pedidoRef = doc(db, "pedidosLanchonete", item.pedidoId);
+      const docSnap = await getDoc(pedidoRef);
+
+      if (docSnap.exists()) {
+        const pedidoData = docSnap.data();
+        const novaListaItens = pedidoData.itens.filter((_, i) => i !== parseInt(item.id.split("-")[1]));
+
+        if (novaListaItens.length > 0) {
+          await updateDoc(pedidoRef, { itens: novaListaItens });
+        } else {
+          await deleteDoc(pedidoRef);
+        }
+
+        const novaLista = [...lanchoneteCarrinho];
+        novaLista.splice(idx, 1);
+        setLanchoneteCarrinho(novaLista);
+        alert("Item removido com sucesso!");
+      }
+    } catch (error) {
+      console.error("Erro ao remover item do Firestore:", error);
+      alert("Erro ao remover item.");
+    }
+  } else if (item.origem === "local") {
+    try {
+      const novaLista = [...lanchoneteCarrinho];
+      novaLista.splice(idx, 1);
+      setLanchoneteCarrinho(novaLista);
+
+      const cartDataRaw = localStorage.getItem("cartData");
+      if (cartDataRaw) {
+        const cartData = JSON.parse(cartDataRaw);
+        cartData.cart.splice(item.localIndex, 1);
+        localStorage.setItem("cartData", JSON.stringify(cartData));
+      }
+
+      alert("Item removido com sucesso!");
+    } catch (error) {
+      console.error("Erro ao remover item local:", error);
+      alert("Erro ao remover item.");
+    }
+  }
+}
+
+
+
+
   function alterarQuantidadeLanchonete(idx, delta) {
     const novo = [...lanchoneteCarrinho];
     const item = novo[idx];
@@ -382,9 +435,9 @@ export default function Carrinho() {
                 const formatosAlternativos = [
                   `https://lh3.googleusercontent.com/d/${fileId}`,
                   `https://drive.google.com/uc?export=download&id=${fileId}`,
-                  `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h600`
+                  `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h600`,
                 ];
-                e.target.dataset.tentativa = '1';
+                e.target.dataset.tentativa = "1";
                 e.target.src = formatosAlternativos[0];
               } else {
                 e.target.src = "/placeholder.png";
@@ -403,8 +456,18 @@ export default function Carrinho() {
               <strong>Total:</strong> R$ {parseFloat(item.precoTotal || 0).toFixed(2)}
             </p>
           </div>
+          <div className={styles.acoes}>
+            <button
+              onClick={() => removerItemLanchonete(idx)}
+              className={styles.btnRemover}
+              title="Remover item da lanchonete"
+            >
+              ✕
+            </button>
+          </div>
         </div>
       ))}
+
 
       <div className={styles.resumoCompra}>
         <h3>Subtotal Ingressos: R$ {calcularSubtotalIngressos().toFixed(2)}</h3>
