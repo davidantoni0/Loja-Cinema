@@ -13,16 +13,8 @@ export default function FinanceiroFilmes() {
   const [resumo, setResumo] = useState({});
   const [mediaPorUsuario, setMediaPorUsuario] = useState(null);
   const [categoriasMeia, setCategoriasMeia] = useState({});
-  // Removido o estado debugInfo
-  // const [debugInfo, setDebugInfo] = useState({
-  //   totalDocumentos: 0,
-  //   documentosPagos: 0,
-  //   documentosNaoPagos: 0,
-  //   errosProcessamento: [],
-  //   ultimaAtualizacao: null
-  // });
+  const [usuariosData, setUsuariosData] = useState({}); // Novo estado para armazenar dados dos usuários
 
-  // Mapeamento de nomes de meses em português para números (0-11)
   const monthMap = {
     "janeiro": 0, "fevereiro": 1, "março": 2, "abril": 3, "maio": 4, "junho": 5,
     "julho": 6, "agosto": 7, "setembro": 8, "outubro": 9, "novembro": 10, "dezembro": 11,
@@ -31,31 +23,34 @@ export default function FinanceiroFilmes() {
   };
 
   useEffect(() => {
-    async function carregarIngressos() {
-      console.log("Iniciando carregamento de ingressos...");
+    async function carregarDados() {
+      console.log("Iniciando carregamento de ingressos e usuários...");
       try {
+        // Carregar dados de usuários primeiro
+        const usuariosSnapshot = await getDocs(collection(db, "usuarios"));
+        const usuariosMap = {};
+        usuariosSnapshot.forEach((doc) => {
+          const userData = doc.data();
+          if (userData.email) {
+            usuariosMap[userData.email] = userData;
+          }
+        });
+        setUsuariosData(usuariosMap);
+
+        // Carregar dados de ingressos
         const querySnapshot = await getDocs(collection(db, "ingressos"));
         const dados = [];
-        let totalDocs = 0; // Mantido para logs, pode ser removido se não for mais necessário
-        let docsPagos = 0; // Mantido para logs, pode ser removido se não for mais necessário
-        let docsNaoPagos = 0; // Mantido para logs, pode ser removido se não for mais necessário
-        const erros = []; // Mantido para logs, pode ser removido se não for mais necessário
 
         querySnapshot.forEach((doc) => {
-          totalDocs++;
           const data = doc.data();
           const docId = doc.id;
 
           if (data.pago !== true) {
-            docsNaoPagos++;
             return;
           }
 
-          docsPagos++;
-
           try {
             let parsedDataCompra;
-            // Conversão de dataCompra: Firebase Timestamp para Date ou string para Date
             if (data.dataCompra?.toDate) {
               parsedDataCompra = data.dataCompra.toDate();
             } else if (data.dataCompra && typeof data.dataCompra === "string") {
@@ -74,40 +69,17 @@ export default function FinanceiroFilmes() {
                 }
               }
               if (!parsedDataCompra || isNaN(parsedDataCompra.getTime())) {
-                erros.push(`Documento ${docId}: dataCompra inválida e não pôde ser convertida: "${dateString}"`);
+                console.warn(`Documento ${docId}: dataCompra inválida e não pôde ser convertida: "${dateString}"`);
                 return;
               }
             } else {
-                erros.push(`Documento ${docId}: dataCompra ausente ou formato inesperado.`);
-                return;
+              console.warn(`Documento ${docId}: dataCompra ausente ou formato inesperado.`);
+              return;
             }
             data.dataCompra = parsedDataCompra;
 
-
-            let parsedUsuarioDataNascimento;
-            if (data.usuarioDataNascimento?.toDate) {
-              parsedUsuarioDataNascimento = data.usuarioDataNascimento.toDate();
-            } else if (data.usuarioDataNascimento && typeof data.usuarioDataNascimento === "string") {
-              const dateString = data.usuarioDataNascimento;
-              const match = dateString.match(/(\d+) de ([a-zç]+) de (\d+)/i); // Ajuste para formato de data de nascimento
-              if (match) {
-                const day = parseInt(match[1]);
-                const monthName = match[2].toLowerCase();
-                const year = parseInt(match[3]);
-                const month = monthMap[monthName];
-                if (month !== undefined) {
-                  parsedUsuarioDataNascimento = new Date(year, month, day);
-                }
-              }
-              if (!parsedUsuarioDataNascimento || isNaN(parsedUsuarioDataNascimento.getTime())) {
-                erros.push(`Documento ${docId}: usuarioDataNascimento inválida e não pôde ser convertida: "${dateString}"`);
-                return;
-              }
-            }
-            data.usuarioDataNascimento = parsedUsuarioDataNascimento;
-
-
-            if (data.desconto > 0 || data.usuarioEstudante || data.usuarioDeficiente) {
+            // Atribuição de inteira/meia baseado no desconto de 50%
+            if (data.desconto === 50) {
               data.meia = (data.quantidade || 1);
               data.inteira = 0;
             } else {
@@ -115,10 +87,10 @@ export default function FinanceiroFilmes() {
               data.meia = 0;
             }
 
-            if (data.precoUnitario) { // Preferir precoUnitario se existir
+            if (data.precoUnitario) {
               data.preco = data.precoUnitario;
-            } else if (!data.preco) { // Se preco não existir, e precoUnitario também não, default para 0
-                data.preco = 0;
+            } else if (!data.preco) {
+              data.preco = 0;
             }
 
             if (!data.usuario && data.usuarioNome) {
@@ -127,31 +99,17 @@ export default function FinanceiroFilmes() {
 
             dados.push(data);
           } catch (error) {
-            erros.push(`Erro ao processar documento ${doc.id}: ${error.message}`);
+            console.error(`Erro ao processar documento ${doc.id}: ${error.message}`);
           }
         });
 
         setIngressos(dados);
-        // Removido setDebugInfo
-        // setDebugInfo({
-        //   totalDocumentos: totalDocs,
-        //   documentosPagos: docsPagos,
-        //   documentosNaoPagos: docsNaoPagos,
-        //   errosProcessamento: erros,
-        //   ultimaAtualizacao: new Date().toLocaleString()
-        // });
       } catch (error) {
-        // Removido setDebugInfo
-        // setDebugInfo((prev) => ({
-        //   ...prev,
-        //   errosProcessamento: [...prev.errosProcessamento, `Erro geral ao carregar ingressos: ${error.message}`],
-        //   ultimaAtualizacao: new Date().toLocaleString()
-        // }));
-        console.error("Erro geral ao carregar ingressos:", error); // Adicionado console.error para erros gerais
+        console.error("Erro geral ao carregar dados:", error);
       }
     }
 
-    carregarIngressos();
+    carregarDados();
   }, []);
 
   function calcularIdade(dataNascimento) {
@@ -182,14 +140,14 @@ export default function FinanceiroFilmes() {
     };
 
     const categoriasMeiaCalculadas = {
-      menor18: 0,
-      maior65: 0,
-      deficiente: 0,
+      menorDeIdade: 0,
+      maiorDe65Anos: 0,
+      deficiencia: 0,
       estudante: 0
     };
 
-    let totalIngressos = 0;
-    const usuariosUnicos = new Set();
+    let totalIngressosVendidos = 0;
+    const usuariosCompradoresUnicos = new Set();
 
     ingressos.forEach((ing) => {
       if (!ing.dataCompra || !(ing.dataCompra instanceof Date) || isNaN(ing.dataCompra.getTime())) return;
@@ -201,10 +159,10 @@ export default function FinanceiroFilmes() {
       const inteira = Number(ing.inteira || 0);
       const meia = Number(ing.meia || 0);
       const qtd = inteira + meia;
-      totalIngressos += qtd;
+      totalIngressosVendidos += qtd;
 
-      if (ing.usuario) {
-        usuariosUnicos.add(ing.usuario);
+      if (ing.usuarioEmail) {
+        usuariosCompradoresUnicos.add(ing.usuarioEmail);
       }
 
       const valorTotal = Number(ing.precoTotal || (ing.preco || 0) * qtd);
@@ -242,26 +200,25 @@ export default function FinanceiroFilmes() {
         resumoCalculado.porUsuario[ing.usuario].qtd += qtd;
       }
 
-      // 🧮 Contabilizar categorias de meia
-      if (meia > 0) { // Só contabiliza se for meia-entrada
-        const idade = calcularIdade(ing.usuarioDataNascimento);
-        if (idade !== null) {
-          if (idade < 18) categoriasMeiaCalculadas.menor18 += meia;
-          else if (idade > 65) categoriasMeiaCalculadas.maior65 += meia;
+      // 🧮 Contabilizar categorias de meia-entrada baseadas em desconto e dados do usuário
+      if (ing.desconto === 50 && ing.usuarioEmail) {
+        const usuarioInfo = usuariosData[ing.usuarioEmail];
+        if (usuarioInfo) {
+          if (usuarioInfo.menorDeIdade) categoriasMeiaCalculadas.menorDeIdade += meia;
+          if (usuarioInfo.maiorDe65Anos) categoriasMeiaCalculadas.maiorDe65Anos += meia;
+          if (usuarioInfo.deficiencia) categoriasMeiaCalculadas.deficiencia += meia;
+          if (usuarioInfo.estudante) categoriasMeiaCalculadas.estudante += meia;
         }
-
-        if (ing.usuarioDeficiente) categoriasMeiaCalculadas.deficiente += meia;
-        if (ing.usuarioEstudante) categoriasMeiaCalculadas.estudante += meia;
       }
     });
 
     setResumo(resumoCalculado);
 
-    const totalUsuarios = usuariosUnicos.size;
-    const media = totalUsuarios > 0 ? (totalIngressos / totalUsuarios) : 0;
+    const totalUsuariosCompradores = usuariosCompradoresUnicos.size;
+    const media = totalUsuariosCompradores > 0 ? (totalIngressosVendidos / totalUsuariosCompradores) : 0;
     setMediaPorUsuario(media.toFixed(2));
     setCategoriasMeia(categoriasMeiaCalculadas);
-  }, [ingressos, dataEscolhida]);
+  }, [ingressos, dataEscolhida, usuariosData]); // Adicionado usuariosData como dependência
 
   function getSemana(date) {
     const start = new Date(date.getFullYear(), 0, 1);
@@ -272,10 +229,9 @@ export default function FinanceiroFilmes() {
   function exportarExcel() {
     const wb = XLSX.utils.book_new();
 
-    // Função auxiliar para criar folhas de Excel
     const createSheet = (data, sheetName, totalColumn = false) => {
       const rows = [];
-      const sortedKeys = Object.keys(data).sort(); // Ordena as chaves (filmes, semanas, meses)
+      const sortedKeys = Object.keys(data).sort();
 
       sortedKeys.forEach(key => {
         const item = data[key];
@@ -303,7 +259,6 @@ export default function FinanceiroFilmes() {
       return XLSX.utils.json_to_sheet(rows);
     };
 
-    // Adiciona as folhas de resumo
     if (Object.keys(resumo.porFilme).length > 0) {
       XLSX.utils.book_append_sheet(wb, createSheet(resumo.porFilme, "Vendas por Filme", true), "Vendas por Filme");
     }
@@ -314,29 +269,29 @@ export default function FinanceiroFilmes() {
       XLSX.utils.book_append_sheet(wb, createSheet(resumo.porMes, "Vendas por Mês", true), "Vendas por Mês");
     }
 
-    // Adiciona a folha de resumo por data (se houver data escolhida)
     if (dataEscolhida && resumo.porData[dataEscolhida]) {
-        const dataSheetData = [{
-            Categoria: dataEscolhida,
-            Inteira: resumo.porData[dataEscolhida].inteira,
-            Meia: resumo.porData[dataEscolhida].meia,
-            Quantidade: resumo.porData[dataEscolhida].inteira + resumo.porData[dataEscolhida].meia,
-            Montante: (typeof resumo.porData[dataEscolhida].montante === 'number' && !isNaN(resumo.porData[dataEscolhida].montante) ? resumo.porData[dataEscolhida].montante.toFixed(2) : "0.00"),
-        }];
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataSheetData), "Vendas por Data");
+      const dataSheetData = [{
+        Categoria: dataEscolhida,
+        Inteira: resumo.porData[dataEscolhida].inteira,
+        Meia: resumo.porData[dataEscolhida].meia,
+        Quantidade: resumo.porData[dataEscolhida].inteira + resumo.porData[dataEscolhida].meia,
+        Montante: (typeof resumo.porData[dataEscolhida].montante === 'number' && !isNaN(resumo.porData[dataEscolhida].montante) ? resumo.porData[dataEscolhida].montante.toFixed(2) : "0.00"),
+      }];
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dataSheetData), "Vendas por Data");
     }
 
-    // Adiciona a folha de categorias de meia-entrada
     const meiaCategoriasArray = [
-      { Categoria: "Menores de 18 anos", Quantidade: categoriasMeia.menor18 || 0 },
-      { Categoria: "Maiores de 65 anos", Quantidade: categoriasMeia.maior65 || 0 },
-      { Categoria: "Pessoas com deficiência", Quantidade: categoriasMeia.deficiente || 0 },
+      { Categoria: "Menores de 18 anos", Quantidade: categoriasMeia.menorDeIdade || 0 },
+      { Categoria: "Maiores de 65 anos", Quantidade: categoriasMeia.maiorDe65Anos || 0 },
+      { Categoria: "Pessoas com deficiência", Quantidade: categoriasMeia.deficiencia || 0 },
       { Categoria: "Estudantes", Quantidade: categoriasMeia.estudante || 0 },
-      { Categoria: "Total Geral Meia-Entrada", Quantidade: (categoriasMeia.menor18 || 0) + (categoriasMeia.maior65 || 0) + (categoriasMeia.deficiente || 0) + (categoriasMeia.estudante || 0) }
+      {
+        Categoria: "Total Geral Meia-Entrada", Quantidade: (categoriasMeia.menorDeIdade || 0) +
+          (categoriasMeia.maiorDe65Anos || 0) + (categoriasMeia.deficiencia || 0) + (categoriasMeia.estudante || 0)
+      }
     ];
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(meiaCategoriasArray), "Categorias Meia-Entrada");
 
-    // Adiciona a folha de média por usuário
     const mediaPorUsuarioArray = [
       { Metrica: "Média de Ingressos por Usuário", Valor: mediaPorUsuario !== null ? mediaPorUsuario : "0.00" }
     ];
@@ -351,7 +306,6 @@ export default function FinanceiroFilmes() {
     }
   }
 
-  // Função auxiliar para renderizar tabelas de resumo
   const renderResumoTable = (data = {}, title, showTotalRow = true) => {
     if (Object.keys(data).length === 0) {
       return <p className={styles.paragrafo}>Nenhuma venda encontrada para {title.toLowerCase()}.</p>;
@@ -486,15 +440,15 @@ export default function FinanceiroFilmes() {
           <tbody>
             <tr className={styles.itemProduto}>
               <td>Menores de 18 anos</td>
-              <td>{categoriasMeia.menor18 || 0}</td>
+              <td>{categoriasMeia.menorDeIdade || 0}</td>
             </tr>
             <tr className={styles.itemProduto}>
               <td>Maiores de 65 anos</td>
-              <td>{categoriasMeia.maior65 || 0}</td>
+              <td>{categoriasMeia.maiorDe65Anos || 0}</td>
             </tr>
             <tr className={styles.itemProduto}>
               <td>Pessoas com deficiência</td>
-              <td>{categoriasMeia.deficiente || 0}</td>
+              <td>{categoriasMeia.deficiencia || 0}</td>
             </tr>
             <tr className={styles.itemProduto}>
               <td>Estudantes</td>
@@ -503,9 +457,9 @@ export default function FinanceiroFilmes() {
             <tr className={styles.totalLinha}>
               <td>Total Geral de Meias</td>
               <td>
-                {(categoriasMeia.menor18 || 0) +
-                  (categoriasMeia.maior65 || 0) +
-                  (categoriasMeia.deficiente || 0) +
+                {(categoriasMeia.menorDeIdade || 0) +
+                  (categoriasMeia.maiorDe65Anos || 0) +
+                  (categoriasMeia.deficiencia || 0) +
                   (categoriasMeia.estudante || 0)}
               </td>
             </tr>
@@ -520,28 +474,6 @@ export default function FinanceiroFilmes() {
           <strong>Média geral por usuário:</strong> {mediaPorUsuario !== null ? mediaPorUsuario : "Calculando..."}
         </p>
       </div>
-
-      {/* Removido a seção de Informações de Debug */}
-      {/* <h2 className={styles.subtitulo}>Informações de Debug</h2>
-      <div className={styles.categoriaBloco}>
-        <strong className={styles.categoriaTitulo}>Status do Carregamento de Dados</strong>
-        <ul className={styles.listaDebug}>
-          <li className={styles.itemListaDebug}>Total de Documentos no Firestore: {debugInfo.totalDocumentos}</li>
-          <li className={styles.itemListaDebug}>Documentos Pagos Processados: {debugInfo.documentosPagos}</li>
-          <li className={styles.itemListaDebug}>Documentos Não Pagos Ignorados: {debugInfo.documentosNaoPagos}</li>
-          <li className={styles.itemListaDebug}>Última Atualização: {debugInfo.ultimaAtualizacao}</li>
-          {debugInfo.errosProcessamento.length > 0 && (
-            <li className={styles.itemListaDebugErro}>
-              Erros de Processamento:
-              <ul className={styles.listaErros}>
-                {debugInfo.errosProcessamento.map((erro, i) => (
-                  <li key={i}>{erro}</li>
-                ))}
-              </ul>
-            </li>
-          )}
-        </ul>
-      </div> */}
 
       <button onClick={exportarExcel} className={styles.botaoExportar}>Exportar para Excel</button>
     </div>
