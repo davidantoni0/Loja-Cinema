@@ -44,28 +44,30 @@ export default function FinanceiroLanchonete() {
 
         if (querySnapshot.empty) {
           console.warn("Nenhum documento encontrado na coleção 'pedidosLanchonete' com 'pago == true'.");
+          setPedidos([]);
+          return;
         }
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          const docId = doc.id; // Para logs mais específicos
+          const docId = doc.id;
 
           console.log(`Processando documento ${docId}:`, data);
 
+          // Verificação adicional de segurança
           if (data.pago !== true) {
-            console.warn(`Documento ${docId} ignorado: 'pago' não é true. (Isso não deveria acontecer com a cláusula where, mas é uma verificação extra)`);
-            return; // só pega pedidos pagos
+            console.warn(`Documento ${docId} ignorado: 'pago' não é true.`);
+            return;
           }
 
           try {
             let parsedDate;
+            
             // Conversão de data: Firebase Timestamp para Date ou string para Date
             if (data.dataCompra?.toDate) {
               parsedDate = data.dataCompra.toDate();
               console.log(`Documento ${docId}: dataCompra convertida de Timestamp para Date:`, parsedDate);
             } else if (data.dataCompra && typeof data.dataCompra === "string") {
-              // Tenta parsear o formato específico "DD de MMMM deYYYY às HH:mm:ss UTC-X"
-              // A regex foi ajustada para incluir o "UTC-X" opcionalmente no final
               const dateString = data.dataCompra;
               const match = dateString.match(/(\d+) de ([a-zç]+) de (\d+) às (\d+):(\d+):(\d+)(?: UTC[+-]?\d+)?/i);
 
@@ -80,33 +82,42 @@ export default function FinanceiroLanchonete() {
                 const month = monthMap[monthName];
 
                 if (month !== undefined) {
-                  // Cria a data no fuso horário local, pois a string original já contém o offset UTC-3
                   parsedDate = new Date(year, month, day, hours, minutes, seconds);
                   console.log(`Documento ${docId}: dataCompra parseada manualmente de string para Date:`, parsedDate);
                 } else {
-                  console.error(`Documento ${docId}: Nome do mês '${monthName}' não reconhecido no mapeamento. String original: "${dateString}"`);
+                  console.error(`Documento ${docId}: Nome do mês '${monthName}' não reconhecido. String original: "${dateString}"`);
+                  return;
                 }
               } else {
-                console.error(`Documento ${docId}: dataCompra é uma string com formato inesperado e não pôde ser parseada:`, dateString);
+                console.error(`Documento ${docId}: dataCompra com formato inesperado: "${dateString}"`);
+                return;
               }
 
               if (!parsedDate || isNaN(parsedDate.getTime())) {
-                console.error(`Documento ${docId}: dataCompra é uma string inválida e não pôde ser convertida para Date:`, dateString);
-                return; // Pula se a string da data for inválida ou o parse falhar
+                console.error(`Documento ${docId}: dataCompra inválida: "${dateString}"`);
+                return;
               }
-              data.dataCompra = parsedDate; // Atribui a data parseada de volta ao objeto
             } else if (!data.dataCompra) {
-                console.warn(`Documento ${docId}: dataCompra está ausente. Documento ignorado.`);
-                return;
+              console.warn(`Documento ${docId}: dataCompra está ausente. Documento ignorado.`);
+              return;
             } else {
-                console.warn(`Documento ${docId}: dataCompra tem um formato inesperado (${typeof data.dataCompra}). Documento ignorado.`, data.dataCompra);
-                return;
+              console.warn(`Documento ${docId}: dataCompra tem formato inesperado (${typeof data.dataCompra}). Documento ignorado.`, data.dataCompra);
+              return;
             }
 
+            // Atualizar o objeto data com a data parseada
+            data.dataCompra = parsedDate;
 
+            // Verificar se itens existe e é um array
             if (!Array.isArray(data.itens)) {
-              console.warn(`Documento ${docId} ignorado: 'itens' não é um array. Conteúdo de 'itens':`, data.itens);
-              return; // pula se não tem array de itens
+              console.warn(`Documento ${docId} ignorado: 'itens' não é um array. Conteúdo:`, data.itens);
+              return;
+            }
+
+            // Verificar se há itens no array
+            if (data.itens.length === 0) {
+              console.warn(`Documento ${docId} ignorado: array 'itens' está vazio.`);
+              return;
             }
 
             dados.push(data);
@@ -118,14 +129,14 @@ export default function FinanceiroLanchonete() {
         });
 
         setPedidos(dados);
-        console.log(`Total de pedidos carregados para o estado: ${dados.length}`);
+        console.log(`Total de pedidos carregados: ${dados.length}`);
       } catch (mainFetchError) {
-        // Captura e exibe qualquer erro que ocorra durante a busca no Firestore
         console.error("Erro geral ao carregar pedidos do Firestore:", mainFetchError);
-        // Exemplo de como verificar se é um erro de permissão
         if (mainFetchError.code === 'permission-denied') {
           console.error("Erro de Permissão: Verifique suas Regras de Segurança do Firebase para a coleção 'pedidosLanchonete'.");
         }
+        // Garantir que o estado seja resetado em caso de erro
+        setPedidos([]);
       }
     }
 
@@ -134,15 +145,18 @@ export default function FinanceiroLanchonete() {
 
   useEffect(() => {
     console.log("Iniciando cálculo do resumo de vendas...");
+    console.log("Pedidos para processar:", pedidos.length);
+    
     if (pedidos.length === 0) {
-      setResumo({
+      const resumoVazio = {
         porDia: {},
         porMes: {},
         porAno: {},
         totaisPorDia: {},
         totaisPorMes: {},
         totaisPorAno: {},
-      });
+      };
+      setResumo(resumoVazio);
       console.log("Nenhum pedido para resumir. Resumo resetado.");
       return;
     }
@@ -158,8 +172,7 @@ export default function FinanceiroLanchonete() {
 
     pedidos.forEach((pedido, index) => {
       const dt = pedido.dataCompra;
-      // console.log(`Processando pedido ${index + 1} para resumo:`, pedido); // Descomente para log de pedido individual
-
+      
       if (!(dt instanceof Date) || isNaN(dt.getTime())) {
         console.warn(`Pedido ${index + 1} ignorado no resumo: dataCompra não é um objeto Date válido.`, dt);
         return;
@@ -169,62 +182,67 @@ export default function FinanceiroLanchonete() {
       const mes = dia.slice(0, 7);
       const ano = dia.slice(0, 4);
 
-      // Inicializa totais para esta data/mês/ano se ainda não existirem
+      // Inicializar totais se não existirem
       if (!resumoCalculado.totaisPorDia[dia]) resumoCalculado.totaisPorDia[dia] = 0;
       if (!resumoCalculado.totaisPorMes[mes]) resumoCalculado.totaisPorMes[mes] = 0;
       if (!resumoCalculado.totaisPorAno[ano]) resumoCalculado.totaisPorAno[ano] = 0;
 
+      // Verificar se itens existe e é um array
       if (!pedido.itens || !Array.isArray(pedido.itens)) {
         console.warn(`Pedido ${index + 1} ignorado no resumo: 'itens' está ausente ou não é um array.`, pedido.itens);
         return;
       }
 
       pedido.itens.forEach((item, itemIndex) => {
-        // console.log(`  Processando item ${itemIndex + 1} do pedido ${index + 1}:`, item); // Descomente para log de item individual
-
         const nomeProduto = item.item ?? item.nome ?? "Produto desconhecido";
         const tamanho = item.tamanho ?? "tamanho desconhecido";
-        const nomeComTamanho = `${nomeProduto} (tamanho: ${tamanho})`;
+        const nomeComTamanho = `${nomeProduto} (${tamanho})`;
 
         const qtd = Number(item.quantidade ?? item.qtd ?? 1);
-        // Preço unitário, tenta pegar dos dados (ou zero)
         const precoUnitario = Number(item.precoUnitario ?? item.preco ?? 0);
-        const precoTotalItemOriginal = Number(item.precoTotal ?? 0); // O preço total do item no documento
+        const precoTotalItemOriginal = Number(item.precoTotal ?? 0);
 
-        // Calcula o valor total do item com base na quantidade e preço unitário
+        // Calcular valor total do item
         const valorTotalCalculado = qtd * precoUnitario;
 
-        if (isNaN(qtd)) {
+        // Logs de debug
+        if (isNaN(qtd) || qtd <= 0) {
           console.warn(`  Item ${itemIndex + 1} do pedido ${index + 1} (${nomeComTamanho}): quantidade inválida (${item.quantidade ?? item.qtd}). Usando 1.`);
         }
-        if (isNaN(precoUnitario)) {
-            console.warn(`  Item ${itemIndex + 1} do pedido ${index + 1} (${nomeComTamanho}): precoUnitario inválido (${item.precoUnitario ?? item.preco}). Usando 0.`);
+        if (isNaN(precoUnitario) || precoUnitario <= 0) {
+          console.warn(`  Item ${itemIndex + 1} do pedido ${index + 1} (${nomeComTamanho}): precoUnitario inválido (${item.precoUnitario ?? item.preco}). Usando 0.`);
         }
-        if (valorTotalCalculado !== precoTotalItemOriginal && precoTotalItemOriginal !== 0) {
-            console.warn(`  Item ${itemIndex + 1} do pedido ${index + 1} (${nomeComTamanho}): precoTotal calculado (${valorTotalCalculado.toFixed(2)}) difere do original (${precoTotalItemOriginal.toFixed(2)}). Usando o calculado.`);
+        if (Math.abs(valorTotalCalculado - precoTotalItemOriginal) > 0.01 && precoTotalItemOriginal !== 0) {
+          console.warn(`  Item ${itemIndex + 1} do pedido ${index + 1} (${nomeComTamanho}): precoTotal calculado (${valorTotalCalculado.toFixed(2)}) difere do original (${precoTotalItemOriginal.toFixed(2)}). Usando o calculado.`);
         }
 
-
-        // Inicializa o produto nas categorias se necessário
+        // Inicializar categorias se necessário
         if (!resumoCalculado.porDia[dia]) resumoCalculado.porDia[dia] = {};
-        if (!resumoCalculado.porDia[dia][nomeComTamanho])
+        if (!resumoCalculado.porMes[mes]) resumoCalculado.porMes[mes] = {};
+        if (!resumoCalculado.porAno[ano]) resumoCalculado.porAno[ano] = {};
+
+        // Inicializar produto específico se necessário
+        if (!resumoCalculado.porDia[dia][nomeComTamanho]) {
           resumoCalculado.porDia[dia][nomeComTamanho] = { qtd: 0, valor: 0 };
+        }
+        if (!resumoCalculado.porMes[mes][nomeComTamanho]) {
+          resumoCalculado.porMes[mes][nomeComTamanho] = { qtd: 0, valor: 0 };
+        }
+        if (!resumoCalculado.porAno[ano][nomeComTamanho]) {
+          resumoCalculado.porAno[ano][nomeComTamanho] = { qtd: 0, valor: 0 };
+        }
+
+        // Somar valores
         resumoCalculado.porDia[dia][nomeComTamanho].qtd += qtd;
         resumoCalculado.porDia[dia][nomeComTamanho].valor += valorTotalCalculado;
 
-        if (!resumoCalculado.porMes[mes]) resumoCalculado.porMes[mes] = {};
-        if (!resumoCalculado.porMes[mes][nomeComTamanho])
-          resumoCalculado.porMes[mes][nomeComTamanho] = { qtd: 0, valor: 0 };
         resumoCalculado.porMes[mes][nomeComTamanho].qtd += qtd;
         resumoCalculado.porMes[mes][nomeComTamanho].valor += valorTotalCalculado;
 
-        if (!resumoCalculado.porAno[ano]) resumoCalculado.porAno[ano] = {};
-        if (!resumoCalculado.porAno[ano][nomeComTamanho])
-          resumoCalculado.porAno[ano][nomeComTamanho] = { qtd: 0, valor: 0 };
         resumoCalculado.porAno[ano][nomeComTamanho].qtd += qtd;
         resumoCalculado.porAno[ano][nomeComTamanho].valor += valorTotalCalculado;
 
-        // Soma totais gerais
+        // Somar totais gerais
         resumoCalculado.totaisPorDia[dia] += valorTotalCalculado;
         resumoCalculado.totaisPorMes[mes] += valorTotalCalculado;
         resumoCalculado.totaisPorAno[ano] += valorTotalCalculado;
@@ -240,12 +258,10 @@ export default function FinanceiroLanchonete() {
 
     function resumoParaArray(resumoTipo, totais) {
       const linhas = [];
-      // Ordenar as categorias (dias, meses, anos) para uma saída consistente
       const categoriasOrdenadas = Object.keys(resumoTipo).sort();
 
       categoriasOrdenadas.forEach(categoria => {
         const produtos = resumoTipo[categoria];
-        // Ordenar os produtos dentro de cada categoria
         const produtosOrdenados = Object.keys(produtos).sort();
 
         produtosOrdenados.forEach(produto => {
@@ -254,47 +270,62 @@ export default function FinanceiroLanchonete() {
             Categoria: categoria,
             Produto: produto,
             Quantidade: dados.qtd,
-            // Garante que dados.valor seja um número antes de toFixed
             "Valor Total": (typeof dados.valor === 'number' && !isNaN(dados.valor) ? dados.valor.toFixed(2) : "0.00"),
           });
         });
+        
         // Linha de total da categoria
         linhas.push({
           Categoria: categoria,
-          Produto: "Total da Categoria", // Mais descritivo
+          Produto: "Total da Categoria",
           Quantidade: "",
-          // Garante que totais[categoria] seja um número antes de toFixed
           "Valor Total": (typeof totais[categoria] === 'number' && !isNaN(totais[categoria]) ? totais[categoria].toFixed(2) : "0.00"),
         });
       });
       return linhas;
     }
 
-    const porDiaArray = resumoParaArray(resumo.porDia, resumo.totaisPorDia);
-    const porMesArray = resumoParaArray(resumo.porMes, resumo.totaisPorMes);
-    const porAnoArray = resumoParaArray(resumo.porAno, resumo.totaisPorAno);
+    // Verificar se há dados para exportar
+    if (Object.keys(resumo.porDia).length === 0 && Object.keys(resumo.porMes).length === 0 && Object.keys(resumo.porAno).length === 0) {
+      console.warn("Nenhum dado para exportar.");
+      alert("Nenhum dado disponível para exportar.");
+      return;
+    }
 
-    const wsDia = XLSX.utils.json_to_sheet(porDiaArray);
-    const wsMes = XLSX.utils.json_to_sheet(porMesArray);
-    const wsAno = XLSX.utils.json_to_sheet(porAnoArray);
+    // Criar planilhas apenas se houver dados
+    if (Object.keys(resumo.porDia).length > 0) {
+      const porDiaArray = resumoParaArray(resumo.porDia, resumo.totaisPorDia);
+      const wsDia = XLSX.utils.json_to_sheet(porDiaArray);
+      XLSX.utils.book_append_sheet(wb, wsDia, "Vendas por Dia");
+    }
 
-    XLSX.utils.book_append_sheet(wb, wsDia, "Vendas por Dia");
-    XLSX.utils.book_append_sheet(wb, wsMes, "Vendas por Mês");
-    XLSX.utils.book_append_sheet(wb, wsAno, "Vendas por Ano");
+    if (Object.keys(resumo.porMes).length > 0) {
+      const porMesArray = resumoParaArray(resumo.porMes, resumo.totaisPorMes);
+      const wsMes = XLSX.utils.json_to_sheet(porMesArray);
+      XLSX.utils.book_append_sheet(wb, wsMes, "Vendas por Mês");
+    }
+
+    if (Object.keys(resumo.porAno).length > 0) {
+      const porAnoArray = resumoParaArray(resumo.porAno, resumo.totaisPorAno);
+      const wsAno = XLSX.utils.json_to_sheet(porAnoArray);
+      XLSX.utils.book_append_sheet(wb, wsAno, "Vendas por Ano");
+    }
 
     try {
       XLSX.writeFile(wb, "relatorio_pedidos_lanchonete.xlsx");
       console.log("Relatório exportado para Excel com sucesso!");
     } catch (error) {
       console.error("Erro ao exportar para Excel:", error);
-      // Substituindo alert por uma mensagem no console, conforme as instruções
-      console.error("Não foi possível exportar o relatório para Excel. Verifique o console para mais detalhes.");
+      alert("Erro ao exportar para Excel. Verifique o console para mais detalhes.");
     }
   }
 
   function renderResumoPorCategoria(resumoTipo, totais) {
-    // Ordenar as categorias (dias, meses, anos) para uma exibição consistente
     const categoriasOrdenadas = Object.keys(resumoTipo).sort();
+
+    if (categoriasOrdenadas.length === 0) {
+      return <p className={styles.paragrafo}>Nenhuma venda encontrada.</p>;
+    }
 
     return categoriasOrdenadas.map((categoria) => (
       <div key={categoria} className={styles.categoriaBloco}>
@@ -308,20 +339,19 @@ export default function FinanceiroLanchonete() {
             </tr>
           </thead>
           <tbody>
-            {/* Ordenar os produtos dentro de cada categoria */}
-            {Object.entries(resumoTipo[categoria]).sort(([a], [b]) => a.localeCompare(b)).map(([produto, dados]) => (
-              <tr key={produto} className={styles.itemProduto}>
-                <td>{produto}</td>
-                <td>{dados.qtd}</td>
-                {/* Garante que dados.valor seja um número antes de toFixed */}
-                <td>{typeof dados.valor === 'number' && !isNaN(dados.valor) ? dados.valor.toFixed(2) : "0.00"}</td>
-              </tr>
-            ))}
+            {Object.entries(resumoTipo[categoria])
+              .sort(([a], [b]) => a.localeCompare(b))
+              .map(([produto, dados]) => (
+                <tr key={produto} className={styles.itemProduto}>
+                  <td>{produto}</td>
+                  <td>{dados.qtd}</td>
+                  <td>{typeof dados.valor === 'number' && !isNaN(dados.valor) ? dados.valor.toFixed(2) : "0.00"}</td>
+                </tr>
+              ))}
             <tr className={styles.totalLinha}>
-              <td>Total</td>
+              <td><strong>Total</strong></td>
               <td></td>
-              {/* Garante que totais[categoria] seja um número antes de toFixed */}
-              <td>{typeof totais[categoria] === 'number' && !isNaN(totais[categoria]) ? totais[categoria].toFixed(2) : "0.00"}</td>
+              <td><strong>{typeof totais[categoria] === 'number' && !isNaN(totais[categoria]) ? totais[categoria].toFixed(2) : "0.00"}</strong></td>
             </tr>
           </tbody>
         </table>
@@ -337,25 +367,13 @@ export default function FinanceiroLanchonete() {
       <h1 className={styles.titulo}>Relatório de Vendas - Lanchonete</h1>
 
       <h2 className={styles.subtitulo}>Resumo por Dia</h2>
-      {Object.keys(resumo.porDia).length > 0 ? (
-        renderResumoPorCategoria(resumo.porDia, resumo.totaisPorDia)
-      ) : (
-        <p className={styles.paragrafo}>Nenhuma venda encontrada para o resumo diário.</p>
-      )}
+      {renderResumoPorCategoria(resumo.porDia, resumo.totaisPorDia)}
 
       <h2 className={styles.subtitulo}>Resumo por Mês</h2>
-      {Object.keys(resumo.porMes).length > 0 ? (
-        renderResumoPorCategoria(resumo.porMes, resumo.totaisPorMes)
-      ) : (
-        <p className={styles.paragrafo}>Nenhuma venda encontrada para o resumo mensal.</p>
-      )}
+      {renderResumoPorCategoria(resumo.porMes, resumo.totaisPorMes)}
 
       <h2 className={styles.subtitulo}>Resumo por Ano</h2>
-      {Object.keys(resumo.porAno).length > 0 ? (
-        renderResumoPorCategoria(resumo.porAno, resumo.totaisPorAno)
-      ) : (
-        <p className={styles.paragrafo}>Nenhuma venda encontrada para o resumo anual.</p>
-      )}
+      {renderResumoPorCategoria(resumo.porAno, resumo.totaisPorAno)}
 
       <button onClick={exportarExcel} className={styles.botaoExportar}>
         Exportar para Excel
